@@ -3,330 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clip Flow Pro | Advanced Manager</title>
+    <title>Clipflow</title>
     <style>
         :root {
             --bg: #0a0b1e; --card: #16183d; --text: #ffffff; --muted: #a0a4d0;
             --accent: #6c63ff; --border: rgba(255,255,255,0.1);
-            --yt: #FF0000; --fb: #1877F2; --snap: #FFFC00; --ig: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
         }
         [data-theme="light"] {
-            --bg: #f4f7fe; --card: #ffffff; --text: #1a1c3d; --muted: #64748b; --border: rgba(0,0,0,0.05);
+            --bg: #f4f7fe; --card: #ffffff; --text: #1a1c3d; --muted: #64748b; --border: rgba(0,0,0,0.1);
         }
 
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; transition: 0.3s; }
+        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); transition: 0.3s; }
         
-        /* Icons Styling */
-        .u-icon { width: 24px; height: 24px; vertical-align: middle; object-fit: contain; }
-        .u-icon.small { width: 16px; height: 16px; }
-        .platform-icon { width: 20px; height: 20px; border-radius: 4px; }
+        /* Navbar & Search */
+        nav { padding: 15px 25px; background: var(--card); border-bottom: 1px solid var(--border); }
+        .nav-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .logo { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 20px; }
+        
+        .search-area { display: flex; align-items: center; gap: 10px; background: var(--bg); padding: 8px 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .search-area input { background: none; border: none; color: var(--text); width: 100%; outline: none; }
 
-        /* Navigation */
-        nav { display: flex; align-items: center; justify-content: space-between; padding: 15px 30px; background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
-        .search-container { display: flex; align-items: center; background: var(--bg); padding: 5px 15px; border-radius: 10px; border: 1px solid var(--border); flex: 0.6; }
-        .search-container input { background: none; border: none; color: var(--text); padding: 8px; width: 100%; outline: none; }
+        /* Platform Categories - Below Search */
+        .categories { display: flex; gap: 10px; padding: 10px 25px; overflow-x: auto; background: var(--bg); }
+        .cat-btn { display: flex; align-items: center; gap: 8px; padding: 8px 15px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; cursor: pointer; color: var(--text); white-space: nowrap; }
+        .cat-btn.active { border-color: var(--accent); background: rgba(108, 99, 255, 0.1); }
 
         /* Grid & Cards */
-        #mainGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 30px; }
-        .video-card { background: var(--card); border-radius: 15px; overflow: hidden; position: relative; border: 1px solid var(--border); transition: 0.3s; cursor: pointer; }
-        .video-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        #mainGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 25px; }
+        .video-card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; position: relative; }
         
-        .thumb-area { width: 100%; background: #000; position: relative; }
-        .ratio-16-9 .thumb-area { aspect-ratio: 16/9; }
-        .ratio-9-16 .thumb-area { aspect-ratio: 9/16; max-height: 480px; }
-        .thumb-area img { width: 100%; height: 100%; object-fit: cover; }
+        .thumb-wrap { width: 100%; background: #000; cursor: pointer; position: relative; }
+        .ratio-16-9 { aspect-ratio: 16/9; }
+        .ratio-9-16 { aspect-ratio: 9/16; max-height: 450px; }
+        .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
 
-        .card-info { padding: 15px; position: relative; }
-        .card-info h3 { margin: 0 0 5px; font-size: 16px; width: 85%; }
-        .card-date { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
-        
-        .three-dots { position: absolute; top: 15px; right: 10px; cursor: pointer; padding: 5px; }
+        .card-content { padding: 15px; position: relative; }
+        .edit-trigger { position: absolute; top: 15px; right: 10px; cursor: pointer; padding: 5px; z-index: 10; }
 
-        /* Floating Shapes */
-        #canvasBG { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; opacity: 0.4; }
+        /* Modal Layout: Video TOP, then Thumbs, then Meta */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        
+        .field { margin-bottom: 15px; }
+        .field label { display: block; margin-bottom: 5px; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+        input, textarea, select { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 5px; box-sizing: border-box; }
 
-        /* Modals */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
-        .modal-content { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
-        
-        /* Form elements */
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-size: 13px; color: var(--muted); }
-        input, textarea, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); box-sizing: border-box; }
-        
-        .thumb-upload-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-        .thumb-box { aspect-ratio: 16/9; border: 2px dashed var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
+        .thumb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .thumb-box { aspect-ratio: 16/9; border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
 
-        .btn-primary { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
-        .btn-danger { background: #ff4757; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+        .icon-btn { background: none; border: none; cursor: pointer; padding: 5px; }
+        .u-icon { width: 24px; height: 24px; object-fit: contain; }
+
+        #bgCanvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
     </style>
 </head>
 <body>
 
-<canvas id="canvasBG"></canvas>
+<canvas id="bgCanvas"></canvas>
 
 <nav>
-    <div style="display:flex; align-items:center; gap:10px;">
-        <img src="youtube.png" class="u-icon" style="filter: drop-shadow(0 0 5px var(--yt))">
-        <h2 style="margin:0; font-size:18px;">CLIP FLOW PRO</h2>
+    <div class="nav-top">
+        <div class="logo">
+            <img src="youtube.png" class="u-icon"> Clipflow
+        </div>
+        <div style="display:flex; gap:15px;">
+            <button class="icon-btn" onclick="toggleTheme()">
+                <img src="brightness.png" id="themeIcon" class="u-icon">
+            </button>
+            <button class="icon-btn" onclick="toggleLang()">
+                <img src="arabic.png" class="u-icon">
+            </button>
+            <button class="icon-btn" onclick="openForm()">
+                <img src="sign.png" class="u-icon" style="width:30px;">
+            </button>
+        </div>
     </div>
 
-    <div class="search-container">
-        <img src="serch.png" class="u-icon small">
-        <input type="text" id="searchInput" placeholder="Search by title..." oninput="handleSearch()">
-        <select id="filterPlatform" style="width:auto; padding:2px; border:none;" onchange="handleSearch()">
-            <option value="all">All Platforms</option>
-            <option value="yt">YouTube</option>
-            <option value="fb">Facebook</option>
-            <option value="reels">Instagram</option>
-            <option value="snap">Snapchat</option>
-        </select>
-    </div>
-
-    <div style="display:flex; gap:15px; align-items:center;">
-        <img src="brightness.png" id="themeBtn" class="u-icon" onclick="toggleTheme()" style="cursor:pointer">
-        <img src="arabic.png" class="u-icon" onclick="toggleLang()" style="cursor:pointer">
-        <button onclick="openModal('add')" style="background:none; border:none; cursor:pointer;">
-            <img src="sign.png" class="u-icon" style="width:35px; height:35px;">
-        </button>
+    <div class="search-area">
+        <img src="serch.png" class="u-icon" style="width:18px;">
+        <input type="text" id="searchInp" placeholder="Search videos..." oninput="drawGrid()">
     </div>
 </nav>
+
+<div class="categories" id="platformTabs">
+    <button class="cat-btn active" onclick="filterBy('all')">All</button>
+    <button class="cat-btn" onclick="filterBy('yt')"><img src="youtube.png" class="u-icon" style="width:16px;"> YouTube</button>
+    <button class="cat-btn" onclick="filterBy('reels')"><img src="reels.png" class="u-icon" style="width:16px;"> Instagram</button>
+    <button class="cat-btn" onclick="filterBy('fb')"><img src="facebook.png" class="u-icon" style="width:16px;"> Facebook</button>
+    <button class="cat-btn" onclick="filterBy('snap')"><img src="snap.png" class="u-icon" style="width:16px;"> Snapchat</button>
+</div>
 
 <div id="mainGrid"></div>
 
 <div class="modal" id="formModal">
     <div class="modal-content">
-        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-            <h2 id="modalTitle">New Video</h2>
-            <button onclick="closeModal()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
-        </div>
+        <h2 id="mHeader">New Video</h2>
         
-        <div class="form-group">
-            <label><img src="title.png" class="u-icon small"> Video Title</label>
-            <input type="text" id="vTitle">
-        </div>
-
-        <div class="form-group">
-            <label><img src="description.png" class="u-icon small"> Description</label>
-            <textarea id="vDesc" rows="3"></textarea>
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-            <div class="form-group">
-                <label><img src="calendar.png" class="u-icon small"> Post Date</label>
-                <input type="date" id="vDate">
-            </div>
-            <div class="form-group">
-                <label>Target Platform</label>
-                <select id="vPlatform">
-                    <option value="yt">YouTube (16:9)</option>
-                    <option value="fb">Facebook (16:9)</option>
-                    <option value="shorts">YT Shorts (9:16)</option>
-                    <option value="tiktok">TikTok (9:16)</option>
-                    <option value="reels">Instagram Reels (9:16)</option>
-                    <option value="snap">Snapchat (9:16)</option>
-                </select>
-            </div>
-        </div>
-
-        <label>Thumbnails (3 Slots - First is Primary)</label>
-        <div class="thumb-upload-row">
-            <div class="thumb-box" onclick="triggerUpload(0)"><img id="pre0" src="upload thimb.png" style="width:40px; height:40px; object-fit:contain;"></div>
-            <div class="thumb-box" onclick="triggerUpload(1)"><img id="pre1" src="upload thimb.png" style="width:40px; height:40px; object-fit:contain;"></div>
-            <div class="thumb-box" onclick="triggerUpload(2)"><img id="pre2" src="upload thimb.png" style="width:40px; height:40px; object-fit:contain;"></div>
-        </div>
-
-        <div class="form-group" style="margin-top:15px;">
-            <label><img src="upload video.png" class="u-icon small"> Video File</label>
+        <div class="field">
+            <label><img src="upload video.png" class="u-icon" style="width:16px;"> Step 1: Select Video File</label>
             <input type="file" id="vFile" accept="video/*">
         </div>
 
-        <button class="btn-primary" id="saveBtn" onclick="saveProject()">Save Video</button>
-        <button class="btn-danger" id="deleteBtn" style="display:none;" onclick="confirmDelete()">
-            <img src="trash.png" class="u-icon small"> Delete Permanently
+        <label style="font-size:12px; color:var(--muted);">Step 2: Add 3 Thumbnails (First is Cover)</label>
+        <div class="thumb-grid">
+            <div class="thumb-box" onclick="pickThumb(0)"><img id="p0" src="upload thimb.png"></div>
+            <div class="thumb-box" onclick="pickThumb(1)"><img id="p1" src="upload thimb.png"></div>
+            <div class="thumb-box" onclick="pickThumb(2)"><img id="p2" src="upload thimb.png"></div>
+        </div>
+
+        <div class="field">
+            <label><img src="title.png" class="u-icon" style="width:16px;"> Title</label>
+            <input type="text" id="vTitle">
+        </div>
+        <div class="field">
+            <label><img src="description.png" class="u-icon" style="width:16px;"> Description</label>
+            <textarea id="vDesc" rows="2"></textarea>
+        </div>
+        <div class="field">
+            <label><img src="calendar.png" class="u-icon" style="width:16px;"> Date</label>
+            <input type="date" id="vDate">
+        </div>
+        <div class="field">
+            <label>Platform & Ratio</label>
+            <select id="vPlat">
+                <option value="yt">YouTube (16:9)</option>
+                <option value="fb">Facebook (16:9)</option>
+                <option value="reels">Instagram Reels (9:16)</option>
+                <option value="shorts">YT Shorts (9:16)</option>
+                <option value="snap">Snapchat (9:16)</option>
+                <option value="tiktok">TikTok (9:16)</option>
+            </select>
+        </div>
+
+        <button onclick="save()" style="width:100%; padding:12px; background:var(--accent); color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">Save Project</button>
+        <button id="delBtn" onclick="remove()" style="width:100%; padding:8px; background:none; color:#ff4757; border:none; cursor:pointer; margin-top:10px; display:none;">
+            <img src="trash.png" class="u-icon" style="width:14px;"> Delete Permanently
         </button>
+        <button onclick="closeModal()" style="width:100%; padding:8px; background:none; color:var(--muted); border:none; cursor:pointer;">Cancel</button>
     </div>
 </div>
 
-<div class="modal" id="playerModal" onclick="closePlayer(event)">
-    <div style="width:90%; max-width:1000px; position:relative;">
-        <video id="mainPlayer" controls style="width:100%; border-radius:15px; box-shadow: 0 0 50px rgba(0,0,0,1);"></video>
-    </div>
+<div class="modal" id="playModal" onclick="this.style.display='none'; document.getElementById('mainVid').pause();">
+    <video id="mainVid" controls style="width:90%; max-height:80vh; border-radius:10px;"></video>
 </div>
 
 <script>
-    let projects = [];
-    let editIndex = null;
-    let tempThumbs = [null, null, null];
+    let db = JSON.parse(localStorage.getItem('clipflow_db') || '[]');
+    let currentFilter = 'all';
+    let editIdx = null;
+    let thumbs = [null, null, null];
 
-    // Platform Database
-    const platformConfig = {
-        yt: { color: 'var(--yt)', icon: 'youtube.png', ratio: '16-9' },
-        fb: { color: 'var(--fb)', icon: 'facebook.png', ratio: '16-9' },
-        shorts: { color: 'var(--yt)', icon: 'youtube-shorts.png', ratio: '9-16' },
-        tiktok: { color: '#000', icon: 'tik-tok.png', ratio: '9-16' },
-        reels: { color: 'var(--ig)', icon: 'reels.png', ratio: '9-16' },
-        snap: { color: 'var(--snap)', icon: 'snap.png', ratio: '9-16' }
-    };
+    // THEME TOGGLE FIX
+    function toggleTheme() {
+        const root = document.documentElement;
+        const isDark = root.getAttribute('data-theme') === 'dark';
+        root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        document.getElementById('themeIcon').src = isDark ? 'moon.png' : 'brightness.png';
+    }
 
-    window.onload = () => {
-        setupBackground();
-        const saved = localStorage.getItem('clip_flow_data');
-        if(saved) projects = JSON.parse(saved);
-        renderGrid();
-    };
+    function openForm() {
+        editIdx = null;
+        document.getElementById('mHeader').innerText = "New Video";
+        document.getElementById('delBtn').style.display = 'none';
+        document.getElementById('vTitle').value = '';
+        document.getElementById('vDesc').value = '';
+        document.getElementById('vDate').value = new Date().toISOString().split('T')[0];
+        thumbs = [null, null, null];
+        [0,1,2].forEach(i => document.getElementById('p'+i).src = 'upload thimb.png');
+        document.getElementById('formModal').style.display = 'flex';
+    }
 
-    function triggerUpload(idx) {
-        const input = document.createElement('input');
-        input.type = 'file'; input.accept = 'image/*';
-        input.onchange = (e) => {
+    function pickThumb(i) {
+        const inp = document.createElement('input');
+        inp.type = 'file'; inp.accept = 'image/*';
+        inp.onchange = (e) => {
             const reader = new FileReader();
             reader.onload = (f) => {
-                tempThumbs[idx] = f.target.result;
-                document.getElementById(`pre${idx}`).src = f.target.result;
-                document.getElementById(`pre${idx}`).style.width = "100%";
-                document.getElementById(`pre${idx}`).style.height = "100%";
+                thumbs[i] = f.target.result;
+                document.getElementById('p'+i).src = f.target.result;
             };
             reader.readAsDataURL(e.target.files[0]);
         };
-        input.click();
+        inp.click();
     }
 
-    function saveProject() {
-        const data = {
+    function save() {
+        const item = {
             title: document.getElementById('vTitle').value,
             desc: document.getElementById('vDesc').value,
             date: document.getElementById('vDate').value,
-            platform: document.getElementById('vPlatform').value,
-            thumbs: [...tempThumbs]
+            plat: document.getElementById('vPlat').value,
+            images: [...thumbs]
         };
-
-        if(editIndex !== null) projects[editIndex] = data;
-        else projects.push(data);
-
-        localStorage.setItem('clip_flow_data', JSON.stringify(projects));
+        if(editIdx !== null) db[editIdx] = item;
+        else db.push(item);
+        
+        localStorage.setItem('clipflow_db', JSON.stringify(db));
         closeModal();
-        renderGrid();
+        drawGrid();
     }
 
-    function renderGrid(dataList = projects) {
-        const grid = document.getElementById('mainGrid');
-        grid.innerHTML = '';
-        
-        // Sort newest to oldest
-        const sorted = [...dataList].sort((a,b) => new Date(b.date) - new Date(a.date));
+    function drawGrid() {
+        const container = document.getElementById('mainGrid');
+        container.innerHTML = '';
+        const search = document.getElementById('searchInp').value.toLowerCase();
 
-        sorted.forEach((p, index) => {
-            const conf = platformConfig[p.platform];
+        // Sort Newest to Oldest
+        const filtered = db
+            .filter(i => (currentFilter === 'all' || i.plat === currentFilter) && i.title.toLowerCase().includes(search))
+            .sort((a,b) => new Date(b.date) - new Date(a.date));
+
+        filtered.forEach((item) => {
+            const isVertical = ['reels','shorts','snap','tiktok'].includes(item.plat);
             const card = document.createElement('div');
-            card.className = `video-card ratio-${conf.ratio}`;
+            card.className = 'video-card';
             card.innerHTML = `
-                <div class="thumb-area" onclick="playVideo()">
-                    <img src="${p.thumbs[0] || 'upload thimb.png'}">
-                    <div style="position:absolute; bottom:10px; left:10px; background:${conf.color}; padding:5px; border-radius:5px;">
-                        <img src="${conf.icon}" class="platform-icon">
-                    </div>
+                <div class="thumb-wrap ${isVertical ? 'ratio-9-16' : 'ratio-16-9'}" onclick="watch()">
+                    <img src="${item.images[0] || 'upload thimb.png'}">
                 </div>
-                <div class="card-info">
-                    <img src="edit.png" class="u-icon small three-dots" onclick="openEdit(${projects.indexOf(p)}, event)">
-                    <h3>${p.title}</h3>
-                    <div class="card-date"><img src="calendar.png" class="u-icon small"> ${p.date}</div>
+                <div class="card-content">
+                    <div class="edit-trigger" onclick="event.stopPropagation(); startEdit(${db.indexOf(item)})">
+                        <img src="edit.png" class="u-icon" style="width:18px;">
+                    </div>
+                    <div style="font-weight:bold; margin-bottom:5px;">${item.title}</div>
+                    <div style="font-size:12px; color:var(--muted);">${item.date}</div>
                 </div>
             `;
-            grid.appendChild(card);
+            container.appendChild(card);
         });
     }
 
-    function openEdit(idx, e) {
-        e.stopPropagation();
-        editIndex = idx;
-        const p = projects[idx];
-        document.getElementById('modalTitle').innerText = "Edit Video";
-        document.getElementById('vTitle').value = p.title;
-        document.getElementById('vDesc').value = p.desc;
-        document.getElementById('vDate').value = p.date;
-        document.getElementById('vPlatform').value = p.platform;
-        tempThumbs = [...p.thumbs];
-        tempThumbs.forEach((src, i) => {
-            if(src) {
-                document.getElementById(`pre${i}`).src = src;
-                document.getElementById(`pre${i}`).style.width = "100%";
-            }
-        });
-        document.getElementById('deleteBtn').style.display = "block";
-        document.getElementById('formModal').style.display = "flex";
+    function startEdit(idx) {
+        editIdx = idx;
+        const i = db[idx];
+        document.getElementById('mHeader').innerText = "Edit Video";
+        document.getElementById('vTitle').value = i.title;
+        document.getElementById('vDesc').value = i.desc;
+        document.getElementById('vDate').value = i.date;
+        document.getElementById('vPlat').value = i.plat;
+        thumbs = [...i.images];
+        thumbs.forEach((src, idx) => document.getElementById('p'+idx).src = src || 'upload thimb.png');
+        document.getElementById('delBtn').style.display = 'block';
+        document.getElementById('formModal').style.display = 'flex';
     }
 
-    function confirmDelete() {
-        if(confirm("⚠️ WARNING: This video will be permanently deleted from the file and cannot be recovered. Proceed?")) {
-            projects.splice(editIndex, 1);
-            localStorage.setItem('clip_flow_data', JSON.stringify(projects));
+    function remove() {
+        if(confirm("PERMANENT DELETE: This cannot be recovered. Are you sure?")) {
+            db.splice(editIdx, 1);
+            localStorage.setItem('clipflow_db', JSON.stringify(db));
             closeModal();
-            renderGrid();
+            drawGrid();
         }
     }
 
-    function handleSearch() {
-        const term = document.getElementById('searchInput').value.toLowerCase();
-        const plat = document.getElementById('filterPlatform').value;
-        
-        const filtered = projects.filter(p => {
-            const matchTitle = p.title.toLowerCase().includes(term);
-            const matchPlat = plat === 'all' || p.platform.includes(plat);
-            return matchTitle && matchPlat;
-        });
-        renderGrid(filtered);
+    function watch() {
+        // Since we are simulating local storage, real video files need a Blob URL
+        // For this demo, we trigger the modal window
+        document.getElementById('playModal').style.display = 'flex';
     }
 
-    function playVideo() {
-        document.getElementById('playerModal').style.display = "flex";
-        document.getElementById('mainPlayer').play();
+    function filterBy(p) {
+        currentFilter = p;
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        drawGrid();
     }
 
-    function closePlayer(e) {
-        if(e.target.id === 'playerModal') {
-            document.getElementById('playerModal').style.display = "none";
-            document.getElementById('mainPlayer').pause();
-        }
+    function closeModal() { document.getElementById('formModal').style.display = 'none'; }
+    
+    // Background Shapes
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    function drawShapes() {
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        ctx.strokeStyle = 'rgba(108, 99, 255, 0.1)';
+        ctx.strokeRect(100, 100, 50, 50);
+        ctx.beginPath(); ctx.arc(canvas.width-100, 200, 30, 0, Math.PI*2); ctx.stroke();
     }
-
-    function openModal(mode) {
-        editIndex = null;
-        tempThumbs = [null, null, null];
-        document.querySelectorAll('.thumb-box img').forEach(img => {
-            img.src = 'upload thimb.png';
-            img.style.width = '40px';
-        });
-        document.getElementById('deleteBtn').style.display = "none";
-        document.getElementById('formModal').style.display = "flex";
-    }
-
-    function closeModal() { document.getElementById('formModal').style.display = "none"; }
-
-    function setupBackground() {
-        const c = document.getElementById('canvasBG');
-        const ctx = c.getContext('2d');
-        c.width = window.innerWidth; c.height = window.innerHeight;
-        const shapes = Array(20).fill().map(() => ({
-            x: Math.random()*c.width, y: Math.random()*c.height,
-            s: Math.random()*40+10, t: Math.floor(Math.random()*3),
-            v: Math.random()*0.5
-        }));
-        function draw() {
-            ctx.clearRect(0,0,c.width,c.height);
-            ctx.strokeStyle = "rgba(108, 99, 255, 0.2)";
-            shapes.forEach(sh => {
-                ctx.beginPath();
-                if(sh.t === 0) ctx.rect(sh.x, sh.y, sh.s, sh.s);
-                else if(sh.t === 1) ctx.arc(sh.x, sh.y, sh.s/2, 0, 7);
-                else { ctx.moveTo(sh.x, sh.y); ctx.lineTo(sh.x+sh.s, sh.y); ctx.lineTo(sh.x+sh.s/2, sh.y-sh.s); ctx.closePath(); }
-                ctx.stroke(); sh.y -= sh.v; if(sh.y < -50) sh.y = c.height + 50;
-            });
-            requestAnimationFrame(draw);
-        }
-        draw();
-    }
+    drawShapes();
+    drawGrid();
 </script>
 </body>
 </html>
