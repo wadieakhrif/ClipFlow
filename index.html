@@ -28,6 +28,8 @@ nav {
  cursor:pointer;
 }
 
+.card:hover { background:#eee; }
+
 .card img {
  width:100%;
  height:120px;
@@ -46,17 +48,22 @@ video { width:100%; }
  display:flex;
  justify-content:center;
  align-items:center;
+ z-index:999;
 }
 
 .box {
  background:white;
  padding:20px;
- width:350px;
+ width:360px;
  border-radius:10px;
  text-align:center;
 }
 
-button { padding:6px 12px; margin:5px; cursor:pointer; }
+button {
+ padding:6px 12px;
+ margin:5px;
+ cursor:pointer;
+}
 </style>
 </head>
 
@@ -73,33 +80,32 @@ button { padding:6px 12px; margin:5px; cursor:pointer; }
 <!-- نافذة البداية -->
 <div id="modal">
   <div class="box">
-    <h3 id="title">اختيار مكان الحفظ</h3>
+    <h3 id="title"></h3>
     <p id="desc"></p>
-
     <div id="actions"></div>
   </div>
 </div>
 
 <script>
-let rootDir;      // الفولدر الذي يختاره المستخدم
-let appDir;       // ClipFlow folder
+let rootDir;
+let appDir;
 
 /* ===== IndexedDB ===== */
 function openDB(){
   return new Promise(res=>{
-    let req=indexedDB.open("clipflowDB",1);
-    req.onupgradeneeded=()=>req.result.createObjectStore("store");
-    req.onsuccess=()=>res(req.result);
+    let req = indexedDB.open("clipflowDB",1);
+    req.onupgradeneeded = ()=>req.result.createObjectStore("store");
+    req.onsuccess = ()=>res(req.result);
   });
 }
 
 async function saveDir(handle){
-  let db=await openDB();
+  let db = await openDB();
   db.transaction("store","readwrite").objectStore("store").put(handle,"dir");
 }
 
 async function getDir(){
-  let db=await openDB();
+  let db = await openDB();
   return db.transaction("store","readonly").objectStore("store").get("dir");
 }
 
@@ -117,44 +123,62 @@ window.onload = async ()=>{
 /* ===== واجهة أول مرة ===== */
 function showFirstUI(){
   title.innerText = "اختيار مكان الحفظ";
-  desc.innerHTML = "اختر فولدر (مثل Documents).<br>سيتم إنشاء مجلد ClipFlow داخله.";
+  desc.innerHTML = `
+  اختر مكانًا عاديًا مثل Documents أو Desktop.<br>
+  سيقوم ClipFlow بإنشاء مجلد خاص بك تلقائيًا.
+  `;
   actions.innerHTML = `<button onclick="chooseFolder()">اختيار</button>`;
 }
 
 /* ===== واجهة التأكيد ===== */
 function showConfirmUI(){
   title.innerText = "تأكيد مكان الحفظ";
-  desc.innerHTML = "تم العثور على مكان الحفظ السابق.<br>هل تريد استخدامه؟";
-
+  desc.innerHTML = `
+  تم العثور على مكان الحفظ السابق.<br>
+  هل تريد استخدامه؟
+  `;
   actions.innerHTML = `
     <button onclick="confirmFolder()">نعم</button>
     <button onclick="chooseFolder()">تغيير</button>
   `;
 }
 
-/* ===== اختيار فولدر جديد ===== */
+/* ===== اختيار فولدر ===== */
 async function chooseFolder(){
   try{
     rootDir = await window.showDirectoryPicker({mode:"readwrite"});
 
-    await rootDir.requestPermission({mode:"readwrite"});
+    const perm = await rootDir.requestPermission({mode:"readwrite"});
+    if(perm !== "granted"){
+      alert("❌ يجب السماح بالوصول");
+      return;
+    }
 
-    // إنشاء مجلد ClipFlow
-    appDir = await rootDir.getDirectoryHandle("ClipFlow",{create:true});
+    try{
+      appDir = await rootDir.getDirectoryHandle("ClipFlow",{create:true});
+    }catch{
+      alert("⚠️ هذا المجلد لا يمكن استخدامه.\nاختر Documents أو Desktop.");
+      return;
+    }
 
     await saveDir(rootDir);
 
     closeModal();
     loadProjects();
 
-  }catch{}
+  }catch{
+    alert("❌ لم يتم اختيار مجلد");
+  }
 }
 
-/* ===== تأكيد الفولدر القديم ===== */
+/* ===== تأكيد نفس الفولدر ===== */
 async function confirmFolder(){
   try{
     let perm = await rootDir.requestPermission({mode:"readwrite"});
-    if(perm !== "granted") return;
+    if(perm !== "granted"){
+      alert("❌ يجب السماح بالوصول");
+      return;
+    }
 
     appDir = await rootDir.getDirectoryHandle("ClipFlow",{create:true});
 
@@ -166,7 +190,7 @@ async function confirmFolder(){
   }
 }
 
-/* ===== إغلاق المودال ===== */
+/* ===== إغلاق ===== */
 function closeModal(){
   modal.style.display="none";
 }
@@ -204,17 +228,14 @@ function newProject(){
 
       let p = await appDir.getDirectoryHandle(final,{create:true});
 
-      // video
       let v=await p.getFileHandle("video.mp4",{create:true});
       let vw=await v.createWritable();
       await vw.write(video); await vw.close();
 
-      // thumb
       let t=await p.getFileHandle("thumb.png",{create:true});
       let tw=await t.createWritable();
       await tw.write(thumb); await tw.close();
 
-      // data
       let d=await p.getFileHandle("data.json",{create:true});
       let dw=await d.createWritable();
       await dw.write(JSON.stringify({title:titleName}));
