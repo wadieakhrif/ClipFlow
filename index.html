@@ -243,8 +243,255 @@ input,textarea { width:100%; padding:8px; margin:5px 0; border-radius:8px; borde
 </div>
 
 <script>
-// هنا سأجهز لك كامل الكود JS لإدارة المجلدات، المشاريع، الصور المصغرة، Drag&Drop، Light/Dark Mode، اللغات، الخلفية الهندسية
-// هذا الكود كبير جدًا وسأرسله لك في رسالة ثانية لتجنب القطع. 
+// ====== إعداد المتغيرات ======
+let projects = [];
+let folderHandle = null;
+let currentLang = 'ar';
+let darkMode = true;
+
+const projectsContainer = document.getElementById('projectsContainer');
+const folderPopup = document.getElementById('folderPopup');
+const projectPopup = document.getElementById('projectPopup');
+const chooseFolderBtn = document.getElementById('chooseFolderBtn');
+const dropZone = document.getElementById('dropZone');
+const dropThumbs = document.getElementById('dropThumbs');
+const thumbPreview = document.getElementById('thumbPreview');
+const titleInput = document.getElementById('title');
+const descriptionInput = document.getElementById('description');
+const platformsContainer = document.getElementById('platformsContainer');
+const datetimeInput = document.getElementById('datetime');
+const saveProjectBtn = document.getElementById('saveProjectBtn');
+const cancelProjectBtn = document.getElementById('cancelProjectBtn');
+const toggleModeBtn = document.getElementById('toggleMode');
+const toggleLangBtn = document.getElementById('toggleLang');
+
+// ====== منصات التواصل الاجتماعي ======
+const platforms = [
+  {name:'YouTube',class:'youtube'},
+  {name:'YouTube Shorts',class:'youtube-shorts'},
+  {name:'TikTok',class:'tiktok'},
+  {name:'Instagram',class:'instagram'},
+  {name:'Facebook',class:'facebook'},
+  {name:'Snapchat',class:'snapchat'},
+  {name:'LinkedIn',class:'linkedin'},
+  {name:'Twitter',class:'twitter'},
+  {name:'Pinterest',class:'pinterest'}
+];
+
+// إنشاء أزرار المنصات
+platforms.forEach(p=>{
+  const btn = document.createElement('button');
+  btn.className='platformBtn';
+  btn.innerText=p.name;
+  btn.dataset.class=p.class;
+  btn.onclick=()=>btn.classList.toggle('selected');
+  platformsContainer.appendChild(btn);
+});
+
+// ====== اختيار مجلد المشاريع ======
+chooseFolderBtn.onclick=async ()=>{
+  folderHandle = await window.showDirectoryPicker();
+  // تأكد من إنشاء مجلد ClipFlow Projects داخله
+  let clipFlowFolder;
+  try {
+    clipFlowFolder = await folderHandle.getDirectoryHandle('ClipFlow Projects',{create:true});
+  } catch(e){ console.error(e); return; }
+  folderPopup.style.display='none';
+  loadProjects();
+}
+
+// ====== تحميل المشاريع من المجلد ======
+async function loadProjects(){
+  if(!folderHandle) return;
+  projectsContainer.innerHTML='';
+  const clipFlowFolder = await folderHandle.getDirectoryHandle('ClipFlow Projects');
+  projects = [];
+  for await (const [name,handle] of clipFlowFolder.entries()){
+    if(handle.kind==='directory'){
+      const videoFile = await handle.getFileHandle('video.mp4').catch(()=>null);
+      const thumbs = [];
+      for await(const [fname,fhandle] of handle.entries()){
+        if(fname.startsWith('thumbnail') && fname.endsWith('.png')){
+          thumbs.push(fhandle);
+        }
+      }
+      const metaFile = await handle.getFileHandle('meta.json').catch(()=>null);
+      let meta = {};
+      if(metaFile){
+        const fileData = await (await metaFile.getFile()).text();
+        meta = JSON.parse(fileData);
+      }
+      projects.push({name,videoFile,thumbs,meta,folderHandle:handle});
+    }
+  }
+  displayProjects();
+}
+
+// ====== عرض المشاريع ======
+function displayProjects(){
+  projectsContainer.innerHTML='';
+  // ترتيب من الأحدث للأقدم حسب التاريخ
+  projects.sort((a,b)=> new Date(b.meta.datetime)-new Date(a.meta.datetime));
+  projects.forEach((p,index)=>{
+    const div = document.createElement('div');
+    div.className='project';
+
+    const img = document.createElement('img');
+    if(p.thumbs.length>0){
+      img.src=URL.createObjectURL(awaitFile(p.thumbs[0]));
+    } else img.src='';
+
+    const info = document.createElement('div');
+    info.className='project-info';
+    const h3 = document.createElement('h3');
+    h3.innerText=p.meta.title||p.name;
+    const pInfo = document.createElement('p');
+    const date = new Date(p.meta.datetime||Date.now());
+    pInfo.innerText=`${date.toLocaleDateString(currentLang)} `;
+    const platSpan = document.createElement('span');
+    platSpan.className='platform-label '+(p.meta.platformClass||'youtube');
+    platSpan.innerText=p.meta.platformName||'YouTube';
+    pInfo.appendChild(platSpan);
+    info.appendChild(h3);
+    info.appendChild(pInfo);
+
+    // القائمة الثلاث نقاط
+    const menuBtn = document.createElement('button');
+    menuBtn.className='menu-btn';
+    menuBtn.innerText='⋮';
+    const menuContent = document.createElement('div');
+    menuContent.className='menu-content';
+    const editBtn = document.createElement('button');
+    editBtn.innerText='✏️ تعديل';
+    editBtn.onclick=()=>openProjectPopup(p);
+    const delBtn = document.createElement('button');
+    delBtn.innerText='🗑️ حذف';
+    delBtn.onclick=()=>deleteProject(p);
+    menuContent.appendChild(editBtn);
+    menuContent.appendChild(delBtn);
+    menuBtn.onclick=()=>{menuContent.style.display=menuContent.style.display==='flex'?'none':'flex';}
+    div.appendChild(img);
+    div.appendChild(info);
+    div.appendChild(menuBtn);
+    div.appendChild(menuContent);
+    div.onclick=()=>viewVideo(p);
+    projectsContainer.appendChild(div);
+  });
+}
+
+// ====== فتح الفيديو في نافذة صغيرة ======
+async function viewVideo(project){
+  const file = await project.videoFile.getFile();
+  const url = URL.createObjectURL(file);
+  const win = window.open('','Video Preview','width=600,height=400');
+  win.document.write(`<video src="${url}" controls autoplay style="width:100%;height:100%;"></video>`);
+}
+
+// ====== حذف المشروع ======
+async function deleteProject(project){
+  if(!confirm('تحذير! سيتم حذف المشروع بالكامل من جهازك!')) return;
+  await project.folderHandle.removeEntry('video.mp4');
+  for(const t of project.thumbs) await project.folderHandle.removeEntry(await t.name);
+  await project.folderHandle.removeEntry('meta.json');
+  await folderHandle.getDirectoryHandle('ClipFlow Projects').then(f=>f.removeEntry(project.name,{recursive:true}));
+  loadProjects();
+}
+
+// ====== فتح Popup مشروع جديد ======
+function openProjectPopup(project=null){
+  projectPopup.style.display='block';
+  if(project){
+    titleInput.value=project.meta.title||'';
+    descriptionInput.value=project.meta.description||'';
+    datetimeInput.value=project.meta.datetime||'';
+    // يمكننا تحديد المنصات المحددة
+  } else {
+    titleInput.value='';
+    descriptionInput.value='';
+    datetimeInput.value='';
+  }
+}
+
+// ====== حفظ المشروع ======
+saveProjectBtn.onclick=async ()=>{
+  if(!folderHandle) return alert('اختر مجلد المشروع أولاً');
+  const clipFlowFolder = await folderHandle.getDirectoryHandle('ClipFlow Projects');
+  const projectName = titleInput.value || 'New Project';
+  const projectFolder = await clipFlowFolder.getDirectoryHandle(projectName,{create:true});
+  // حفظ الفيديو
+  const videoFileHandle = await projectFolder.getFileHandle('video.mp4',{create:true});
+  // حفظ الصور المصغرة
+  // حفظ البيانات meta.json
+  projectPopup.style.display='none';
+  loadProjects();
+}
+
+// ====== إلغاء Popup ======
+cancelProjectBtn.onclick=()=>{projectPopup.style.display='none';}
+
+// ====== Light/Dark Mode ======
+toggleModeBtn.onclick=()=>{
+  darkMode=!darkMode;
+  document.body.style.background=darkMode?'var(--dark-bg)':'var(--light-bg)';
+  document.body.style.color=darkMode?'var(--text-light)':'var(--text-dark)';
+}
+
+// ====== تغيير اللغة ======
+toggleLangBtn.onclick=()=>{
+  currentLang=currentLang==='ar'?'en':'ar';
+  loadProjects();
+}
+
+// ====== Backend: تحميل File من FileHandle ======
+async function awaitFile(fileHandle){ return await fileHandle.getFile(); }
+
+// ====== الخلفية الهندسية Outline ======
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+class Shape{
+  constructor(){
+    this.x=Math.random()*canvas.width;
+    this.y=Math.random()*canvas.height;
+    this.size=Math.random()*100+50;
+    this.type=['circle','square','triangle','parallelogram'][Math.floor(Math.random()*4)];
+    this.speedX=(Math.random()-0.5)*0.5;
+    this.speedY=(Math.random()-0.5)*0.5;
+    this.color=`rgba(255,255,255,0.2)`;
+  }
+  draw(){
+    ctx.strokeStyle=this.color;
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    if(this.type=='circle') ctx.arc(this.x,this.y,this.size,0,2*Math.PI);
+    else if(this.type=='square') ctx.strokeRect(this.x,this.y,this.size,this.size);
+    else if(this.type=='triangle'){
+      ctx.moveTo(this.x,this.y);
+      ctx.lineTo(this.x+this.size,this.y+this.size);
+      ctx.lineTo(this.x-this.size,this.y+this.size);
+      ctx.closePath();
+      ctx.stroke();
+    } else if(this.type=='parallelogram'){
+      ctx.moveTo(this.x,this.y);
+      ctx.lineTo(this.x+this.size*1.2,this.y);
+      ctx.lineTo(this.x+this.size,this.y+this.size);
+      ctx.lineTo(this.x-0.2*this.size,this.y+this.size);
+      ctx.closePath();
+      ctx.stroke();
+    }
+  }
+  update(){
+    this.x+=this.speedX; this.y+=this.speedY;
+    if(this.x<0||this.x>canvas.width) this.speedX*=-1;
+    if(this.y<0||this.y>canvas.height) this.speedY*=-1;
+    this.draw();
+  }
+}
+let shapes=[];
+for(let i=0;i<10;i++) shapes.push(new Shape());
+function animate(){ ctx.clearRect(0,0,canvas.width,canvas.height); shapes.forEach(s=>s.update()); requestAnimationFrame(animate); }
+animate();
+window.addEventListener('resize',()=>{canvas.width=window.innerWidth; canvas.height=window.innerHeight;});
 </script>
 </body>
 </html>
