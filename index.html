@@ -42,8 +42,8 @@
 
         .header-center { flex: 1; max-width: 650px; margin: 0 20px; display: flex; flex-direction: column; gap: 12px; }
         
-        .search-bar { position: relative; width: 100%; }
-        .search-bar i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+        .search-bar { position: relative; width: 100%; display: flex; align-items: center; }
+        .search-bar i { position: absolute; left: 15px; color: var(--text-muted); pointer-events: none; z-index: 5; }
         body.rtl .search-bar i { left: auto; right: 15px; }
         .search-bar input {
             width: 100%; background: var(--bg); border: 1px solid var(--border);
@@ -71,19 +71,16 @@
             background: var(--card-bg); border-radius: 24px; border: 1px solid var(--border);
             overflow: hidden; position: relative; transition: 0.4s cubic-bezier(0.2, 1, 0.2, 1);
             backdrop-filter: blur(10px); animation: fadeInUp 0.6s ease-out forwards;
+            height: 100%; display: flex; flex-direction: column;
         }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .card:hover { transform: translateY(-10px); border-color: var(--primary); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
 
-        .card.vertical { max-width: 280px; justify-self: center; }
-        .card.vertical .card-thumb { aspect-ratio: 9/16; max-height: 420px; }
-        .card.horizontal .card-thumb { aspect-ratio: 16/9; }
-
-        .card-thumb { width: 100%; background: #000; cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
+        .card-thumb { width: 100%; height: 200px; background: #000; cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
         .card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
         .card:hover .card-thumb img { transform: scale(1.05); }
 
-        .card-body { padding: 20px; }
+        .card-body { padding: 20px; flex-grow: 1; }
         .card-body h3 { margin: 5px 0; font-size: 18px; font-weight: 700; }
         .project-date { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
 
@@ -117,8 +114,9 @@
         .modal { background: var(--card-bg); width: 90%; max-width: 550px; border-radius: 30px; padding: 35px; border: 1px solid var(--border); max-height: 85vh; overflow-y: auto; }
 
         .thumb-slot { position: relative; aspect-ratio: 1; background: var(--bg); border: 1.5px dashed var(--border); border-radius: 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .check-item { background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .check-item { background: var(--bg); border: 1px solid var(--border); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; font-size: 12px; }
         .check-item input { cursor: pointer; }
+        .checkbox-group { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 8px; padding-bottom: 5px; scrollbar-width: none; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -142,6 +140,7 @@
             <div class="cat-item" onclick="setFilter('youtube')"><i data-lucide="youtube" size="14"></i> YouTube <span class="cat-count" id="cnt-youtube">0</span></div>
             <div class="cat-item" onclick="setFilter('shorts')"><i data-lucide="play" size="14"></i> YT Shorts <span class="cat-count" id="cnt-shorts">0</span></div>
             <div class="cat-item" onclick="setFilter('reels')"><i data-lucide="instagram" size="14"></i> Instagram <span class="cat-count" id="cnt-reels">0</span></div>
+            <div class="cat-item" onclick="setFilter('tiktok')"><i data-lucide="music" size="14"></i> TikTok <span class="cat-count" id="cnt-tiktok">0</span></div>
             <div class="cat-item" onclick="setFilter('fbshorts')"><i data-lucide="facebook" size="14"></i> FB Shorts <span class="cat-count" id="cnt-fb">0</span></div>
         </div>
     </div>
@@ -197,10 +196,11 @@
             <textarea id="projDesc" data-i18n="descPlaceholder" placeholder="Description..." rows="3" style="width:100%; padding:14px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); box-sizing:border-box;"></textarea>
         </div>
 
-        <div class="checkbox-group" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
+        <div class="checkbox-group" style="margin-top:15px;">
             <label class="check-item"><input type="checkbox" value="youtube"> YouTube</label>
             <label class="check-item"><input type="checkbox" value="shorts"> YT Shorts</label>
             <label class="check-item"><input type="checkbox" value="reels"> Instagram</label>
+            <label class="check-item"><input type="checkbox" value="tiktok"> TikTok</label>
             <label class="check-item"><input type="checkbox" value="fbshorts"> FB Shorts</label>
         </div>
 
@@ -230,6 +230,7 @@
         youtube: '<i data-lucide="youtube" size="16"></i>',
         shorts: '<i data-lucide="play" size="16"></i>',
         reels: '<i data-lucide="instagram" size="16"></i>',
+        tiktok: '<i data-lucide="music" size="16"></i>',
         fbshorts: '<i data-lucide="facebook" size="16"></i>'
     };
 
@@ -290,6 +291,7 @@
         document.getElementById('cnt-youtube').innerText = projects.filter(p => p.meta.platforms.includes('youtube')).length;
         document.getElementById('cnt-shorts').innerText = projects.filter(p => p.meta.platforms.includes('shorts')).length;
         document.getElementById('cnt-reels').innerText = projects.filter(p => p.meta.platforms.includes('reels')).length;
+        document.getElementById('cnt-tiktok').innerText = projects.filter(p => p.meta.platforms.includes('tiktok')).length;
         document.getElementById('cnt-fb').innerText = projects.filter(p => p.meta.platforms.includes('fbshorts')).length;
     }
 
@@ -313,9 +315,8 @@
             
             if(!matchesSearch || !matchesCat) return;
 
-            const isShort = p.meta.platforms.some(x => ['shorts','reels','fbshorts'].includes(x));
             const div = document.createElement('div');
-            div.className = `card ${isShort ? 'vertical' : 'horizontal'}`;
+            div.className = `card`;
             div.innerHTML = `
                 <div class="dots-btn" onclick="toggleMenu(event, ${idx})"><i data-lucide="more-vertical" size="18"></i></div>
                 <div class="dropdown" id="menu-${idx}">
@@ -378,6 +379,25 @@
         document.getElementById('formModal').style.display = 'flex';
     }
 
+    async function captureFirstFrame(videoFile) {
+        return new Promise((resolve) => {
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            video.onloadedmetadata = () => {
+                video.currentTime = 0.1; 
+            };
+            video.onseeked = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL('image/png'));
+            };
+            video.src = URL.createObjectURL(videoFile);
+        });
+    }
+
     async function saveData() {
         const title = document.getElementById('projTitle').value;
         const date = document.getElementById('projDate').value;
@@ -385,6 +405,10 @@
         const plats = Array.from(document.querySelectorAll('.check-item input:checked')).map(i => i.value);
         
         if(!title || (!selectedVideo && !editMode)) return alert("Missing Title or Video");
+
+        if (!tempThumbs[0] && selectedVideo) {
+            tempThumbs[0] = await captureFirstFrame(selectedVideo);
+        }
 
         const root = await workspace.getDirectoryHandle('Clipflow_Projects', { create: true });
         const folderName = editMode ? currentEditName : title.replace(/[^\w\s]/gi, '').replace(/\s+/g,'_') + "_" + Date.now();
@@ -502,7 +526,6 @@
         win.document.write(`<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;"><video src="${url}" controls autoplay style="max-height:100vh;max-width:100%"></video></body>`); 
     }
 
-    // Canvas Background logic remains unchanged
     const canvas = document.getElementById('bgCanvas');
     const ctx = canvas.getContext('2d');
     let shapes = [];
@@ -533,7 +556,6 @@
     initShapes(); drawShapes();
     autoConnect();
 
-    // Initial Language Apply
     if(currentLang === 'ar') {
         document.body.classList.add('rtl');
         document.getElementById('langBtn').innerText = 'EN';
