@@ -7,145 +7,187 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 :root {
-  --bg:#0d0f25;
-  --secondary:#1a0a36;
-  --blue:#0d6cff;
-  --purple:#6c63ff;
-  --text:#fff;
+  --bg: #0d0f25;
+  --secondary: #1a0a36;
+  --blue: #0d6cff;
+  --purple: #6c63ff;
+  --text: #fff;
 }
 body {
-  margin:0;
-  font-family:'Roboto',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  overflow-x:hidden;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
 }
 nav {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:15px 25px;
-  background: linear-gradient(90deg,var(--purple),var(--blue));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 25px;
+  background: linear-gradient(90deg, var(--purple), var(--blue));
 }
-nav .logo { display:flex; align-items:center; gap:10px; }
-nav .logo img { width:40px; height:40px; }
+nav .logo { display: flex; align-items: center; gap: 10px; }
+nav .logo img { width: 40px; height: 40px; }
 nav .logo h1 {
-  font-size:22px;
-  background: linear-gradient(90deg,#fff,#ddd);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
+  font-size: 22px;
+  background: linear-gradient(90deg, #fff, #ddd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
 }
-nav button { padding:8px 15px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; transition:0.3s; }
+nav button { 
+  padding: 8px 15px; 
+  border: none; 
+  border-radius: 8px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  transition: 0.3s; 
+  margin-left: 10px;
+}
+nav button:hover { opacity: 0.8; }
 #bgCanvas {
-  position:fixed;
-  top:0; left:0;
-  width:100%;
-  height:100%;
-  z-index:-1;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
 }
 #projectsContainer {
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-  gap:20px;
-  padding:20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 20px;
 }
 .project {
-  background: linear-gradient(145deg,var(--secondary),var(--bg));
-  border-radius:15px;
-  overflow:hidden;
-  box-shadow:0 5px 15px rgba(0,0,0,0.5);
-  display:flex;
-  flex-direction:column;
-  cursor:pointer;
-  transition:0.3s;
-  position:relative;
+  background: linear-gradient(145deg, var(--secondary), var(--bg));
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: 0.3s;
+  position: relative;
 }
-.project:hover{ transform:translateY(-5px); }
-.project img { width:100%; height:140px; object-fit:cover; }
-.project-info { padding:10px; display:flex; flex-direction:column; gap:5px; }
-.project-info h3{ font-size:16px; margin:0; font-weight:bold; }
-.project-info p{ font-size:12px; margin:0; display:flex; align-items:center; gap:5px; }
-.platform-label { padding:2px 6px; border-radius:5px; font-size:11px; font-weight:bold; color:#fff; }
-.youtube { background:#FF0000; }
-.youtube-shorts { background:#FF5555; }
-.tiktok { background:#000; color:#fff; }
-.instagram { background: linear-gradient(45deg,#feda75,#d62976,#8134af); }
-.facebook { background:#1877F2; }
-.snapchat { background:#FFFC00; color:#000; }
-.linkedin { background:#0077B5; }
-.twitter { background:#1DA1F2; }
-.pinterest { background:#E60023; }
+.project:hover { transform: translateY(-5px); }
+.project img { width: 100%; height: 140px; object-fit: cover; background: #000; }
+.project-info { padding: 10px; display: flex; flex-direction: column; gap: 5px; }
+.project-info h3 { font-size: 16px; margin: 0; font-weight: bold; }
+.project-info p { font-size: 12px; margin: 0; display: flex; align-items: center; gap: 5px; color: #ccc; }
+.platform-label { padding: 2px 6px; border-radius: 5px; font-size: 11px; font-weight: bold; color: #fff; }
+.youtube { background: #FF0000; }
+.youtube-shorts { background: #FF5555; }
+.tiktok { background: #000; color: #fff; border: 1px solid #333; }
+.instagram { background: linear-gradient(45deg, #feda75, #d62976, #8134af); }
+.facebook { background: #1877F2; }
+.snapchat { background: #FFFC00; color: #000; }
+.linkedin { background: #0077B5; }
+.twitter { background: #1DA1F2; }
+.pinterest { background: #E60023; }
 .project .menu-btn {
-  position:absolute;
-  top:10px; right:10px;
-  background:rgba(255,255,255,0.2);
-  border:none;
-  border-radius:50%;
-  width:30px;
-  height:30px;
-  cursor:pointer;
-  font-weight:bold;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  position: absolute;
+  top: 10px; right: 10px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
 }
+.project .menu-btn:hover { background: rgba(255,255,255,0.3); }
 .project .menu-content {
-  display:none;
-  position:absolute;
-  top:40px;
-  right:10px;
-  background:var(--secondary);
-  border-radius:8px;
-  overflow:hidden;
-  z-index:5;
-  flex-direction:column;
+  display: none;
+  position: absolute;
+  top: 45px;
+  right: 10px;
+  background: #2a1b4d;
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 5;
+  flex-direction: column;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.8);
 }
 .project .menu-content button {
-  background:none;
-  color:#fff;
-  padding:8px 12px;
-  text-align:left;
-  border:none;
-  width:100%;
-  cursor:pointer;
+  background: none;
+  color: #fff;
+  padding: 10px 15px;
+  text-align: left;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  white-space: nowrap;
 }
-.project .menu-content button:hover{ background:rgba(255,255,255,0.2); }
+.project .menu-content button:hover { background: rgba(255,255,255,0.1); }
 #folderPopup, #projectPopup {
-  position:fixed;
-  top:50%; left:50%;
-  transform:translate(-50%,-50%);
-  background:var(--secondary);
-  padding:20px;
-  border-radius:15px;
-  z-index:10;
-  display:none;
-  width:350px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.7);
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--secondary);
+  padding: 25px;
+  border-radius: 15px;
+  z-index: 10;
+  display: none;
+  width: 380px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+  border: 1px solid rgba(255,255,255,0.1);
 }
-#folderPopup h2,#projectPopup h2{text-align:center; margin-bottom:15px;}
-button.popupBtn{
-  padding:10px 15px;
-  margin:5px 0;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  width:100%;
-  font-weight:bold;
+#folderPopup h2, #projectPopup h2 { text-align: center; margin-top: 0; margin-bottom: 15px; }
+button.popupBtn {
+  padding: 12px 15px;
+  margin: 5px 0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  font-weight: bold;
+  background: var(--purple);
+  color: white;
+  transition: 0.2s;
 }
+button.popupBtn:hover { background: #5a52d6; }
+#cancelProjectBtn { background: #444; }
+#cancelProjectBtn:hover { background: #555; }
 #dropZone, #dropThumbs {
-  border:2px dashed var(--purple);
-  border-radius:10px;
-  padding:20px;
-  text-align:center;
-  margin:10px 0;
-  cursor:pointer;
-  transition:0.3s;
+  border: 2px dashed var(--purple);
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  margin: 10px 0;
+  cursor: pointer;
+  transition: 0.3s;
+  background: rgba(0,0,0,0.2);
 }
-#dropZone:hover, #dropThumbs:hover { border-color:#fff; }
-#thumbPreview img { margin:3px; border-radius:5px; width:50px; height:35px; object-fit:cover; }
-input,textarea { width:100%; padding:8px; margin:5px 0; border-radius:8px; border:none; background:var(--bg); color:var(--text); }
-.platformBtn{ padding:5px 10px; margin:2px; border-radius:6px; background:var(--purple); cursor:pointer; transition:0.3s; }
-.platformBtn.selected{ background:#ff6c63; }
+#dropZone:hover, #dropThumbs:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+#thumbPreview { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
+#thumbPreview img { margin: 3px; border-radius: 5px; width: 60px; height: 40px; object-fit: cover; }
+input, textarea { 
+  width: 100%; 
+  padding: 10px; 
+  margin: 5px 0; 
+  border-radius: 8px; 
+  border: 1px solid #444; 
+  background: rgba(0,0,0,0.3); 
+  color: var(--text); 
+  box-sizing: border-box;
+}
+.platformBtn { 
+  padding: 6px 12px; 
+  margin: 3px; 
+  border-radius: 6px; 
+  background: #333; 
+  color: white;
+  cursor: pointer; 
+  transition: 0.3s; 
+  border: 1px solid transparent;
+}
+.platformBtn.selected { background: var(--purple); border-color: #fff; }
 </style>
 </head>
 <body>
@@ -153,181 +195,370 @@ input,textarea { width:100%; padding:8px; margin:5px 0; border-radius:8px; borde
 <canvas id="bgCanvas"></canvas>
 
 <nav>
-<div class="logo">
-<img src="https://img.sanishtech.com/u/8a6ce39c01afd349c83d1c5b8f4cd7ac.png">
-<h1>Clip Flow</h1>
-</div>
-<div>
-<button id="chooseFolderNav">Choose Folder</button>
-<button id="newProjectBtn">New Project</button>
-</div>
+  <div class="logo">
+    <img src="https://img.sanishtech.com/u/8a6ce39c01afd349c83d1c5b8f4cd7ac.png" alt="Logo">
+    <h1>Clip Flow</h1>
+  </div>
+  <div>
+    <button id="chooseFolderNav">Switch Folder</button>
+    <button id="newProjectBtn" style="display:none;">+ New Project</button>
+  </div>
 </nav>
 
 <div id="projectsContainer"></div>
 
-<div id="folderPopup">
-<h2>Select Your Projects Folder</h2>
-<button class="popupBtn" id="chooseFolderBtn">Choose Folder</button>
+<div id="folderPopup" style="display:block;">
+  <h2>Select Your Workspace</h2>
+  <p style="text-align:center; font-size:14px; color:#aaa; margin-bottom:20px;">Choose a folder on your computer to save all your Clip Flow projects.</p>
+  <button class="popupBtn" id="chooseFolderBtn">Choose Folder</button>
 </div>
 
 <div id="projectPopup">
-<h2>New Project</h2>
-<div id="dropZone">Drag video here or click to select</div>
-<div id="dropThumbs">Drag thumbnails here or click to select (1-3)</div>
-<div id="thumbPreview"></div>
-<input type="text" id="title" placeholder="Project Title">
-<textarea id="description" placeholder="Description"></textarea>
-<label>Select Platforms:</label>
-<div id="platformsContainer"></div>
-<label>Select Date & Time:</label>
-<input type="datetime-local" id="datetime">
-<button class="popupBtn" id="saveProjectBtn">Save Project</button>
-<button class="popupBtn" id="cancelProjectBtn">Cancel</button>
+  <h2>New Project</h2>
+  <div id="dropZone">Drag video here or click to select</div>
+  <div id="dropThumbs">Drag thumbnails here or click to select</div>
+  <div id="thumbPreview"></div>
+  <input type="text" id="title" placeholder="Project Title (Required)">
+  <textarea id="description" placeholder="Description" rows="3"></textarea>
+  <label style="font-size:12px; color:#aaa; margin-top:10px; display:block;">Select Platform:</label>
+  <div id="platformsContainer" style="margin-bottom:10px;"></div>
+  <label style="font-size:12px; color:#aaa; display:block;">Scheduled Date & Time:</label>
+  <input type="datetime-local" id="datetime">
+  <button class="popupBtn" id="saveProjectBtn">Save Project</button>
+  <button class="popupBtn" id="cancelProjectBtn">Cancel</button>
 </div>
 
 <script>
-let projects=[], folderHandle=null;
-const projectsContainer=document.getElementById('projectsContainer');
-const folderPopup=document.getElementById('folderPopup');
-const projectPopup=document.getElementById('projectPopup');
-const chooseFolderBtn=document.getElementById('chooseFolderBtn');
-const dropZone=document.getElementById('dropZone');
-const dropThumbs=document.getElementById('dropThumbs');
-const thumbPreview=document.getElementById('thumbPreview');
-const titleInput=document.getElementById('title');
-const descriptionInput=document.getElementById('description');
-const platformsContainer=document.getElementById('platformsContainer');
-const datetimeInput=document.getElementById('datetime');
-const saveProjectBtn=document.getElementById('saveProjectBtn');
-const cancelProjectBtn=document.getElementById('cancelProjectBtn');
-const chooseFolderNav=document.getElementById('chooseFolderNav');
-const newProjectBtn=document.getElementById('newProjectBtn');
+let projects = [], folderHandle = null;
+let selectedThumbs = [], selectedVideo = null;
 
-const platforms=[
-{name:'YouTube',class:'youtube'},
-{name:'YouTube Shorts',class:'youtube-shorts'},
-{name:'TikTok',class:'tiktok'},
-{name:'Instagram',class:'instagram'},
-{name:'Facebook',class:'facebook'},
-{name:'Snapchat',class:'snapchat'},
-{name:'LinkedIn',class:'linkedin'},
-{name:'Twitter',class:'twitter'},
-{name:'Pinterest',class:'pinterest'}
+// DOM Elements
+const projectsContainer = document.getElementById('projectsContainer');
+const folderPopup = document.getElementById('folderPopup');
+const projectPopup = document.getElementById('projectPopup');
+const titleInput = document.getElementById('title');
+const descriptionInput = document.getElementById('description');
+const platformsContainer = document.getElementById('platformsContainer');
+const datetimeInput = document.getElementById('datetime');
+const dropZone = document.getElementById('dropZone');
+const dropThumbs = document.getElementById('dropThumbs');
+const thumbPreview = document.getElementById('thumbPreview');
+
+// Platforms Setup
+const platforms = [
+  {name: 'YouTube', class: 'youtube'},
+  {name: 'Shorts', class: 'youtube-shorts'},
+  {name: 'TikTok', class: 'tiktok'},
+  {name: 'Instagram', class: 'instagram'},
+  {name: 'Facebook', class: 'facebook'},
+  {name: 'Twitter', class: 'twitter'}
 ];
-platforms.forEach(p=>{
-let btn=document.createElement('button');
-btn.className='platformBtn';
-btn.innerText=p.name;
-btn.dataset.class=p.class;
-btn.onclick=()=>btn.classList.toggle('selected');
-platformsContainer.appendChild(btn);
+
+platforms.forEach(p => {
+  let btn = document.createElement('button');
+  btn.className = 'platformBtn';
+  btn.innerText = p.name;
+  btn.dataset.class = p.class;
+  // Act like radio buttons (only one selected at a time)
+  btn.onclick = () => {
+    document.querySelectorAll('.platformBtn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  };
+  platformsContainer.appendChild(btn);
 });
 
-// Folder selection
-chooseFolderBtn.onclick=chooseFolderNav.onclick=async()=>{
-folderHandle=await window.showDirectoryPicker();
-await folderHandle.getDirectoryHandle('ClipFlow Projects',{create:true});
-folderPopup.style.display='none';
-loadProjects();
+// --- Folder Selection ---
+document.getElementById('chooseFolderBtn').onclick = document.getElementById('chooseFolderNav').onclick = async () => {
+  try {
+    // mode: 'readwrite' is required to save files!
+    folderHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    await folderHandle.getDirectoryHandle('ClipFlow Projects', { create: true });
+    folderPopup.style.display = 'none';
+    document.getElementById('newProjectBtn').style.display = 'inline-block';
+    loadProjects();
+  } catch (err) {
+    console.error("Folder selection cancelled or failed", err);
+  }
+};
+
+// --- Drag & Drop / Click to Upload ---
+document.getElementById('newProjectBtn').onclick = () => openProjectPopup();
+
+function resetForm() {
+  titleInput.value = '';
+  descriptionInput.value = '';
+  datetimeInput.value = '';
+  thumbPreview.innerHTML = '';
+  selectedThumbs = [];
+  selectedVideo = null;
+  dropZone.innerText = 'Drag video here or click to select';
+  dropThumbs.innerText = 'Drag thumbnails here or click to select';
+  document.querySelectorAll('.platformBtn').forEach(b => b.classList.remove('selected'));
 }
 
-// New project popup
-newProjectBtn.onclick=()=>{ projectPopup.style.display='block'; titleInput.value=''; descriptionInput.value=''; datetimeInput.value=''; thumbPreview.innerHTML=''; selectedThumbs=[]; selectedVideo=null; }
-
-// Drag&Drop
-let selectedThumbs=[], selectedVideo=null;
-dropZone.addEventListener('dragover', e=>{ e.preventDefault(); });
-dropThumbs.addEventListener('dragover', e=>{ e.preventDefault(); });
-dropZone.addEventListener('drop', e=>{ e.preventDefault(); selectedVideo=e.dataTransfer.files[0]; });
-dropThumbs.addEventListener('drop', e=>{ e.preventDefault(); selectedThumbs=Array.from(e.dataTransfer.files); updateThumbPreview(); });
-function updateThumbPreview(){ thumbPreview.innerHTML=''; selectedThumbs.forEach(f=>{ let img=document.createElement('img'); img.src=URL.createObjectURL(f); thumbPreview.appendChild(img); })}
-
-// Display projects
-async function loadProjects(){
-if(!folderHandle) return;
-projectsContainer.innerHTML=''; projects=[];
-const clipFlowFolder=await folderHandle.getDirectoryHandle('ClipFlow Projects');
-for await(const [name,handle] of clipFlowFolder.entries()){
-if(handle.kind==='directory'){
-const videoFile=await handle.getFileHandle('video.mp4').catch(()=>null);
-const thumbs=[];
-for await(const [fname,fhandle] of handle.entries()){
-if(fname.startsWith('thumbnail') && fname.endsWith('.png')) thumbs.push(fhandle);
-}
-const metaFile=await handle.getFileHandle('meta.json').catch(()=>null);
-let meta={}; if(metaFile){ const fileData=await (await metaFile.getFile()).text(); meta=JSON.parse(fileData); }
-projects.push({name,videoFile,thumbs,meta,folderHandle:handle});
-}}
-displayProjects();
-}
-function displayProjects(){
-projectsContainer.innerHTML='';
-projects.sort((a,b)=> new Date(b.meta.datetime)-new Date(a.meta.datetime));
-projects.forEach(p=>{
-const div=document.createElement('div'); div.className='project';
-const img=document.createElement('img');
-if(p.thumbs.length>0){ img.src=URL.createObjectURL(awaitFile(p.thumbs[0])); }
-const info=document.createElement('div'); info.className='project-info';
-const h3=document.createElement('h3'); h3.innerText=p.meta.title||p.name;
-const pInfo=document.createElement('p');
-const date=new Date(p.meta.datetime||Date.now()); pInfo.innerText=`${date.toLocaleDateString()} `;
-const platSpan=document.createElement('span'); platSpan.className='platform-label '+(p.meta.platformClass||'youtube'); platSpan.innerText=p.meta.platformName||'YouTube';
-pInfo.appendChild(platSpan); info.appendChild(h3); info.appendChild(pInfo);
-const menuBtn=document.createElement('button'); menuBtn.className='menu-btn'; menuBtn.innerText='⋮';
-const menuContent=document.createElement('div'); menuContent.className='menu-content';
-const editBtn=document.createElement('button'); editBtn.innerText='✏️ Edit'; editBtn.onclick=()=>openProjectPopup(p);
-const delBtn=document.createElement('button'); delBtn.innerText='🗑️ Delete'; delBtn.onclick=()=>deleteProject(p);
-menuContent.appendChild(editBtn); menuContent.appendChild(delBtn);
-menuBtn.onclick=()=>{ menuContent.style.display=menuContent.style.display==='flex'?'none':'flex'; }
-div.appendChild(img); div.appendChild(info); div.appendChild(menuBtn); div.appendChild(menuContent);
-div.onclick=()=>viewVideo(p);
-projectsContainer.appendChild(div);
+// Video Input
+dropZone.addEventListener('dragover', e => e.preventDefault());
+dropZone.addEventListener('drop', e => { 
+  e.preventDefault(); 
+  selectedVideo = e.dataTransfer.files[0]; 
+  dropZone.innerText = `Selected: ${selectedVideo.name}`;
 });
+dropZone.onclick = () => {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'video/*';
+  input.onchange = e => { 
+    selectedVideo = e.target.files[0]; 
+    dropZone.innerText = `Selected: ${selectedVideo.name}`;
+  };
+  input.click();
+};
+
+// Thumbnails Input
+dropThumbs.addEventListener('dragover', e => e.preventDefault());
+dropThumbs.addEventListener('drop', e => { 
+  e.preventDefault(); 
+  selectedThumbs = Array.from(e.dataTransfer.files); 
+  updateThumbPreview(); 
+  dropThumbs.innerText = `${selectedThumbs.length} image(s) selected`;
+});
+dropThumbs.onclick = () => {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/*'; input.multiple = true;
+  input.onchange = e => { 
+    selectedThumbs = Array.from(e.target.files); 
+    updateThumbPreview(); 
+    dropThumbs.innerText = `${selectedThumbs.length} image(s) selected`;
+  };
+  input.click();
+};
+
+function updateThumbPreview() { 
+  thumbPreview.innerHTML = ''; 
+  selectedThumbs.forEach(f => { 
+    let img = document.createElement('img'); 
+    img.src = URL.createObjectURL(f); 
+    thumbPreview.appendChild(img); 
+  });
 }
 
-async function viewVideo(project){
-const file=await project.videoFile.getFile(); const url=URL.createObjectURL(file);
-const win=window.open('','Video Preview','width=600,height=400'); win.document.write(`<video src="${url}" controls autoplay style="width:100%;height:100%;"></video>`);
+// --- Load and Display Projects ---
+async function loadProjects() {
+  if(!folderHandle) return;
+  projectsContainer.innerHTML = ''; 
+  projects = [];
+  
+  const clipFlowFolder = await folderHandle.getDirectoryHandle('ClipFlow Projects');
+  
+  for await (const [name, handle] of clipFlowFolder.entries()) {
+    if (handle.kind === 'directory') {
+      const videoFile = await handle.getFileHandle('video.mp4').catch(() => null);
+      const thumbs = [];
+      
+      for await (const [fname, fhandle] of handle.entries()) {
+        if (fname.startsWith('thumbnail') && (fname.endsWith('.png') || fname.endsWith('.jpg'))) {
+            thumbs.push(fhandle);
+        }
+      }
+      
+      const metaFile = await handle.getFileHandle('meta.json').catch(() => null);
+      let meta = {}; 
+      if (metaFile) { 
+        const fileData = await (await metaFile.getFile()).text(); 
+        try { meta = JSON.parse(fileData); } catch(e){}
+      }
+      
+      projects.push({ name, videoFile, thumbs, meta, folderHandle: handle });
+    }
+  }
+  displayProjects();
 }
 
-async function deleteProject(project){
-if(!confirm('Warning! This will delete the project completely from your device!')) return;
-await project.folderHandle.removeEntry('video.mp4');
-for(const t of project.thumbs) await project.folderHandle.removeEntry(await t.name);
-await project.folderHandle.removeEntry('meta.json');
-await folderHandle.getDirectoryHandle('ClipFlow Projects').then(f=>f.removeEntry(project.name,{recursive:true}));
-loadProjects();
+// Made this function async to properly await images
+async function displayProjects() {
+  projectsContainer.innerHTML = '';
+  // Safely sort by date
+  projects.sort((a, b) => new Date(b.meta.datetime || 0) - new Date(a.meta.datetime || 0));
+  
+  for (const p of projects) {
+    const div = document.createElement('div'); 
+    div.className = 'project';
+    
+    const img = document.createElement('img');
+    if (p.thumbs.length > 0) { 
+      // Fixed: Properly await the file from the handle
+      const file = await p.thumbs[0].getFile();
+      img.src = URL.createObjectURL(file); 
+    } else {
+      img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="220" height="140"><rect width="220" height="140" fill="%23222"/><text x="110" y="75" font-family="Arial" font-size="14" fill="%23666" text-anchor="middle">No Thumbnail</text></svg>';
+    }
+    
+    const info = document.createElement('div'); 
+    info.className = 'project-info';
+    
+    const h3 = document.createElement('h3'); 
+    h3.innerText = p.meta.title || p.name;
+    
+    const pInfo = document.createElement('p');
+    const date = p.meta.datetime ? new Date(p.meta.datetime).toLocaleDateString() : 'No Date'; 
+    pInfo.innerText = `${date} `;
+    
+    const platSpan = document.createElement('span'); 
+    platSpan.className = 'platform-label ' + (p.meta.platformClass || 'youtube'); 
+    platSpan.innerText = p.meta.platformName || 'YouTube';
+    pInfo.appendChild(platSpan); 
+    
+    info.appendChild(h3); 
+    info.appendChild(pInfo);
+    
+    const menuBtn = document.createElement('button'); 
+    menuBtn.className = 'menu-btn'; 
+    menuBtn.innerHTML = '&#8942;'; // Vertical ellipsis
+    
+    const menuContent = document.createElement('div'); 
+    menuContent.className = 'menu-content';
+    
+    const editBtn = document.createElement('button'); 
+    editBtn.innerText = '✏️ Edit Metadata'; 
+    editBtn.onclick = (e) => { e.stopPropagation(); openProjectPopup(p); }; // Stop propagation so video doesn't open
+    
+    const delBtn = document.createElement('button'); 
+    delBtn.innerText = '🗑️ Delete Project'; 
+    delBtn.onclick = (e) => { e.stopPropagation(); deleteProject(p); };
+    
+    menuContent.appendChild(editBtn); 
+    menuContent.appendChild(delBtn);
+    
+    menuBtn.onclick = (e) => { 
+      e.stopPropagation(); // Stop propagation here too
+      // Close other menus
+      document.querySelectorAll('.menu-content').forEach(m => { if(m !== menuContent) m.style.display = 'none'; });
+      menuContent.style.display = menuContent.style.display === 'flex' ? 'none' : 'flex'; 
+    };
+    
+    div.appendChild(img); 
+    div.appendChild(info); 
+    div.appendChild(menuBtn); 
+    div.appendChild(menuContent);
+    
+    div.onclick = () => viewVideo(p);
+    projectsContainer.appendChild(div);
+  }
 }
 
-function openProjectPopup(project=null){ projectPopup.style.display='block'; if(project){ titleInput.value=project.meta.title||''; descriptionInput.value=project.meta.description||''; datetimeInput.value=project.meta.datetime||''; } else { titleInput.value=''; descriptionInput.value=''; datetimeInput.value=''; thumbPreview.innerHTML=''; selectedThumbs=[]; selectedVideo=null; }
+// Click outside to close menus
+document.addEventListener('click', () => {
+  document.querySelectorAll('.menu-content').forEach(m => m.style.display = 'none');
+});
+
+async function viewVideo(project) {
+  if(!project.videoFile) return alert("No video uploaded for this project yet!");
+  const file = await project.videoFile.getFile(); 
+  const url = URL.createObjectURL(file);
+  const win = window.open('', 'Video Preview', 'width=800,height=600'); 
+  win.document.write(`<body style="margin:0; background:#000; display:flex; align-items:center; justify-content:center;"><video src="${url}" controls autoplay style="max-width:100%; max-height:100%;"></video></body>`);
 }
 
-saveProjectBtn.onclick=async()=>{
-if(!folderHandle) return alert('Please select a project folder first');
-const clipFlowFolder=await folderHandle.getDirectoryHandle('ClipFlow Projects');
-const projectName=titleInput.value||'New Project';
-const projectFolder=await clipFlowFolder.getDirectoryHandle(projectName,{create:true});
-alert('Project saved!'); projectPopup.style.display='none'; loadProjects();
+async function deleteProject(project) {
+  if (!confirm(`Are you sure you want to permanently delete "${project.name}"?`)) return;
+  try {
+    const clipFlowFolder = await folderHandle.getDirectoryHandle('ClipFlow Projects');
+    // Fixed: properly remove the entire directory recursively
+    await clipFlowFolder.removeEntry(project.name, { recursive: true });
+    loadProjects();
+  } catch (err) {
+    alert("Error deleting project: " + err.message);
+  }
 }
 
-cancelProjectBtn.onclick=()=>{projectPopup.style.display='none';}
+function openProjectPopup(project = null) { 
+  resetForm();
+  projectPopup.style.display = 'block'; 
+  
+  if (project) { 
+    titleInput.value = project.meta.title || project.name; 
+    descriptionInput.value = project.meta.description || ''; 
+    datetimeInput.value = project.meta.datetime || ''; 
+    if(project.meta.platformClass) {
+        const btn = document.querySelector(`.platformBtn[data-class="${project.meta.platformClass}"]`);
+        if(btn) btn.classList.add('selected');
+    }
+  }
+}
 
-async function awaitFile(fileHandle){ return await fileHandle.getFile(); }
+document.getElementById('cancelProjectBtn').onclick = () => { projectPopup.style.display = 'none'; };
 
-// Geometric background outline
-const canvas=document.getElementById('bgCanvas');
-const ctx=canvas.getContext('2d');
-canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+// --- Save Project Logic Fixed ---
+document.getElementById('saveProjectBtn').onclick = async () => {
+  if (!folderHandle) return alert('Please select a workspace folder first');
+  const projectName = titleInput.value.trim();
+  if (!projectName) return alert('Please enter a Project Title');
+
+  saveProjectBtn.innerText = "Saving...";
+  saveProjectBtn.disabled = true;
+
+  try {
+    const clipFlowFolder = await folderHandle.getDirectoryHandle('ClipFlow Projects', { create: true });
+    // Use the title as the folder name
+    const projectFolder = await clipFlowFolder.getDirectoryHandle(projectName, { create: true });
+
+    // 1. Save Meta JSON
+    const activePlatform = document.querySelector('.platformBtn.selected');
+    const metaData = {
+      title: projectName,
+      description: descriptionInput.value,
+      datetime: datetimeInput.value,
+      platformName: activePlatform ? activePlatform.innerText : '',
+      platformClass: activePlatform ? activePlatform.dataset.class : ''
+    };
+    
+    const metaHandle = await projectFolder.getFileHandle('meta.json', { create: true });
+    const metaWritable = await metaHandle.createWritable();
+    await metaWritable.write(JSON.stringify(metaData));
+    await metaWritable.close();
+
+    // 2. Save Video if added
+    if (selectedVideo) {
+      const videoHandle = await projectFolder.getFileHandle('video.mp4', { create: true });
+      const videoWritable = await videoHandle.createWritable();
+      await videoWritable.write(selectedVideo);
+      await videoWritable.close();
+    }
+
+    // 3. Save Thumbnails if added
+    for (let i = 0; i < selectedThumbs.length; i++) {
+      // Keep original extension if possible
+      const ext = selectedThumbs[i].name.split('.').pop() || 'png';
+      const thumbHandle = await projectFolder.getFileHandle(`thumbnail_${i}.${ext}`, { create: true });
+      const thumbWritable = await thumbHandle.createWritable();
+      await thumbWritable.write(selectedThumbs[i]);
+      await thumbWritable.close();
+    }
+
+    projectPopup.style.display = 'none'; 
+    loadProjects();
+  } catch (err) {
+    console.error(err);
+    alert('Error saving project: ' + err.message);
+  } finally {
+    saveProjectBtn.innerText = "Save Project";
+    saveProjectBtn.disabled = false;
+  }
+};
+
+// --- Background Animation (Unchanged) ---
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 class Shape{
-constructor(){ this.x=Math.random()*canvas.width; this.y=Math.random()*canvas.height; this.size=Math.random()*100+50; this.type=['circle','square','triangle','parallelogram'][Math.floor(Math.random()*4)]; this.speedX=(Math.random()-0.5)*0.5; this.speedY=(Math.random()-0.5)*0.5; this.color='rgba(255,255,255,0.2)'; }
-draw(){ ctx.strokeStyle=this.color; ctx.lineWidth=2; ctx.beginPath();
-if(this.type=='circle') ctx.arc(this.x,this.y,this.size,0,2*Math.PI);
-else if(this.type=='square') ctx.strokeRect(this.x,this.y,this.size,this.size);
-else if(this.type=='triangle'){ ctx.moveTo(this.x,this.y); ctx.lineTo(this.x+this.size,this.y+this.size); ctx.lineTo(this.x-this.size,this.y+this.size); ctx.closePath(); ctx.stroke(); }
-else if(this.type=='parallelogram'){ ctx.moveTo(this.x,this.y); ctx.lineTo(this.x+this.size*1.2,this.y); ctx.lineTo(this.x+this.size,this.y+this.size); ctx.lineTo(this.x-0.2*this.size,this.y+this.size); ctx.closePath(); ctx.stroke(); } }
-update(){ this.x+=this.speedX; this.y+=this.speedY; if(this.x<0||this.x>canvas.width) this.speedX*=-1; if(this.y<0||this.y>canvas.height) this.speedY*=-1; this.draw(); }
+  constructor(){ this.x=Math.random()*canvas.width; this.y=Math.random()*canvas.height; this.size=Math.random()*100+50; this.type=['circle','square','triangle','parallelogram'][Math.floor(Math.random()*4)]; this.speedX=(Math.random()-0.5)*0.5; this.speedY=(Math.random()-0.5)*0.5; this.color='rgba(255,255,255,0.05)'; }
+  draw(){ ctx.strokeStyle=this.color; ctx.lineWidth=2; ctx.beginPath();
+  if(this.type=='circle') ctx.arc(this.x,this.y,this.size,0,2*Math.PI);
+  else if(this.type=='square') ctx.strokeRect(this.x,this.y,this.size,this.size);
+  else if(this.type=='triangle'){ ctx.moveTo(this.x,this.y); ctx.lineTo(this.x+this.size,this.y+this.size); ctx.lineTo(this.x-this.size,this.y+this.size); ctx.closePath(); ctx.stroke(); }
+  else if(this.type=='parallelogram'){ ctx.moveTo(this.x,this.y); ctx.lineTo(this.x+this.size*1.2,this.y); ctx.lineTo(this.x+this.size,this.y+this.size); ctx.lineTo(this.x-0.2*this.size,this.y+this.size); ctx.closePath(); ctx.stroke(); } }
+  update(){ this.x+=this.speedX; this.y+=this.speedY; if(this.x<0||this.x>canvas.width) this.speedX*=-1; if(this.y<0||this.y>canvas.height) this.speedY*=-1; this.draw(); }
 }
-let shapes=[]; for(let i=0;i<10;i++) shapes.push(new Shape());
+let shapes=[]; for(let i=0;i<15;i++) shapes.push(new Shape());
 function animate(){ ctx.clearRect(0,0,canvas.width,canvas.height); shapes.forEach(s=>s.update()); requestAnimationFrame(animate); }
 animate();
 window.addEventListener('resize',()=>{canvas.width=window.innerWidth; canvas.height=window.innerHeight;});
