@@ -3,169 +3,137 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clip Flow - Pro</title>
+<title>Clip Flow Pro</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Cairo:wght@400;700&display=swap');
 
 :root[data-theme="dark"] {
-  --bg: #0d0f25;
-  --secondary: #1a0a36;
-  --nav-bg: linear-gradient(90deg, #6c63ff, #0d6cff);
-  --text: #ffffff;
-  --text-muted: #aaaaaa;
-  --border: rgba(255,255,255,0.1);
-  --card-bg: linear-gradient(145deg, #1a0a36, #0d0f25);
-  --btn-bg: #6c63ff;
-  --btn-hover: #5a52d6;
-  --popup-bg: #1a0a36;
-  --canvas-lines: rgba(255,255,255,0.05);
+    --bg: #08091a;
+    --secondary: #121430;
+    --nav-bg: #1a1c3d;
+    --text: #ffffff;
+    --text-muted: #8b8ea8;
+    --accent: #6c63ff;
+    --accent-hover: #5a52d6;
+    --border: rgba(255,255,255,0.08);
+    --glass: rgba(255, 255, 255, 0.03);
 }
 
 :root[data-theme="light"] {
-  --bg: #f4f6f9;
-  --secondary: #ffffff;
-  --nav-bg: linear-gradient(90deg, #6c63ff, #0d6cff);
-  --text: #1a1a1a;
-  --text-muted: #666666;
-  --border: rgba(0,0,0,0.1);
-  --card-bg: #ffffff;
-  --btn-bg: #0d6cff;
-  --btn-hover: #0b5ad6;
-  --popup-bg: #ffffff;
-  --canvas-lines: rgba(0,0,0,0.05);
+    --bg: #f0f2f5;
+    --secondary: #ffffff;
+    --nav-bg: #ffffff;
+    --text: #1a1c3d;
+    --text-muted: #64748b;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --border: rgba(0,0,0,0.08);
+    --glass: rgba(0, 0, 0, 0.02);
 }
 
 body {
-  margin: 0;
-  font-family: 'Roboto', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  overflow-x: hidden;
-  transition: background 0.3s, color 0.3s;
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: 0.3s;
 }
 
-/* RTL Support for Arabic */
 body[dir="rtl"] { font-family: 'Cairo', sans-serif; }
-body[dir="rtl"] nav .logo { flex-direction: row; }
-body[dir="rtl"] nav .controls { flex-direction: row; }
 
+/* SVG Icon Helper */
+.icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; vertical-align: middle; }
+
+/* Navbar */
 nav {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 15px 25px; background: var(--nav-bg); color: white;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 24px; background: var(--nav-bg);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
 }
-nav .logo { display: flex; align-items: center; gap: 10px; }
-nav .logo img { width: 40px; height: 40px; }
-nav .logo h1 { font-size: 22px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo h1 { font-size: 20px; margin: 0; letter-spacing: 1px; }
 
-nav .controls { display: flex; gap: 10px; align-items: center; }
-.icon-btn { 
-  background: rgba(255,255,255,0.2); border: none; border-radius: 50%; 
-  width: 35px; height: 35px; cursor: pointer; color: white; font-size: 16px; 
-  transition: 0.3s; display: flex; align-items: center; justify-content: center;
-}
-.icon-btn:hover { background: rgba(255,255,255,0.4); transform: scale(1.1); }
+.nav-actions { display: flex; gap: 10px; }
 
-button.primary { 
-  padding: 8px 15px; border: none; border-radius: 8px; font-weight: bold; 
-  cursor: pointer; background: white; color: #6c63ff; transition: 0.3s; 
-}
-button.primary:hover { opacity: 0.9; transform: translateY(-2px); }
-
-/* Categories */
+/* Layout Components */
 #categories {
-  display: flex; gap: 15px; padding: 20px 25px 0; overflow-x: auto;
+    display: flex; gap: 12px; padding: 20px 24px; overflow-x: auto;
+    scrollbar-width: none;
 }
 .category-tab {
-  padding: 8px 16px; background: var(--secondary); border: 1px solid var(--border);
-  border-radius: 20px; cursor: pointer; font-weight: bold; color: var(--text-muted);
-  transition: 0.3s; display: flex; align-items: center; gap: 8px; white-space: nowrap;
+    padding: 10px 18px; background: var(--secondary); border: 1px solid var(--border);
+    border-radius: 12px; cursor: pointer; white-space: nowrap; transition: 0.2s;
+    display: flex; align-items: center; gap: 8px; font-weight: 500;
 }
-.category-tab:hover { background: var(--border); color: var(--text); }
-.category-tab.active { background: var(--btn-bg); color: white; border-color: var(--btn-bg); }
-.cat-count { background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 10px; font-size: 11px; }
+.category-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-#bgCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
-
+/* Projects Grid */
 #projectsContainer {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 20px; padding: 25px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px; padding: 0 24px 40px;
 }
 
+/* Card Aspect Ratios */
 .project {
-  background: var(--card-bg); border-radius: 15px; overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15); display: flex; flex-direction: column;
-  cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative;
-  border: 1px solid var(--border);
-  animation: fadeIn 0.5s ease backwards;
+    background: var(--secondary); border-radius: 16px; overflow: hidden;
+    border: 1px solid var(--border); transition: 0.3s; cursor: pointer;
+    position: relative; animation: slideUp 0.4s ease-out;
 }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-.project:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+@keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+.project:hover { transform: translateY(-5px); border-color: var(--accent); }
 
-/* Orientation Support */
-.project .img-wrapper { width: 100%; display: flex; justify-content: center; background: #000; position: relative; }
-.project img { object-fit: cover; transition: 0.3s; }
-.project.horizontal .img-wrapper img { width: 100%; aspect-ratio: 16/9; }
-.project.vertical .img-wrapper { padding: 10px 0; }
-.project.vertical .img-wrapper img { height: 200px; aspect-ratio: 9/16; border-radius: 8px; }
+.thumb-container { width: 100%; background: #000; position: relative; overflow: hidden; display: flex; justify-content: center; }
 
-.project-info { padding: 15px; display: flex; flex-direction: column; gap: 8px; }
-.project-info h3 { font-size: 18px; margin: 0; font-weight: bold; }
-.project-info p { font-size: 12px; margin: 0; color: var(--text-muted); }
+/* 16:9 Ratios */
+.ratio-16-9 .thumb-container { aspect-ratio: 16/9; }
+.ratio-16-9 img { width: 100%; height: 100%; object-fit: cover; }
 
-.platform-label { padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; color: #fff; display: inline-block; }
-.youtube { background: #FF0000; } .youtube-shorts { background: #FF5555; }
-.tiktok { background: #000; border: 1px solid #333; }
-.instagram { background: linear-gradient(45deg, #feda75, #d62976, #8134af); }
+/* 9:16 Ratios (Vertical) */
+.ratio-9-16 .thumb-container { aspect-ratio: 9/16; max-height: 450px; }
+.ratio-9-16 img { height: 100%; width: auto; object-fit: contain; }
 
-.menu-btn {
-  position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white;
-  border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; z-index: 2;
+.project-meta { padding: 16px; }
+.project-meta h3 { margin: 0 0 8px; font-size: 16px; }
+.platform-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag { font-size: 10px; padding: 3px 8px; border-radius: 4px; background: var(--glass); border: 1px solid var(--border); }
+
+/* Modal & Popups */
+.overlay { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+    display: none; z-index: 1000; justify-content: center; align-items: center;
 }
-body[dir="rtl"] .menu-btn { right: auto; left: 10px; }
-.menu-content {
-  display: none; position: absolute; top: 45px; right: 10px; background: var(--secondary);
-  border-radius: 8px; border: 1px solid var(--border); overflow: hidden; z-index: 5; flex-direction: column;
-}
-body[dir="rtl"] .menu-content { right: auto; left: 10px; }
-.menu-content button { background: none; color: var(--text); padding: 10px 15px; text-align: left; border: none; cursor: pointer; }
-body[dir="rtl"] .menu-content button { text-align: right; }
-.menu-content button:hover { background: var(--border); }
-
-/* Popups */
-.overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index: 9; backdrop-filter: blur(5px); }
 .popup {
-  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  background: var(--popup-bg); padding: 30px; border-radius: 15px; z-index: 10;
-  display: none; width: 400px; max-width: 90%; max-height: 90vh; overflow-y: auto;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid var(--border);
+    background: var(--secondary); width: 500px; max-width: 95%; 
+    border-radius: 20px; padding: 24px; position: relative;
+    max-height: 90vh; overflow-y: auto; border: 1px solid var(--border);
 }
-.popup h2 { margin-top: 0; text-align: center; }
-input, textarea { 
-  width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--border); 
-  background: var(--bg); color: var(--text); box-sizing: border-box; font-family: inherit;
+
+/* Video Viewer */
+#videoViewerContent { width: 90%; max-width: 1000px; display: flex; flex-direction: column; gap: 15px; }
+#mainPlayer { width: 100%; border-radius: 12px; background: #000; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+
+/* Forms */
+.platform-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+.platform-choice { 
+    padding: 10px; border: 1px solid var(--border); border-radius: 8px; 
+    cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px;
 }
-button.action-btn {
-  padding: 12px; margin-top: 15px; border: none; border-radius: 8px; cursor: pointer;
-  width: 100%; font-weight: bold; background: var(--btn-bg); color: white; transition: 0.2s;
+.platform-choice.selected { border-color: var(--accent); background: var(--glass); }
+
+input, textarea, select {
+    width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); margin-bottom: 12px; box-sizing: border-box;
 }
-button.action-btn:hover { background: var(--btn-hover); }
-button.cancel-btn { background: transparent; border: 1px solid var(--border); color: var(--text); }
-button.cancel-btn:hover { background: var(--border); }
 
-.platformBtn { padding: 8px 12px; margin: 4px; border-radius: 20px; background: var(--bg); color: var(--text); cursor: pointer; border: 1px solid var(--border); transition: 0.3s; }
-.platformBtn.selected { background: var(--btn-bg); color: white; border-color: var(--btn-bg); }
+button.primary-btn {
+    width: 100%; padding: 14px; background: var(--accent); border: none;
+    color: white; border-radius: 8px; font-weight: bold; cursor: pointer;
+}
 
-#dropZone, #dropThumbs { border: 2px dashed var(--btn-bg); border-radius: 10px; padding: 20px; text-align: center; margin: 10px 0; cursor: pointer; background: var(--bg); transition: 0.3s; color: var(--text-muted); }
-#dropZone:hover, #dropThumbs:hover { border-color: var(--text); background: var(--border); }
-
-/* Video Editor Mockup */
-#videoEditor { display: none; flex-direction: column; gap: 10px; margin-bottom: 15px; background: var(--bg); padding: 15px; border-radius: 8px; }
-#videoPreview { width: 100%; background: #000; border-radius: 8px; }
-.timeline { width: 100%; height: 30px; background: #333; border-radius: 5px; position: relative; margin-top: 10px; overflow: hidden; }
-.timeline-fill { position: absolute; left: 10%; right: 20%; top: 0; height: 100%; background: rgba(108, 99, 255, 0.5); border-left: 3px solid var(--btn-bg); border-right: 3px solid var(--btn-bg); }
-.timeline-text { position: absolute; width: 100%; text-align: center; line-height: 30px; font-size: 11px; color: white; pointer-events: none; }
+/* Shapes Background */
+#bgCanvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
 </style>
 </head>
 <body>
@@ -173,424 +141,283 @@ button.cancel-btn:hover { background: var(--border); }
 <canvas id="bgCanvas"></canvas>
 
 <nav>
-  <div class="logo">
-    <img src="https://img.sanishtech.com/u/8a6ce39c01afd349c83d1c5b8f4cd7ac.png" alt="Logo">
-    <h1 data-i18n="title">Clip Flow</h1>
-  </div>
-  <div class="controls">
-    <button class="icon-btn" id="langToggle" title="Toggle Language">عربي</button>
-    <button class="icon-btn" id="themeToggle" title="Toggle Theme">🌙</button>
-    <button class="primary" id="chooseFolderNav" data-i18n="switch_folder">📁 Switch Folder</button>
-    <button class="primary" id="newProjectBtn" style="display:none;" data-i18n="new_project">+ New Project</button>
-  </div>
+    <div class="logo">
+        <svg class="icon" style="width:30px; height:30px; stroke:var(--accent);"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        <h1 data-i18n="title">Clip Flow Pro</h1>
+    </div>
+    <div class="nav-actions">
+        <button class="category-tab" id="langToggle"><span id="langText">عربي</span></button>
+        <button class="category-tab" id="themeToggle"><svg class="icon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>
+        <button class="category-tab active" id="newProjectBtn"><svg class="icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> <span data-i18n="new_project">New Project</span></button>
+    </div>
 </nav>
 
-<div id="categories">
-  </div>
-
+<div id="categories"></div>
 <div id="projectsContainer"></div>
 
-<div class="overlay" id="overlay"></div>
-
-<div class="popup" id="folderPopup" style="display:block;">
-  <h2 data-i18n="workspace_title">Select Your Workspace</h2>
-  <p style="text-align:center; font-size:14px; color:var(--text-muted); margin-bottom:20px;" data-i18n="workspace_desc">Choose a folder to save your projects. We will remember it for next time!</p>
-  <button class="action-btn" id="chooseFolderBtn" data-i18n="choose_folder">Choose Folder</button>
-  <p id="authMsg" style="display:none; text-align:center; font-size:12px; color:var(--btn-bg); margin-top:10px;">Checking previous workspace...</p>
+<div class="overlay" id="videoViewer">
+    <div id="videoViewerContent">
+        <video id="mainPlayer" controls></video>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 id="viewTitle" style="margin:0;"></h2>
+            <button class="category-tab" onclick="closeViewer()"><svg class="icon"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
+    </div>
 </div>
 
-<div class="popup" id="projectPopup">
-  <h2 id="popupTitle" data-i18n="new_project">New Project</h2>
-  
-  <div id="dropZone" data-i18n="drag_video">Drag video here or click to select</div>
-  
-  <div id="videoEditor">
-    <video id="videoPreview" controls></video>
-    <label style="font-size:12px; color:var(--text-muted);" data-i18n="trim_video">Trim Video (Visual Editor Only):</label>
-    <div class="timeline">
-      <div class="timeline-fill"></div>
-      <div class="timeline-text" data-i18n="timeline_mock">Timeline Trim Selection</div>
-    </div>
-  </div>
+<div class="overlay" id="formOverlay">
+    <div class="popup">
+        <h2 data-i18n="new_project">New Project</h2>
+        
+        <div id="dropZone" style="border: 2px dashed var(--accent); padding: 30px; text-align: center; border-radius: 12px; cursor: pointer; margin-bottom: 15px;">
+            <svg class="icon" style="width:40px; height:40px; margin-bottom:10px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <p id="videoStatus" data-i18n="drag_video">Click to select Video</p>
+        </div>
 
-  <div id="dropThumbs" data-i18n="drag_thumbs">Drag thumbnails here or click</div>
-  <div id="thumbPreview" style="display:flex; gap:5px; flex-wrap:wrap; justify-content:center; margin-bottom:10px;"></div>
-  
-  <input type="text" id="title" placeholder="Project Title (Required)" data-i18n-placeholder="proj_title">
-  <textarea id="description" placeholder="Description" rows="3" data-i18n-placeholder="proj_desc"></textarea>
-  
-  <label style="font-size:12px; color:var(--text-muted); display:block; margin-top:5px;" data-i18n="select_platform">Select Platform:</label>
-  <div id="platformsContainer" style="margin-bottom:10px;"></div>
-  
-  <label style="font-size:12px; color:var(--text-muted); display:block;" data-i18n="schedule_date">Scheduled Date & Time:</label>
-  <input type="datetime-local" id="datetime">
-  
-  <button class="action-btn" id="saveProjectBtn" data-i18n="save_project">Save Project</button>
-  <button class="action-btn cancel-btn" id="cancelProjectBtn" data-i18n="cancel">Cancel</button>
+        <input type="text" id="projTitle" placeholder="Project Title" data-i18n-placeholder="proj_title">
+        <textarea id="projDesc" placeholder="Description" rows="3" data-i18n-placeholder="proj_desc"></textarea>
+
+        <label style="font-size:12px; color:var(--text-muted);" data-i18n="select_platforms">Select Platforms (Cross-platform support):</label>
+        <div class="platform-grid" id="platformGrid"></div>
+
+        <button class="primary-btn" id="saveBtn" data-i18n="save_project">Save Project</button>
+        <button class="primary-btn" style="background:none; color:var(--text-muted);" onclick="closeForm()" data-i18n="cancel">Cancel</button>
+    </div>
 </div>
 
 <script>
-// --- Translations ---
-const dict = {
-  en: {
-    title: "Clip Flow", switch_folder: "📁 Switch Folder", new_project: "+ New Project",
-    workspace_title: "Select Your Workspace", workspace_desc: "Choose a folder to save your projects. We will remember it for next time!",
-    choose_folder: "Choose Folder", drag_video: "Drag video here or click to select", drag_thumbs: "Drag thumbnails here or click",
-    proj_title: "Project Title (Required)", proj_desc: "Description", select_platform: "Select Platform:",
-    schedule_date: "Scheduled Date & Time:", save_project: "Save Project", cancel: "Cancel",
-    trim_video: "Trim Video (Mockup):", timeline_mock: "Timeline Trim Selection", all: "All Projects"
-  },
-  ar: {
-    title: "كليب فلو", switch_folder: "📁 تغيير المجلد", new_project: "+ مشروع جديد",
-    workspace_title: "اختر مساحة العمل", workspace_desc: "اختر مجلداً لحفظ مشاريعك. سنتذكره في المرة القادمة!",
-    choose_folder: "اختر المجلد", drag_video: "اسحب الفيديو هنا أو انقر للاختيار", drag_thumbs: "اسحب الصور المصغرة هنا أو انقر",
-    proj_title: "عنوان المشروع (مطلوب)", proj_desc: "الوصف", select_platform: "اختر المنصة:",
-    schedule_date: "تاريخ ووقت النشر المجدول:", save_project: "حفظ المشروع", cancel: "إلغاء",
-    trim_video: "قص الفيديو (واجهة تجريبية):", timeline_mock: "تحديد مقطع الفيديو", all: "جميع المشاريع"
-  }
+const platforms = [
+    { id: 'yt', name: 'YouTube', ratio: '16-9' },
+    { id: 'fb', name: 'Facebook', ratio: '16-9' },
+    { id: 'shorts', name: 'YT Shorts', ratio: '9-16' },
+    { id: 'tiktok', name: 'TikTok', ratio: '9-16' },
+    { id: 'reels', name: 'IG Reels', ratio: '9-16' },
+    { id: 'snap', name: 'Snapchat', ratio: '9-16' }
+];
+
+const i18n = {
+    en: { title: "Clip Flow Pro", new_project: "New Project", drag_video: "Click to select Video", proj_title: "Project Title", proj_desc: "Description", select_platforms: "Select Platforms", save_project: "Save Project", cancel: "Cancel", all: "All" },
+    ar: { title: "كليب فلو برو", new_project: "مشروع جديد", drag_video: "انقر لاختيار فيديو", proj_title: "عنوان المشروع", proj_desc: "وصف المشروع", select_platforms: "اختر المنصات", save_project: "حفظ المشروع", cancel: "إلغاء", all: "الكل" }
 };
 
 let currentLang = 'en';
-const langToggle = document.getElementById('langToggle');
-langToggle.onclick = () => {
-  currentLang = currentLang === 'en' ? 'ar' : 'en';
-  document.body.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
-  langToggle.innerText = currentLang === 'en' ? 'عربي' : 'EN';
-  updateText();
-};
+let folderHandle = null;
+let selectedVideo = null;
+let projects = [];
 
-function updateText() {
-  document.querySelectorAll('[data-i18n]').forEach(el => { el.innerText = dict[currentLang][el.dataset.i18n]; });
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = dict[currentLang][el.dataset.i18nPlaceholder]; });
-  renderCategories(); // Re-render to translate 'All'
-}
-
-// --- Themes ---
-const themeToggle = document.getElementById('themeToggle');
-let currentTheme = localStorage.getItem('clipflow_theme') || 'dark';
-document.documentElement.setAttribute('data-theme', currentTheme);
-themeToggle.innerText = currentTheme === 'dark' ? '☀️' : '🌙';
-
-themeToggle.onclick = () => {
-  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', currentTheme);
-  localStorage.setItem('clipflow_theme', currentTheme);
-  themeToggle.innerText = currentTheme === 'dark' ? '☀️' : '🌙';
-  updateCanvasTheme();
-};
-
-// --- Simple IndexedDB Wrapper for Auto-Save Folder ---
-const idb = {
-  db: null,
-  async init() {
-    return new Promise((resolve) => {
-      const req = indexedDB.open('ClipFlowDB', 1);
-      req.onupgradeneeded = e => e.target.result.createObjectStore('settings');
-      req.onsuccess = e => { this.db = e.target.result; resolve(); };
-    });
-  },
-  async get(key) {
-    return new Promise(res => {
-      const tx = this.db.transaction('settings', 'readonly');
-      const req = tx.objectStore('settings').get(key);
-      req.onsuccess = () => res(req.result);
-      req.onerror = () => res(null);
-    });
-  },
-  async set(key, val) {
-    const tx = this.db.transaction('settings', 'readwrite');
-    tx.objectStore('settings').put(val, key);
-  }
-};
-
-// --- App State ---
-let projects = [], folderHandle = null;
-let selectedThumbs = [], selectedVideo = null;
-let currentTab = 'All';
-
-const platforms = [
-  {name: 'YouTube', class: 'youtube', type: 'horizontal'},
-  {name: 'Shorts', class: 'youtube-shorts', type: 'vertical'},
-  {name: 'TikTok', class: 'tiktok', type: 'vertical'},
-  {name: 'Instagram', class: 'instagram', type: 'vertical'}
-];
-
-// Initialize DOM
-const platformsContainer = document.getElementById('platformsContainer');
-platforms.forEach(p => {
-  let btn = document.createElement('button');
-  btn.className = 'platformBtn'; btn.innerText = p.name; btn.dataset.class = p.class; btn.dataset.type = p.type;
-  btn.onclick = () => { document.querySelectorAll('.platformBtn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); };
-  platformsContainer.appendChild(btn);
-});
-
-// --- Boot Sequence (Check Saved Folder) ---
+// Initialize
 window.onload = async () => {
-  await idb.init();
-  const savedHandle = await idb.get('workspaceHandle');
-  if (savedHandle) {
-    document.getElementById('authMsg').style.display = 'block';
-    try {
-      // Ask browser if we still have permission (will prompt user silently)
-      const options = { mode: 'readwrite' };
-      if ((await savedHandle.queryPermission(options)) === 'granted' || (await savedHandle.requestPermission(options)) === 'granted') {
-        folderHandle = savedHandle;
-        document.getElementById('folderPopup').style.display = 'none';
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('newProjectBtn').style.display = 'inline-block';
-        loadProjects();
-      }
-    } catch(e) { console.log("Permission denied or expired"); }
-    document.getElementById('authMsg').style.display = 'none';
-  }
+    renderPlatformGrid();
+    setupShapes();
+    checkExistingFolder();
 };
 
-// --- Folder Selection ---
-document.getElementById('chooseFolderBtn').onclick = document.getElementById('chooseFolderNav').onclick = async () => {
-  try {
-    folderHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-    await idb.set('workspaceHandle', folderHandle); // Save to DB!
-    await folderHandle.getDirectoryHandle('ClipFlow Projects', { create: true });
-    
-    document.getElementById('folderPopup').style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
-    document.getElementById('newProjectBtn').style.display = 'inline-block';
-    loadProjects();
-  } catch (err) { console.error(err); }
-};
-
-// --- Popups & Drag/Drop ---
-const projectPopup = document.getElementById('projectPopup');
-const overlay = document.getElementById('overlay');
-document.getElementById('newProjectBtn').onclick = () => openProjectPopup();
-document.getElementById('cancelProjectBtn').onclick = () => { projectPopup.style.display = 'none'; overlay.style.display = 'none'; document.getElementById('videoPreview').src=''; };
-
-function openProjectPopup(project = null) {
-  selectedThumbs = []; selectedVideo = null;
-  document.getElementById('thumbPreview').innerHTML = '';
-  document.getElementById('title').value = project ? project.meta.title || project.name : '';
-  document.getElementById('description').value = project ? project.meta.description || '' : '';
-  document.getElementById('datetime').value = project ? project.meta.datetime || '' : '';
-  document.getElementById('dropZone').innerText = dict[currentLang].drag_video;
-  document.getElementById('dropThumbs').innerText = dict[currentLang].drag_thumbs;
-  document.querySelectorAll('.platformBtn').forEach(b => b.classList.remove('selected'));
-  document.getElementById('videoEditor').style.display = 'none';
-
-  if (project && project.meta.platformClass) {
-    const btn = document.querySelector(`.platformBtn[data-class="${project.meta.platformClass}"]`);
-    if(btn) btn.classList.add('selected');
-  }
-
-  // Load video into editor mockup if editing
-  if (project && project.videoFile) {
-    project.videoFile.getFile().then(file => {
-      document.getElementById('videoEditor').style.display = 'flex';
-      document.getElementById('videoPreview').src = URL.createObjectURL(file);
-      document.getElementById('dropZone').innerText = `Editing: ${project.videoFile.name}`;
+function renderPlatformGrid() {
+    const grid = document.getElementById('platformGrid');
+    platforms.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'platform-choice';
+        div.dataset.id = p.id;
+        div.innerHTML = `<div class="check" style="width:12px; height:12px; border:1px solid var(--border); border-radius:3px;"></div> ${p.name}`;
+        div.onclick = () => div.classList.toggle('selected');
+        grid.appendChild(div);
     });
-  }
-
-  overlay.style.display = 'block';
-  projectPopup.style.display = 'block';
 }
 
-// Handlers for File Input
-const dropZone = document.getElementById('dropZone');
-dropZone.onclick = () => {
-  const input = document.createElement('input'); input.type = 'file'; input.accept = 'video/*';
-  input.onchange = e => { 
-    selectedVideo = e.target.files[0]; 
-    dropZone.innerText = selectedVideo.name;
-    document.getElementById('videoEditor').style.display = 'flex';
-    document.getElementById('videoPreview').src = URL.createObjectURL(selectedVideo);
-  };
-  input.click();
+// Language Toggle
+document.getElementById('langToggle').onclick = () => {
+    currentLang = currentLang === 'en' ? 'ar' : 'en';
+    document.body.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+    document.getElementById('langText').innerText = currentLang === 'en' ? 'عربي' : 'English';
+    document.querySelectorAll('[data-i18n]').forEach(el => el.innerText = i18n[currentLang][el.dataset.i18n]);
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => el.placeholder = i18n[currentLang][el.dataset.i18nPlaceholder]);
 };
 
-const dropThumbs = document.getElementById('dropThumbs');
-dropThumbs.onclick = () => {
-  const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.multiple = true;
-  input.onchange = e => { selectedThumbs = Array.from(e.target.files); updateThumbPreview(); };
-  input.click();
+// Video Upload Logic
+document.getElementById('dropZone').onclick = () => {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = 'video/*';
+    input.onchange = (e) => {
+        selectedVideo = e.target.files[0];
+        document.getElementById('videoStatus').innerText = selectedVideo.name;
+    };
+    input.click();
 };
 
-function updateThumbPreview() {
-  const tp = document.getElementById('thumbPreview'); tp.innerHTML = '';
-  selectedThumbs.forEach(f => {
-    let img = document.createElement('img'); img.src = URL.createObjectURL(f);
-    img.style.width = '60px'; img.style.height = '60px'; img.style.objectFit = 'cover'; img.style.borderRadius = '5px';
-    tp.appendChild(img);
-  });
-  dropThumbs.innerText = `${selectedThumbs.length} image(s) selected`;
+async function checkExistingFolder() {
+    // Basic auto-folder logic using DirectoryPicker
+    document.getElementById('categories').innerHTML = `<button class="category-tab active" onclick="requestFolder()">Click to select Workspace Folder</button>`;
 }
 
-// --- Load, Render & Categorize ---
-async function loadProjects() {
-  if(!folderHandle) return;
-  projects = [];
-  const clipFlowFolder = await folderHandle.getDirectoryHandle('ClipFlow Projects');
-  
-  for await (const [name, handle] of clipFlowFolder.entries()) {
-    if (handle.kind === 'directory') {
-      const videoFile = await handle.getFileHandle('video.mp4').catch(() => null);
-      const thumbs = [];
-      for await (const [fname, fhandle] of handle.entries()) {
-        if (fname.startsWith('thumbnail') && (fname.endsWith('.png') || fname.endsWith('.jpg'))) thumbs.push(fhandle);
-      }
-      const metaFile = await handle.getFileHandle('meta.json').catch(() => null);
-      let meta = {}; if (metaFile) { try { meta = JSON.parse(await (await metaFile.getFile()).text()); } catch(e){} }
-      projects.push({ name, videoFile, thumbs, meta, folderHandle: handle });
-    }
-  }
-  projects.sort((a, b) => new Date(b.meta.datetime || 0) - new Date(a.meta.datetime || 0));
-  renderCategories();
-  displayProjects();
-}
-
-function renderCategories() {
-  const catContainer = document.getElementById('categories');
-  catContainer.innerHTML = '';
-  
-  // Calculate counts
-  const counts = { 'All': projects.length };
-  platforms.forEach(p => counts[p.name] = 0);
-  projects.forEach(p => { if(p.meta.platformName && counts[p.meta.platformName] !== undefined) counts[p.meta.platformName]++; });
-
-  const createTab = (name, labelText) => {
-    const tab = document.createElement('div');
-    tab.className = `category-tab ${currentTab === name ? 'active' : ''}`;
-    tab.innerHTML = `<span>${labelText}</span> <span class="cat-count">${counts[name] || 0}</span>`;
-    tab.onclick = () => { currentTab = name; renderCategories(); displayProjects(); };
-    catContainer.appendChild(tab);
-  };
-
-  createTab('All', dict[currentLang].all);
-  platforms.forEach(p => createTab(p.name, p.name));
-}
-
-async function displayProjects() {
-  const container = document.getElementById('projectsContainer');
-  container.innerHTML = '';
-  
-  const filtered = currentTab === 'All' ? projects : projects.filter(p => p.meta.platformName === currentTab);
-
-  for (let i=0; i<filtered.length; i++) {
-    const p = filtered[i];
-    const div = document.createElement('div');
-    
-    // Determine orientation class
-    const platInfo = platforms.find(pl => pl.class === p.meta.platformClass);
-    const orientationClass = platInfo ? platInfo.type : 'horizontal';
-    div.className = `project ${orientationClass}`;
-    div.style.animationDelay = `${i * 0.05}s`; // Staggered animation
-    
-    let imgSrc = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="220" height="140"><rect width="220" height="140" fill="%23222"/></svg>';
-    if (p.thumbs.length > 0) imgSrc = URL.createObjectURL(await p.thumbs[0].getFile());
-    
-    const dateStr = p.meta.datetime ? new Date(p.meta.datetime).toLocaleDateString() : 'No Date';
-    
-    div.innerHTML = `
-      <div class="img-wrapper"><img src="${imgSrc}"></div>
-      <div class="project-info">
-        <h3>${p.meta.title || p.name}</h3>
-        <p>${dateStr} <span class="platform-label ${p.meta.platformClass || 'youtube'}">${p.meta.platformName || 'YouTube'}</span></p>
-      </div>
-      <button class="menu-btn">&#8942;</button>
-      <div class="menu-content">
-        <button class="edit-btn">✏️ Edit / View</button>
-        <button class="del-btn" style="color:#ff5555;">🗑️ Delete</button>
-      </div>
-    `;
-
-    const menuBtn = div.querySelector('.menu-btn');
-    const menuContent = div.querySelector('.menu-content');
-    
-    menuBtn.onclick = (e) => {
-      e.stopPropagation();
-      document.querySelectorAll('.menu-content').forEach(m => { if(m !== menuContent) m.style.display = 'none'; });
-      menuContent.style.display = menuContent.style.display === 'flex' ? 'none' : 'flex';
-    };
-    
-    div.querySelector('.edit-btn').onclick = (e) => { e.stopPropagation(); openProjectPopup(p); };
-    div.querySelector('.del-btn').onclick = async (e) => { 
-      e.stopPropagation(); 
-      if(confirm('Delete completely?')) {
-        await folderHandle.getDirectoryHandle('ClipFlow Projects').then(f=>f.removeEntry(p.name,{recursive:true}));
-        loadProjects();
-      }
-    };
-    
-    container.appendChild(div);
-  }
-}
-
-document.addEventListener('click', () => document.querySelectorAll('.menu-content').forEach(m => m.style.display = 'none'));
-
-// --- Save Project ---
-document.getElementById('saveProjectBtn').onclick = async () => {
-  const projectName = document.getElementById('title').value.trim();
-  if (!projectName) return alert('Enter Title');
-  const btn = document.getElementById('saveProjectBtn'); btn.innerText = "Saving..."; btn.disabled = true;
-
-  try {
-    const clipFlowFolder = await folderHandle.getDirectoryHandle('ClipFlow Projects', { create: true });
-    const projectFolder = await clipFlowFolder.getDirectoryHandle(projectName, { create: true });
-    
-    const activePlatform = document.querySelector('.platformBtn.selected');
-    const metaData = {
-      title: projectName, description: document.getElementById('description').value,
-      datetime: document.getElementById('datetime').value,
-      platformName: activePlatform ? activePlatform.innerText : '',
-      platformClass: activePlatform ? activePlatform.dataset.class : ''
-    };
-    
-    const metaH = await projectFolder.getFileHandle('meta.json', { create: true });
-    const metaW = await metaH.createWritable(); await metaW.write(JSON.stringify(metaData)); await metaW.close();
-
-    if (selectedVideo) {
-      const vH = await projectFolder.getFileHandle('video.mp4', { create: true });
-      const vW = await vH.createWritable(); await vW.write(selectedVideo); await vW.close();
-    }
-    
-    for (let i=0; i<selectedThumbs.length; i++) {
-      const ext = selectedThumbs[i].name.split('.').pop();
-      const tH = await projectFolder.getFileHandle(`thumbnail_${i}.${ext}`, { create: true });
-      const tW = await tH.createWritable(); await tW.write(selectedThumbs[i]); await tW.close();
-    }
-    
-    projectPopup.style.display = 'none'; overlay.style.display = 'none';
-    document.getElementById('videoPreview').src = '';
+async function requestFolder() {
+    folderHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
     loadProjects();
-  } catch (err) { alert(err.message); } 
-  finally { btn.innerText = dict[currentLang].save_project; btn.disabled = false; }
+}
+
+async function loadProjects() {
+    projects = [];
+    const root = await folderHandle.getDirectoryHandle('ClipFlow_Storage', { create: true });
+    for await (const [name, handle] of root.entries()) {
+        if(handle.kind === 'directory') {
+            const metaFile = await handle.getFileHandle('meta.json');
+            const meta = JSON.parse(await (await metaFile.getFile()).text());
+            const videoFile = await handle.getFileHandle('video.mp4');
+            projects.push({ name, meta, videoFile });
+        }
+    }
+    renderProjects();
+    renderTabs();
+}
+
+function renderProjects(filter = 'all') {
+    const container = document.getElementById('projectsContainer');
+    container.innerHTML = '';
+    
+    const displayList = filter === 'all' ? projects : projects.filter(p => p.meta.platforms.includes(filter));
+
+    displayList.forEach(p => {
+        const primaryPlatform = platforms.find(pl => pl.id === p.meta.platforms[0]) || platforms[0];
+        const card = document.createElement('div');
+        card.className = `project ratio-${primaryPlatform.ratio}`;
+        
+        card.innerHTML = `
+            <div class="thumb-container">
+                <img id="thumb-${p.name}" src="" alt="Thumbnail">
+                <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.7); padding:5px; border-radius:50%;">
+                    <svg class="icon" style="stroke:white;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                </div>
+            </div>
+            <div class="project-meta">
+                <h3>${p.meta.title}</h3>
+                <div class="platform-tags">
+                    ${p.meta.platforms.map(pl => `<span class="tag">${pl.toUpperCase()}</span>`).join('')}
+                </div>
+            </div>
+        `;
+        card.onclick = () => openViewer(p);
+        container.appendChild(card);
+        generateThumbnail(p);
+    });
+}
+
+function renderTabs() {
+    const cat = document.getElementById('categories');
+    cat.innerHTML = `<div class="category-tab active" onclick="renderProjects('all')">${i18n[currentLang].all}</div>`;
+    platforms.forEach(p => {
+        const count = projects.filter(proj => proj.meta.platforms.includes(p.id)).length;
+        if(count > 0) {
+            const tab = document.createElement('div');
+            tab.className = 'category-tab';
+            tab.innerHTML = `${p.name} <span style="font-size:10px; opacity:0.6">${count}</span>`;
+            tab.onclick = () => renderProjects(p.id);
+            cat.appendChild(tab);
+        }
+    });
+}
+
+// Auto-Thumbnail from first frame
+async function generateThumbnail(project) {
+    const file = await project.videoFile.getFile();
+    const url = URL.createObjectURL(file);
+    const video = document.createElement('video');
+    video.src = url;
+    video.currentTime = 1; // Capture at 1 second
+    video.onloadeddata = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        document.getElementById(`thumb-${project.name}`).src = canvas.toDataURL();
+    };
+}
+
+// Viewer Logic
+function openViewer(project) {
+    project.videoFile.getFile().then(file => {
+        const url = URL.createObjectURL(file);
+        const player = document.getElementById('mainPlayer');
+        player.src = url;
+        document.getElementById('viewTitle').innerText = project.meta.title;
+        document.getElementById('videoViewer').style.display = 'flex';
+        player.play();
+    });
+}
+
+function closeViewer() {
+    const player = document.getElementById('mainPlayer');
+    player.pause();
+    player.src = "";
+    document.getElementById('videoViewer').style.display = 'none';
+}
+
+// Form Logic
+document.getElementById('newProjectBtn').onclick = () => {
+    if(!folderHandle) return requestFolder();
+    document.getElementById('formOverlay').style.display = 'flex';
 };
 
-// --- Dynamic Background Canvas ---
-const canvas = document.getElementById('bgCanvas'); const ctx = canvas.getContext('2d');
-let shapes = [];
-function updateCanvasTheme() {
-  const color = getComputedStyle(document.documentElement).getPropertyValue('--canvas-lines').trim();
-  shapes.forEach(s => s.color = color);
-}
+function closeForm() { document.getElementById('formOverlay').style.display = 'none'; }
 
-class Shape {
-  constructor() {
-    this.x=Math.random()*window.innerWidth; this.y=Math.random()*window.innerHeight; this.size=Math.random()*80+30;
-    this.speedX=(Math.random()-0.5)*0.5; this.speedY=(Math.random()-0.5)*0.5; 
-    this.color = getComputedStyle(document.documentElement).getPropertyValue('--canvas-lines').trim() || 'rgba(255,255,255,0.05)';
-  }
-  update() {
-    this.x+=this.speedX; this.y+=this.speedY; 
-    if(this.x<0||this.x>window.innerWidth) this.speedX*=-1; if(this.y<0||this.y>window.innerHeight) this.speedY*=-1;
-    ctx.strokeStyle=this.color; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,2*Math.PI); ctx.stroke();
-  }
-}
-for(let i=0;i<12;i++) shapes.push(new Shape());
-function animate() { ctx.clearRect(0,0,window.innerWidth,window.innerHeight); shapes.forEach(s=>s.update()); requestAnimationFrame(animate); }
-animate();
-window.addEventListener('resize', () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
-canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+document.getElementById('saveBtn').onclick = async () => {
+    const title = document.getElementById('projTitle').value;
+    const selectedPlats = Array.from(document.querySelectorAll('.platform-choice.selected')).map(el => el.dataset.id);
+    
+    if(!title || !selectedVideo || selectedPlats.length === 0) return alert("Fill all fields");
 
+    const root = await folderHandle.getDirectoryHandle('ClipFlow_Storage', { create: true });
+    const pFolder = await root.getDirectoryHandle(title.replace(/\s/g, '_'), { create: true });
+    
+    // Save Meta
+    const metaH = await pFolder.getFileHandle('meta.json', { create: true });
+    const metaW = await metaH.createWritable();
+    await metaW.write(JSON.stringify({ title, platforms: selectedPlats, date: new Date() }));
+    await metaW.close();
+
+    // Save Video
+    const vidH = await pFolder.getFileHandle('video.mp4', { create: true });
+    const vidW = await vidH.createWritable();
+    await vidW.write(selectedVideo);
+    await vidW.close();
+
+    closeForm();
+    loadProjects();
+};
+
+// Geometric Background
+function setupShapes() {
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    
+    const shapes = [];
+    for(let i=0; i<15; i++) {
+        shapes.push({
+            x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+            size: Math.random()*50+20,
+            type: Math.floor(Math.random()*3),
+            dx: (Math.random()-0.5)*0.5, dy: (Math.random()-0.5)*0.5
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border');
+        ctx.lineWidth = 1;
+        
+        shapes.forEach(s => {
+            ctx.beginPath();
+            if(s.type === 0) ctx.rect(s.x, s.y, s.size, s.size);
+            else if(s.type === 1) ctx.arc(s.x, s.y, s.size/2, 0, Math.PI*2);
+            else { ctx.moveTo(s.x, s.y); ctx.lineTo(s.x+s.size, s.y); ctx.lineTo(s.x+s.size/2, s.y-s.size); ctx.closePath(); }
+            ctx.stroke();
+            
+            s.x += s.dx; s.y += s.dy;
+            if(s.x < 0 || s.x > canvas.width) s.dx *= -1;
+            if(s.y < 0 || s.y > canvas.height) s.dy *= -1;
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
 </script>
 </body>
 </html>
