@@ -3,324 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clipflow | Project Manager</title>
+    <title>Clipflow Pro | Manager</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Cairo:wght@400;700&display=swap');
 
         :root {
-            --primary: #6c63ff;
-            --primary-hover: #5a52d6;
-            --bg: #05060f;
-            --card-bg: #111322;
-            --nav-bg: rgba(13, 15, 30, 0.8);
-            --text: #ffffff;
-            --text-muted: #94a3b8;
-            --border: rgba(255, 255, 255, 0.08);
-            --danger: #ff4757;
-            --success: #2ed573;
+            --primary: #6c63ff; --primary-hover: #5a52d6;
+            --bg: #05060f; --card-bg: rgba(17, 19, 34, 0.9);
+            --nav-bg: rgba(13, 15, 30, 0.7); --text: #ffffff;
+            --text-muted: #94a3b8; --border: rgba(255, 255, 255, 0.1);
+            --danger: #ff4757; --accent-glow: rgba(108, 99, 255, 0.2);
         }
 
         [data-theme="light"] {
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --nav-bg: rgba(255, 255, 255, 0.9);
-            --text: #0f172a;
-            --text-muted: #64748b;
-            --border: rgba(0, 0, 0, 0.05);
+            --bg: #f0f2f5; --card-bg: rgba(255, 255, 255, 0.9);
+            --nav-bg: rgba(255, 255, 255, 0.8); --text: #0f172a;
+            --text-muted: #64748b; --border: rgba(0, 0, 0, 0.1);
         }
 
         body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            transition: all 0.3s ease;
-            line-height: 1.6;
+            margin: 0; font-family: 'Inter', sans-serif;
+            background: var(--bg); color: var(--text);
+            transition: 0.3s; line-height: 1.6; overflow-x: hidden;
         }
 
-        body[dir="rtl"] { font-family: 'Cairo', sans-serif; }
+        /* --- Animated Geometric Background --- */
+        #bgCanvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; pointer-events: none;
+        }
 
-        /* --- Header & Navigation --- */
         header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: var(--nav-bg);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            padding: 10px 24px;
+            position: sticky; top: 0; z-index: 1000;
+            background: var(--nav-bg); backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--border); padding: 12px 24px;
         }
 
-        .top-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            max-width: 1400px;
-            margin: 0 auto;
-            gap: 20px;
-        }
-
-        .logo {
-            font-weight: 700;
-            font-size: 22px;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-
-        .search-wrapper {
-            flex: 1;
-            max-width: 500px;
-            position: relative;
-        }
-
+        .top-bar { display: flex; align-items: center; justify-content: space-between; max-width: 1400px; margin: 0 auto; gap: 20px; }
+        
+        .search-wrapper { flex: 1; max-width: 400px; position: relative; }
         .search-wrapper input {
-            width: 100%;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            padding: 10px 15px 10px 40px;
-            border-radius: 10px;
-            color: var(--text);
-            outline: none;
-            transition: border 0.3s;
+            width: 100%; background: var(--bg); border: 1px solid var(--border);
+            padding: 10px 15px 10px 40px; border-radius: 20px; color: var(--text);
         }
-
-        .search-wrapper input:focus { border-color: var(--primary); }
-        .search-wrapper::before {
-            content: "🔍";
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            opacity: 0.5;
-        }
-
-        .nav-btns { display: flex; gap: 12px; align-items: center; }
-
-        /* --- Buttons --- */
-        .btn {
-            padding: 10px 18px;
-            border-radius: 8px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
-        .btn-ghost:hover { background: var(--border); }
-
-        /* --- Content Layout --- */
-        main { max-width: 1400px; margin: 0 auto; padding: 24px; }
-
-        .category-scroll {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-        }
-
-        .tab {
-            padding: 8px 16px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            white-space: nowrap;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         /* --- Project Grid --- */
         .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 25px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px; padding: 24px; max-width: 1400px; margin: 0 auto;
         }
 
         .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            overflow: hidden;
-            position: relative;
-            transition: transform 0.3s, box-shadow 0.3s;
+            background: var(--card-bg); border-radius: 20px;
+            border: 1px solid var(--border); overflow: hidden;
+            position: relative; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(5px);
         }
+        .card:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 15px 35px var(--accent-glow); }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+        /* Handle Vertical Thumbnail Logic */
+        .card.vertical .card-thumb { aspect-ratio: 9/16; }
+        .card.horizontal .card-thumb { aspect-ratio: 16/9; }
+
+        .card-thumb { width: 100%; background: #000; cursor: pointer; overflow: hidden; }
+        .card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .card:hover .card-thumb img { scale: 1.05; }
+
+        .card-body { padding: 15px; }
+        .badge-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+        .badge { font-size: 10px; padding: 3px 8px; border-radius: 5px; background: var(--primary); color: white; font-weight: bold; text-transform: uppercase; }
+
+        /* --- Multi-Select Platform UI --- */
+        .platform-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+        .plat-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px; background: var(--bg); border: 1px solid var(--border);
+            border-radius: 10px; cursor: pointer; transition: 0.2s;
         }
+        .plat-item input { width: auto; }
+        .plat-item:hover { border-color: var(--primary); }
 
-        .card-thumb {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: #000;
-            position: relative;
-            cursor: pointer;
-        }
-        
-        .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
-
-        .card-body { padding: 18px; }
-        .card-body h3 { margin: 0 0 8px; font-size: 18px; }
-        .card-body p { margin: 0; font-size: 13px; color: var(--text-muted); height: 40px; overflow: hidden; }
-
-        /* Menu Dots */
-        .dots-btn {
-            position: absolute; top: 10px; right: 10px;
-            width: 34px; height: 34px; border-radius: 50%;
-            background: rgba(0,0,0,0.6); color: white;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 10;
-        }
-
-        .dropdown {
-            position: absolute; top: 50px; right: 10px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            display: none; flex-direction: column;
-            width: 160px; z-index: 100;
-        }
-
-        .dropdown button {
-            padding: 12px 15px; border: none; background: none; color: var(--text);
-            text-align: left; cursor: pointer; border-bottom: 1px solid var(--border);
-            font-size: 13px;
-        }
-        .dropdown button:hover { background: var(--primary); color: white; }
-
-        /* --- Modals --- */
+        /* --- Modal Styling --- */
         .overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.8);
             display: none; align-items: center; justify-content: center;
-            z-index: 2000; backdrop-filter: blur(8px);
+            z-index: 2000; backdrop-filter: blur(10px);
         }
-
         .modal {
-            background: var(--card-bg);
-            width: 100%; max-width: 600px;
-            border-radius: 24px; padding: 32px;
-            border: 1px solid var(--border);
-            max-height: 90vh; overflow-y: auto;
+            background: var(--card-bg); width: 95%; max-width: 550px;
+            border-radius: 25px; padding: 30px; border: 1px solid var(--border);
+            max-height: 85vh; overflow-y: auto; animation: slideIn 0.3s ease-out;
         }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); }
-        input, textarea, select {
-            width: 100%; padding: 12px; background: var(--bg);
-            border: 1px solid var(--border); border-radius: 12px;
-            color: var(--text); outline: none; box-sizing: border-box;
-        }
+        .btn { padding: 12px 20px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; }
+        .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
 
-        .thumb-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;
-        }
+        .dots-btn { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.5); color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; }
+        .dropdown { position: absolute; top: 50px; right: 10px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; display: none; flex-direction: column; overflow: hidden; z-index: 100; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .dropdown button { padding: 12px 20px; border: none; background: none; color: var(--text); text-align: left; cursor: pointer; font-size: 13px; border-bottom: 1px solid var(--border); }
+        .dropdown button:hover { background: var(--primary); color: white; }
 
-        .thumb-upload {
-            aspect-ratio: 1; border: 2px dashed var(--border);
-            border-radius: 12px; display: flex; align-items: center;
-            justify-content: center; cursor: pointer; overflow: hidden;
-            background: var(--bg);
-        }
-        .thumb-upload img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* Utility */
-        .hidden { display: none; }
-        .visible { display: flex; }
+        .thumb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .thumb-box { aspect-ratio: 1; border: 2px dashed var(--border); border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; }
+        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
 
+<canvas id="bgCanvas"></canvas>
+
 <header>
     <div class="top-bar">
-        <a href="#" class="logo">⚡ Clipflow</a>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <div style="background:var(--primary); width:35px; height:35px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;">C</div>
+            <h1 style="font-size:20px; margin:0;">Clipflow</h1>
+        </div>
         
         <div class="search-wrapper">
-            <input type="text" id="mainSearch" placeholder="Search by title..." oninput="renderProjects()">
+            <input type="text" id="mainSearch" placeholder="Search projects..." oninput="renderProjects()">
         </div>
 
-        <div class="nav-btns">
+        <div style="display:flex; gap:10px;">
             <button class="btn btn-ghost" onclick="toggleTheme()">🌓</button>
-            <button class="btn btn-primary" onclick="openModal('add')">＋ New Project</button>
+            <button class="btn btn-primary" onclick="openModal('add')">＋ New</button>
         </div>
     </div>
 </header>
 
 <main>
-    <div class="category-scroll" id="catBar">
-        <div class="tab active" onclick="filterBy('all')">All Projects</div>
-        <div class="tab" onclick="filterBy('yt')">YouTube</div>
-        <div class="tab" onclick="filterBy('reels')">Reels / Shorts</div>
-        <div class="tab" onclick="filterBy('fb')">Facebook</div>
-    </div>
-
-    <div id="projectsContainer" class="grid">
-        </div>
-
-    <div id="setupView" style="text-align: center; padding: 100px 20px;" class="hidden">
-        <h2>Welcome to Clipflow</h2>
-        <p>Please select a folder on your computer to use as a workspace.</p>
-        <button class="btn btn-primary" style="margin: 0 auto;" onclick="initWorkspace()">Select Workspace Folder</button>
+    <div class="grid" id="projectsContainer"></div>
+    <div id="setupView" style="text-align:center; padding-top:100px;" class="hidden">
+        <h2>No Workspace Selected</h2>
+        <button class="btn btn-primary" style="width:200px;" onclick="initWorkspace()">Select Folder</button>
     </div>
 </main>
 
 <div class="overlay" id="formModal">
     <div class="modal">
-        <h2 id="modalTitle">New Project</h2>
+        <h2 id="modalTitle">Project Settings</h2>
         
-        <div class="form-group" id="videoInputGroup">
-            <label>1. Select Video</label>
-            <div id="dropZone" style="border: 2px dashed var(--primary); padding: 30px; text-align: center; border-radius: 15px; cursor: pointer;">
-                <span id="videoLabel">Click to upload .mp4</span>
+        <div id="videoSection">
+            <label style="font-size:12px; color:var(--text-muted)">Video File (.mp4)</label>
+            <div id="dropZone" style="border:2px dashed var(--primary); padding:20px; text-align:center; border-radius:15px; cursor:pointer; margin:10px 0;">
+                <span id="videoLabel">Select Video</span>
             </div>
         </div>
 
-        <div class="form-group">
-            <label>2. Thumbnails (First image is the cover)</label>
-            <div class="thumb-grid">
-                <div class="thumb-upload" onclick="pickImage(0)"><img id="pre0" class="hidden"><span>+</span></div>
-                <div class="thumb-upload" onclick="pickImage(1)"><img id="pre1" class="hidden"><span>+</span></div>
-                <div class="thumb-upload" onclick="pickImage(2)"><img id="pre2" class="hidden"><span>+</span></div>
-            </div>
+        <label style="font-size:12px; color:var(--text-muted)">Thumbnails (Drag to reorder - coming soon)</label>
+        <div class="thumb-grid">
+            <div class="thumb-box" onclick="pickImage(0)"><img id="pre0" class="hidden"><span>+</span></div>
+            <div class="thumb-box" onclick="pickImage(1)"><img id="pre1" class="hidden"><span>+</span></div>
+            <div class="thumb-box" onclick="pickImage(2)"><img id="pre2" class="hidden"><span>+</span></div>
         </div>
 
-        <div class="form-group">
-            <label>Project Title</label>
-            <input type="text" id="projTitle" placeholder="Awesome Video Title">
+        <input type="text" id="projTitle" placeholder="Project Title" style="margin-bottom:15px;">
+        <textarea id="projDesc" placeholder="Description..." rows="2" style="margin-bottom:15px;"></textarea>
+
+        <label style="font-size:12px; color:var(--text-muted)">Target Platforms (Multi-select)</label>
+        <div class="platform-selector">
+            <label class="plat-item"><input type="checkbox" value="youtube"> YouTube</label>
+            <label class="plat-item"><input type="checkbox" value="shorts"> YT Shorts</label>
+            <label class="plat-item"><input type="checkbox" value="reels"> IG Reels</label>
+            <label class="plat-item"><input type="checkbox" value="tiktok"> TikTok</label>
+            <label class="plat-item"><input type="checkbox" value="facebook"> Facebook</label>
         </div>
 
-        <div class="form-group">
-            <label>Description</label>
-            <textarea id="projDesc" rows="3" placeholder="What's this video about?"></textarea>
-        </div>
-
-        <div class="form-group">
-            <label>Platform Layout</label>
-            <select id="projPlat">
-                <option value="yt">YouTube (16:9)</option>
-                <option value="reels">TikTok / Reels / Shorts (9:16)</option>
-                <option value="fb">Facebook (16:9)</option>
-            </select>
-        </div>
-
-        <div style="display: flex; gap: 10px; margin-top: 30px;">
-            <button class="btn btn-ghost" style="flex: 1;" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" style="flex: 2;" onclick="saveProject()">Save Project</button>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" style="flex:2" onclick="saveProject()">Save Changes</button>
         </div>
     </div>
 </div>
@@ -332,30 +186,64 @@
     let tempThumbs = [null, null, null];
     let editMode = false;
     let currentEditName = null;
-    let currentFilter = 'all';
 
-    // Initialize
-    async function checkStorage() {
-        if (!workspace) {
-            document.getElementById('setupView').classList.remove('hidden');
-            document.getElementById('projectsContainer').classList.add('hidden');
+    // --- Background Engine ---
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    let shapes = [];
+
+    function initShapes() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        shapes = [];
+        for(let i=0; i<15; i++) {
+            shapes.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 100 + 50,
+                dx: (Math.random() - 0.5) * 0.8,
+                dy: (Math.random() - 0.5) * 0.8,
+                type: Math.floor(Math.random() * 3) // 0: Circle, 1: Square, 2: Triangle
+            });
         }
     }
-    checkStorage();
 
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+        ctx.lineWidth = 2;
+
+        shapes.forEach(s => {
+            ctx.beginPath();
+            if(s.type === 0) ctx.arc(s.x, s.y, s.size/2, 0, Math.PI*2);
+            else if(s.type === 1) ctx.rect(s.x, s.y, s.size, s.size);
+            else {
+                ctx.moveTo(s.x, s.y);
+                ctx.lineTo(s.x + s.size, s.y);
+                ctx.lineTo(s.x + s.size/2, s.y - s.size);
+                ctx.closePath();
+            }
+            ctx.stroke();
+            s.x += s.dx; s.y += s.dy;
+            if(s.x < -100 || s.x > canvas.width + 100) s.dx *= -1;
+            if(s.y < -100 || s.y > canvas.height + 100) s.dy *= -1;
+        });
+        requestAnimationFrame(animate);
+    }
+    initShapes(); animate();
+    window.onresize = initShapes;
+
+    // --- Project Logic ---
     async function initWorkspace() {
-        try {
-            workspace = await window.showDirectoryPicker({ mode: 'readwrite' });
-            document.getElementById('setupView').classList.add('hidden');
-            document.getElementById('projectsContainer').classList.remove('hidden');
-            loadProjects();
-        } catch (e) { console.error("Workspace access denied"); }
+        workspace = await window.showDirectoryPicker({ mode: 'readwrite' });
+        document.getElementById('setupView').classList.add('hidden');
+        loadProjects();
     }
 
     async function loadProjects() {
         projects = [];
-        const root = await workspace.getDirectoryHandle('Clipflow_Data', { create: true });
-        
+        const root = await workspace.getDirectoryHandle('Clipflow_Vault', { create: true });
         for await (const [name, handle] of root.entries()) {
             if (handle.kind === 'directory') {
                 try {
@@ -363,7 +251,7 @@
                     const meta = JSON.parse(await (await mFile.getFile()).text());
                     const vFile = await handle.getFileHandle('video.mp4');
                     projects.push({ folderName: name, meta, videoFile: vFile, handle });
-                } catch (e) { console.warn("Skipping corrupt project: " + name); }
+                } catch(e) {}
             }
         }
         renderProjects();
@@ -374,30 +262,28 @@
         const query = document.getElementById('mainSearch').value.toLowerCase();
         container.innerHTML = '';
 
-        // SORTING: Newest to Oldest
-        const sorted = projects.sort((a, b) => b.meta.timestamp - a.meta.timestamp);
-
-        sorted.forEach((p, idx) => {
-            if (currentFilter !== 'all' && p.meta.platform !== currentFilter) return;
+        projects.sort((a,b) => b.meta.timestamp - a.meta.timestamp).forEach((p, idx) => {
             if (!p.meta.title.toLowerCase().includes(query)) return;
 
+            // Determine Ratio: If any platform is TikTok/Reels/Shorts, use Vertical
+            const isVertical = p.meta.platforms.some(plt => ['tiktok','reels','shorts'].includes(plt));
+            
             const div = document.createElement('div');
-            div.className = 'card';
+            div.className = `card ${isVertical ? 'vertical' : 'horizontal'}`;
             div.innerHTML = `
                 <div class="dots-btn" onclick="toggleMenu(event, ${idx})">⋮</div>
-                <div class="dropdown" id="dropdown-${idx}">
-                    <button onclick="openModal('edit', ${idx})">✏️ Edit Details</button>
-                    <button onclick="downloadBundle(${idx})">📦 Download ZIP</button>
-                    <button onclick="deleteProject(${idx})" style="color:var(--danger)">🗑️ Delete File</button>
+                <div class="dropdown" id="menu-${idx}">
+                    <button onclick="openModal('edit', ${idx})">✏️ Edit Project</button>
+                    <button onclick="downloadZip(${idx})">📦 Download ZIP</button>
+                    <button onclick="deleteProject(${idx})" style="color:var(--danger)">🗑️ Delete Permanently</button>
                 </div>
-                <div class="card-thumb" onclick="previewVideo(${idx})">
+                <div class="card-thumb" onclick="playVideo(${idx})">
                     <img src="${p.meta.thumbs[0] || ''}">
                 </div>
                 <div class="card-body">
-                    <h3>${p.meta.title}</h3>
-                    <p>${p.meta.desc || 'No description provided.'}</p>
-                    <div style="font-size: 11px; margin-top: 10px; opacity: 0.5;">
-                        ${new Date(p.meta.timestamp).toLocaleString()}
+                    <h3 style="margin:0; font-size:16px;">${p.meta.title}</h3>
+                    <div class="badge-container">
+                        ${p.meta.platforms.map(plt => `<span class="badge">${plt}</span>`).join('')}
                     </div>
                 </div>
             `;
@@ -405,171 +291,118 @@
         });
     }
 
-    // --- Actions ---
     function openModal(mode, idx = null) {
-        editMode = (mode === 'edit');
-        currentEditName = idx !== null ? projects[idx].folderName : null;
-        
-        document.getElementById('modalTitle').innerText = editMode ? "Edit Project" : "New Project";
-        document.getElementById('videoInputGroup').style.display = editMode ? 'none' : 'block';
+        editMode = mode === 'edit';
+        document.getElementById('videoSection').style.display = editMode ? 'none' : 'block';
+        document.querySelectorAll('.platform-selector input').forEach(i => i.checked = false);
 
-        if (editMode) {
+        if(editMode) {
             const p = projects[idx];
+            currentEditName = p.folderName;
             document.getElementById('projTitle').value = p.meta.title;
             document.getElementById('projDesc').value = p.meta.desc;
-            document.getElementById('projPlat').value = p.meta.platform;
             tempThumbs = [...p.meta.thumbs];
+            p.meta.platforms.forEach(plt => {
+                const cb = document.querySelector(`input[value="${plt}"]`);
+                if(cb) cb.checked = true;
+            });
         } else {
             document.getElementById('projTitle').value = "";
             document.getElementById('projDesc').value = "";
-            selectedVideoFile = null;
             tempThumbs = [null, null, null];
-            document.getElementById('videoLabel').innerText = "Click to upload .mp4";
+            selectedVideoFile = null;
         }
-
         updateThumbUI();
         document.getElementById('formModal').style.display = 'flex';
     }
 
     async function saveProject() {
         const title = document.getElementById('projTitle').value;
-        const desc = document.getElementById('projDesc').value;
-        const plat = document.getElementById('projPlat').value;
-
-        if (!title || (!selectedVideoFile && !editMode)) return alert("Please fill in the title and select a video.");
-
-        const root = await workspace.getDirectoryHandle('Clipflow_Data', { create: true });
+        const selectedPlats = Array.from(document.querySelectorAll('.platform-selector input:checked')).map(i => i.value);
         
-        // If editing, use the old folder name, otherwise create new unique name
-        const folderName = editMode ? currentEditName : title.replace(/\s+/g, '_') + "_" + Date.now();
+        if(!title || (!selectedVideoFile && !editMode)) return alert("Missing Info");
+
+        const root = await workspace.getDirectoryHandle('Clipflow_Vault', { create: true });
+        const folderName = editMode ? currentEditName : title.replace(/\s+/g,'_') + "_" + Date.now();
         const pFolder = await root.getDirectoryHandle(folderName, { create: true });
 
-        // Meta File
         const mFile = await pFolder.getFileHandle('meta.json', { create: true });
         const writer = await mFile.createWritable();
-        const metaData = {
-            title, desc, 
-            platform: plat, 
-            thumbs: tempThumbs, 
-            timestamp: editMode ? projects.find(p => p.folderName === currentEditName).meta.timestamp : Date.now()
-        };
-        await writer.write(JSON.stringify(metaData));
+        await writer.write(JSON.stringify({
+            title, desc: document.getElementById('projDesc').value,
+            platforms: selectedPlats, thumbs: tempThumbs,
+            timestamp: editMode ? projects.find(p=>p.folderName===currentEditName).meta.timestamp : Date.now()
+        }));
         await writer.close();
 
-        // Video File (Only save if a new file was picked)
-        if (selectedVideoFile) {
+        if(selectedVideoFile) {
             const vFile = await pFolder.getFileHandle('video.mp4', { create: true });
             const vWriter = await vFile.createWritable();
             await vWriter.write(selectedVideoFile);
             await vWriter.close();
         }
-
-        closeModal();
-        loadProjects();
+        closeModal(); loadProjects();
     }
 
-    async function downloadBundle(idx) {
+    async function downloadZip(idx) {
         const p = projects[idx];
         const zip = new JSZip();
-        
-        // 1. Add Text Info
-        const info = `Title: ${p.meta.title}\nDescription: ${p.meta.desc}\nPlatform: ${p.meta.platform}\nDate: ${new Date(p.meta.timestamp).toString()}`;
-        zip.file("project_info.txt", info);
-
-        // 2. Add Video
         const vBlob = await p.videoFile.getFile();
         zip.file("video.mp4", vBlob);
-
-        // 3. Add Thumbnails (Base64 conversion)
-        p.meta.thumbs.forEach((data, i) => {
-            if (data) {
-                const imgData = data.split(',')[1];
-                zip.file(`thumbnail_${i+1}.png`, imgData, {base64: true});
-            }
-        });
-
-        // Generate and Download
+        zip.file("meta.txt", `Title: ${p.meta.title}\nPlatforms: ${p.meta.platforms.join(',')}`);
+        p.meta.thumbs.forEach((t, i) => { if(t) zip.file(`thumb_${i}.png`, t.split(',')[1], {base64: true}); });
         const content = await zip.generateAsync({type:"blob"});
-        saveAs(content, `${p.meta.title}_bundle.zip`);
+        saveAs(content, `${p.meta.title}_clipflow.zip`);
     }
 
-    async function deleteProject(idx) {
-        if (confirm("⚠️ PERMANENT DELETE: This will remove the folder from your workspace. This cannot be undone.")) {
-            const root = await workspace.getDirectoryHandle('Clipflow_Data');
-            await root.removeEntry(projects[idx].folderName, { recursive: true });
-            loadProjects();
-        }
+    // UI Logic
+    function toggleMenu(e, idx) {
+        e.stopPropagation();
+        document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
+        document.getElementById(`menu-${idx}`).style.display = 'flex';
+    }
+    window.onclick = () => document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
+
+    function toggleTheme() {
+        const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', t);
     }
 
-    // --- UI Helpers ---
+    function closeModal() { document.getElementById('formModal').style.display = 'none'; }
+
     function pickImage(i) {
         const input = document.createElement('input');
         input.type = 'file'; input.accept = 'image/*';
         input.onchange = e => {
             const reader = new FileReader();
-            reader.onload = f => {
-                tempThumbs[i] = f.target.result;
-                updateThumbUI();
-            };
+            reader.onload = f => { tempThumbs[i] = f.target.result; updateThumbUI(); };
             reader.readAsDataURL(e.target.files[0]);
         };
         input.click();
     }
 
     function updateThumbUI() {
-        tempThumbs.forEach((src, i) => {
+        tempThumbs.forEach((s, i) => {
             const img = document.getElementById(`pre${i}`);
-            if (src) {
-                img.src = src; img.classList.remove('hidden');
-                img.nextElementSibling.classList.add('hidden');
-            } else {
-                img.classList.add('hidden');
-                img.nextElementSibling.classList.remove('hidden');
-            }
+            if(s) { img.src = s; img.classList.remove('hidden'); img.nextElementSibling.classList.add('hidden'); }
+            else { img.classList.add('hidden'); img.nextElementSibling.classList.remove('hidden'); }
         });
     }
 
     document.getElementById('dropZone').onclick = () => {
-        const input = document.createElement('input');
-        input.type = 'file'; input.accept = 'video/mp4';
-        input.onchange = e => {
-            selectedVideoFile = e.target.files[0];
-            document.getElementById('videoLabel').innerText = selectedVideoFile.name;
-        };
-        input.click();
+        const i = document.createElement('input'); i.type = 'file'; i.accept = 'video/mp4';
+        i.onchange = e => { selectedVideoFile = e.target.files[0]; document.getElementById('videoLabel').innerText = selectedVideoFile.name; };
+        i.click();
     };
 
-    function toggleMenu(e, idx) {
-        e.stopPropagation();
-        const menu = document.getElementById(`dropdown-${idx}`);
-        const isVisible = menu.style.display === 'flex';
-        document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
-        menu.style.display = isVisible ? 'none' : 'flex';
+    async function playVideo(idx) {
+        const f = await projects[idx].videoFile.getFile();
+        const url = URL.createObjectURL(f);
+        const w = window.open("");
+        w.document.write(`<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;"><video src="${url}" controls autoplay style="max-width:100%;max-height:100%"></video></body>`);
     }
 
-    window.onclick = () => document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
-
-    function closeModal() { document.getElementById('formModal').style.display = 'none'; }
-
-    function toggleTheme() {
-        const theme = document.documentElement.getAttribute('data-theme');
-        document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'light' : 'dark');
-    }
-
-    function filterBy(plat) {
-        currentFilter = plat;
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        event.target.classList.add('active');
-        renderProjects();
-    }
-
-    async function previewVideo(idx) {
-        const p = projects[idx];
-        const file = await p.videoFile.getFile();
-        const url = URL.createObjectURL(file);
-        const win = window.open("", "_blank");
-        win.document.write(`<video src="${url}" controls style="width:100%; height:100%; background:black;"></video>`);
-    }
+    if(!workspace) document.getElementById('setupView').classList.remove('hidden');
 </script>
 
 </body>
