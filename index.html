@@ -6,6 +6,7 @@
     <title>Clipflow Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Cairo:wght@400;700&display=swap');
 
@@ -29,7 +30,8 @@
             transition: 0.3s; line-height: 1.6; overflow-x: hidden;
         }
 
-        /* --- Geometric Background --- */
+        body.rtl { direction: rtl; font-family: 'Cairo', sans-serif; }
+
         #bgCanvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
 
         header {
@@ -39,18 +41,13 @@
             display: flex; align-items: center; justify-content: space-between;
         }
 
-        .search-bar {
-            flex: 1; max-width: 450px; margin: 0 20px; position: relative;
-        }
-
+        .search-bar { flex: 1; max-width: 450px; margin: 0 20px; position: relative; }
         .search-bar input {
             width: 100%; background: var(--bg); border: 1px solid var(--border);
             padding: 12px 15px 12px 40px; border-radius: 25px; color: var(--text);
             outline: none; transition: 0.3s;
         }
-        .search-bar input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(108, 99, 255, 0.2); }
 
-        /* --- Grid & Cards --- */
         .grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 30px; padding: 40px 30px; max-width: 1500px; margin: 0 auto;
@@ -66,16 +63,16 @@
         .card.vertical .card-thumb { aspect-ratio: 9/16; }
         .card.horizontal .card-thumb { aspect-ratio: 16/9; }
 
-        .card-thumb { width: 100%; background: #000; cursor: pointer; overflow: hidden; }
-        .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        /* FIXED: Image containment to prevent cropping */
+        .card-thumb { width: 100%; background: #000; cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .card-thumb img { width: 100%; height: 100%; object-fit: contain; }
 
         .card-body { padding: 20px; }
         .card-body h3 { margin: 0; font-size: 18px; font-weight: 700; }
         
         .platform-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-        .tag { font-size: 10px; padding: 4px 10px; border-radius: 6px; background: var(--primary); color: #white; font-weight: 800; text-transform: uppercase; }
+        .tag { font-size: 10px; padding: 4px 10px; border-radius: 6px; background: var(--primary); color: white; font-weight: 800; text-transform: uppercase; }
 
-        /* --- Modal & Forms --- */
         .overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.85);
             display: none; align-items: center; justify-content: center;
@@ -88,7 +85,7 @@
             max-height: 85vh; overflow-y: auto;
         }
 
-        .btn { padding: 12px 25px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
 
@@ -98,11 +95,12 @@
             border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer;
         }
 
-        /* Menu */
         .dots-btn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.4); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
         .dropdown { position: absolute; top: 55px; right: 15px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; display: none; flex-direction: column; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.5); z-index: 100; }
-        .dropdown button { padding: 12px 20px; border: none; background: none; color: var(--text); text-align: left; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--border); }
+        .dropdown button { padding: 12px 20px; border: none; background: none; color: var(--text); text-align: left; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
         .dropdown button:hover { background: var(--primary); color: white; }
+        
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -111,56 +109,60 @@
 
 <header>
     <div style="display:flex; align-items:center; gap:10px;">
-        <div style="width:35px; height:35px; background:var(--primary); border-radius:8px;"></div>
+        <div style="width:35px; height:35px; background:var(--primary); border-radius:8px; display:flex; align-items:center; justify-content:center;"><i data-lucide="layers" size="20"></i></div>
         <h1 style="font-size:22px; margin:0; letter-spacing:-1px;">Clipflow<span style="color:var(--primary)">.</span></h1>
     </div>
 
     <div class="search-bar">
-        <input type="text" id="mainSearch" placeholder="Find a project..." oninput="renderProjects()">
+        <input type="text" id="mainSearch" data-i18n="searchPlaceholder" placeholder="Find a project..." oninput="renderProjects()">
     </div>
 
-    <div style="display:flex; gap:12px;">
-        <button class="btn btn-ghost" onclick="toggleTheme()">🌓</button>
-        <button class="btn btn-primary" onclick="openModal('add')">＋ New Project</button>
+    <div style="display:flex; gap:12px; align-items:center;">
+        <button class="btn btn-ghost" onclick="toggleLanguage()" id="langBtn">AR</button>
+        <button class="btn btn-ghost" onclick="initWorkspace()" title="Change Workspace"><i data-lucide="folder-sync"></i></button>
+        <button class="btn btn-ghost" onclick="toggleTheme()"><i data-lucide="sun" id="themeIcon"></i></button>
+        <button class="btn btn-primary" onclick="openModal('add')"><i data-lucide="plus"></i> <span data-i18n="newProject">New Project</span></button>
     </div>
 </header>
 
 <main>
     <div id="projectsContainer" class="grid"></div>
     <div id="setupView" style="text-align:center; padding:100px 0;" class="hidden">
-        <h2 style="opacity:0.5">Welcome. Please connect your workspace.</h2>
-        <button class="btn btn-primary" onclick="initWorkspace()">Select Workspace Folder</button>
+        <i data-lucide="folder-open" size="64" style="opacity:0.2; margin-bottom:20px;"></i>
+        <h2 style="opacity:0.5" data-i18n="welcomeMsg">Welcome. Please connect your workspace.</h2>
+        <button class="btn btn-primary" onclick="initWorkspace()"><i data-lucide="hard-drive"></i> <span data-i18n="selectFolder">Select Workspace Folder</span></button>
     </div>
 </main>
 
 <div class="overlay" id="formModal">
     <div class="modal">
-        <h2 id="modalTitle" style="margin-top:0">Create Project</h2>
+        <h2 id="modalTitle" style="margin-top:0" data-i18n="createProject">Create Project</h2>
         
         <div id="videoUploadBox" style="margin-bottom:20px;">
-            <label style="font-size:12px; color:var(--text-muted)">Project Video (.mp4)</label>
+            <label style="font-size:12px; color:var(--text-muted)" data-i18n="videoLabel">Project Video (.mp4)</label>
             <div onclick="triggerVideo()" id="dropZone" style="border:2px dashed var(--primary); padding:30px; text-align:center; border-radius:20px; cursor:pointer; margin-top:10px;">
-                <span id="videoLabel">Click to Upload Video</span>
+                <i data-lucide="upload-cloud" style="margin-bottom:10px;"></i><br>
+                <span id="videoLabelText" data-i18n="clickUpload">Click to Upload Video</span>
             </div>
         </div>
 
-        <label style="font-size:12px; color:var(--text-muted)">Thumbnails (Set of 3)</label>
+        <label style="font-size:12px; color:var(--text-muted)" data-i18n="thumbLabel">Thumbnails (Set of 3)</label>
         <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin:10px 0 20px;">
             <div onclick="pickThumb(0)" style="aspect-ratio:1; background:var(--bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer;">
-                <img id="pre0" style="width:100%; height:100%; object-fit:cover; display:none"><span>+</span>
+                <img id="pre0" style="width:100%; height:100%; object-fit:contain; display:none"><span><i data-lucide="image-plus"></i></span>
             </div>
             <div onclick="pickThumb(1)" style="aspect-ratio:1; background:var(--bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer;">
-                <img id="pre1" style="width:100%; height:100%; object-fit:cover; display:none"><span>+</span>
+                <img id="pre1" style="width:100%; height:100%; object-fit:contain; display:none"><span><i data-lucide="image-plus"></i></span>
             </div>
             <div onclick="pickThumb(2)" style="aspect-ratio:1; background:var(--bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer;">
-                <img id="pre2" style="width:100%; height:100%; object-fit:cover; display:none"><span>+</span>
+                <img id="pre2" style="width:100%; height:100%; object-fit:contain; display:none"><span><i data-lucide="image-plus"></i></span>
             </div>
         </div>
 
-        <input type="text" id="projTitle" placeholder="Project Title" style="width:100%; padding:15px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); margin-bottom:15px; box-sizing:border-box;">
-        <textarea id="projDesc" placeholder="Brief description..." rows="3" style="width:100%; padding:15px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); box-sizing:border-box;"></textarea>
+        <input type="text" id="projTitle" data-i18n="titlePlaceholder" placeholder="Project Title" style="width:100%; padding:15px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); margin-bottom:15px; box-sizing:border-box;">
+        <textarea id="projDesc" data-i18n="descPlaceholder" placeholder="Brief description..." rows="3" style="width:100%; padding:15px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); box-sizing:border-box;"></textarea>
 
-        <label style="display:block; margin-top:20px; font-size:12px; color:var(--text-muted)">Select Platforms:</label>
+        <label style="display:block; margin-top:20px; font-size:12px; color:var(--text-muted)" data-i18n="platformLabel">Select Platforms:</label>
         <div class="checkbox-group">
             <label class="check-item"><input type="checkbox" value="youtube"> YouTube</label>
             <label class="check-item"><input type="checkbox" value="shorts"> Shorts</label>
@@ -170,8 +172,8 @@
         </div>
 
         <div style="display:flex; gap:12px; margin-top:30px;">
-            <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" style="flex:2" onclick="saveData()">Save Project</button>
+            <button class="btn btn-ghost" style="flex:1" onclick="closeModal()" data-i18n="cancel">Cancel</button>
+            <button class="btn btn-primary" style="flex:2" onclick="saveData()"><i data-lucide="save"></i> <span data-i18n="saveBtn">Save Project</span></button>
         </div>
     </div>
 </div>
@@ -183,6 +185,68 @@
     let tempThumbs = [null, null, null];
     let editMode = false;
     let currentEditName = null;
+    let currentLang = localStorage.getItem('clipflow_lang') || 'en';
+
+    const i18n = {
+        en: {
+            searchPlaceholder: "Find a project...",
+            newProject: "New Project",
+            welcomeMsg: "Welcome. Please connect your workspace.",
+            selectFolder: "Select Workspace Folder",
+            createProject: "Create Project",
+            editProject: "Edit Project",
+            videoLabel: "Project Video (.mp4)",
+            clickUpload: "Click to Upload Video",
+            thumbLabel: "Thumbnails (Set of 3)",
+            titlePlaceholder: "Project Title",
+            descPlaceholder: "Brief description...",
+            platformLabel: "Select Platforms:",
+            cancel: "Cancel",
+            saveBtn: "Save Project",
+            edit: "Edit",
+            download: "Download ZIP",
+            delete: "Delete"
+        },
+        ar: {
+            searchPlaceholder: "ابحث عن مشروع...",
+            newProject: "مشروع جديد",
+            welcomeMsg: "مرحباً. يرجى اختيار مجلد العمل.",
+            selectFolder: "اختيار مجلد العمل",
+            createProject: "إنشاء مشروع",
+            editProject: "تعديل المشروع",
+            videoLabel: "فيديو المشروع (.mp4)",
+            clickUpload: "انقر لرفع الفيديو",
+            thumbLabel: "الصور المصغرة (طقم من 3)",
+            titlePlaceholder: "عنوان المشروع",
+            descPlaceholder: "وصف قصير...",
+            platformLabel: "اختر المنصات:",
+            cancel: "إلغاء",
+            saveBtn: "حفظ المشروع",
+            edit: "تعديل",
+            download: "تحميل ZIP",
+            delete: "حذف"
+        }
+    };
+
+    function updateLanguageUI() {
+        document.body.classList.toggle('rtl', currentLang === 'ar');
+        document.getElementById('langBtn').innerText = currentLang === 'en' ? 'AR' : 'EN';
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                el.placeholder = i18n[currentLang][key];
+            } else {
+                el.innerText = i18n[currentLang][key];
+            }
+        });
+        lucide.createIcons();
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'en' ? 'ar' : 'en';
+        localStorage.setItem('clipflow_lang', currentLang);
+        updateLanguageUI();
+    }
 
     // --- Background Shapes ---
     const canvas = document.getElementById('bgCanvas');
@@ -216,14 +280,17 @@
     }
     initShapes(); drawShapes(); window.onresize = initShapes;
 
-    // --- Core Logic ---
+    // --- Persistence & Core Logic ---
     async function initWorkspace() {
-        workspace = await window.showDirectoryPicker({ mode: 'readwrite' });
-        document.getElementById('setupView').classList.add('hidden');
-        loadProjects();
+        try {
+            workspace = await window.showDirectoryPicker({ mode: 'readwrite' });
+            document.getElementById('setupView').classList.add('hidden');
+            loadProjects();
+        } catch (e) { console.log("Picker cancelled"); }
     }
 
     async function loadProjects() {
+        if(!workspace) return;
         projects = [];
         const root = await workspace.getDirectoryHandle('Clipflow_Projects', { create: true });
         for await (const [name, handle] of root.entries()) {
@@ -255,9 +322,9 @@
             div.innerHTML = `
                 <div class="dots-btn" onclick="toggleMenu(event, ${idx})">⋮</div>
                 <div class="dropdown" id="menu-${idx}">
-                    <button onclick="openModal('edit', ${idx})">✏️ Edit</button>
-                    <button onclick="downloadZip(${idx})">📦 Download ZIP</button>
-                    <button onclick="deleteProject(${idx})" style="color:var(--danger)">🗑️ Delete</button>
+                    <button onclick="openModal('edit', ${idx})"><i data-lucide="edit-3" size="14"></i> ${i18n[currentLang].edit}</button>
+                    <button onclick="downloadZip(${idx})"><i data-lucide="archive" size="14"></i> ${i18n[currentLang].download}</button>
+                    <button onclick="deleteProject(${idx})" style="color:var(--danger)"><i data-lucide="trash-2" size="14"></i> ${i18n[currentLang].delete}</button>
                 </div>
                 <div class="card-thumb" onclick="playVideo(${idx})">
                     <img src="${p.meta.thumbs[0] || ''}">
@@ -269,11 +336,12 @@
             `;
             container.appendChild(div);
         });
+        lucide.createIcons();
     }
 
     function openModal(mode, idx = null) {
         editMode = mode === 'edit';
-        document.getElementById('modalTitle').innerText = editMode ? "Edit Project" : "New Project";
+        document.getElementById('modalTitle').innerText = editMode ? i18n[currentLang].editProject : i18n[currentLang].createProject;
         document.getElementById('videoUploadBox').style.display = editMode ? 'none' : 'block';
         document.querySelectorAll('.check-item input').forEach(c => c.checked = false);
 
@@ -292,7 +360,7 @@
             document.getElementById('projDesc').value = "";
             tempThumbs = [null, null, null];
             selectedVideo = null;
-            document.getElementById('videoLabel').innerText = "Click to Upload Video";
+            document.getElementById('videoLabelText').innerText = i18n[currentLang].clickUpload;
         }
         refreshThumbs();
         document.getElementById('formModal').style.display = 'flex';
@@ -307,7 +375,6 @@
         const folderName = editMode ? currentEditName : title.replace(/\s+/g,'_') + "_" + Date.now();
         const pFolder = await root.getDirectoryHandle(folderName, { create: true });
 
-        // Save Meta
         const mHandle = await pFolder.getFileHandle('meta.json', { create: true });
         const writer = await mHandle.createWritable();
         await writer.write(JSON.stringify({
@@ -317,7 +384,6 @@
         }));
         await writer.close();
 
-        // Save Video (only if new one selected)
         if(selectedVideo) {
             const vHandle = await pFolder.getFileHandle('video.mp4', { create: true });
             const vWriter = await vHandle.createWritable();
@@ -354,14 +420,18 @@
     window.onclick = () => document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
 
     function closeModal() { document.getElementById('formModal').style.display = 'none'; }
+    
     function toggleTheme() {
         const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', t);
+        const icon = document.getElementById('themeIcon');
+        icon.setAttribute('data-lucide', t === 'dark' ? 'sun' : 'moon');
+        lucide.createIcons();
     }
 
     function triggerVideo() {
         const i = document.createElement('input'); i.type = 'file'; i.accept = 'video/mp4';
-        i.onchange = e => { selectedVideo = e.target.files[0]; document.getElementById('videoLabel').innerText = selectedVideo.name; };
+        i.onchange = e => { selectedVideo = e.target.files[0]; document.getElementById('videoLabelText').innerText = selectedVideo.name; };
         i.click();
     }
 
@@ -390,7 +460,10 @@
         win.document.write(`<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;"><video src="${url}" controls autoplay style="max-height:100vh;max-width:100%"></video></body>`);
     }
 
+    // Auto-init logic
+    updateLanguageUI();
     if(!workspace) document.getElementById('setupView').classList.remove('hidden');
+    lucide.createIcons();
 </script>
 </body>
 </html>
