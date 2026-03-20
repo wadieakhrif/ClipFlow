@@ -8,13 +8,14 @@
 body { font-family: Arial, sans-serif; background: #1e1e2f; color: #fff; padding: 20px; }
 h1 { color: #6c63ff; }
 button { padding: 10px 20px; margin: 5px; cursor: pointer; border: none; border-radius: 8px; background: #6c63ff; color: #fff; }
-input, select { padding: 5px; margin: 5px; border-radius: 5px; }
+input, select, textarea { padding: 5px; margin: 5px; border-radius: 5px; }
 .project { border: 1px solid #444; padding: 10px; margin: 10px 0; border-radius: 8px; background: #2a2a3e; }
 .thumb { width: 120px; height: 70px; object-fit: cover; margin-right: 10px; }
 .project-header { display: flex; align-items: center; }
 .project-info { flex: 1; }
 #dropZone, #dropThumbs { border: 2px dashed #6c63ff; padding: 20px; text-align: center; margin: 10px 0; border-radius: 8px; cursor: pointer; }
 input[type="datetime-local"] { background: #333; color: #fff; border: 1px solid #6c63ff; padding: 5px 10px; }
+img.thumb-preview { width: 60px; height: 40px; object-fit: cover; margin: 2px; border:1px solid #fff; border-radius:4px; }
 </style>
 </head>
 <body>
@@ -27,6 +28,7 @@ input[type="datetime-local"] { background: #333; color: #fff; border: 1px solid 
     <h2 id="formTitle">إضافة مشروع جديد</h2>
     <div id="dropZone">اسحب الفيديو هنا أو اضغط لاختياره</div>
     <div id="dropThumbs">اسحب الصور المصغرة هنا أو اضغط لاختيارها (1-3)</div>
+    <div id="thumbPreview"></div>
     <input type="text" id="title" placeholder="عنوان المشروع"><br>
     <textarea id="description" placeholder="الوصف"></textarea><br>
     <div>
@@ -45,7 +47,7 @@ input[type="datetime-local"] { background: #333; color: #fff; border: 1px solid 
 <div id="projectsContainer"></div>
 
 <script>
-let rootFolderHandle;
+let rootFolderHandle, mainFolderHandle;
 let projects = [];
 let editingIndex = null;
 let selectedVideoFile = null;
@@ -55,10 +57,11 @@ let selectedPlatforms = [];
 // اختيار مجلد المشاريع
 document.getElementById('chooseFolder').addEventListener('click', async () => {
     try {
-        rootFolderHandle = await window.showDirectoryPicker();
-        rootFolderHandle = await rootFolderHandle.getDirectoryHandle('Clip Flow', { create: true });
+        const chosenFolder = await window.showDirectoryPicker();
+        mainFolderHandle = await chosenFolder.getDirectoryHandle('ClipFlow Projects', { create: true });
+        rootFolderHandle = mainFolderHandle;
         document.getElementById('addProjectBtn').disabled = false;
-        loadProjects();
+        await loadProjects();
     } catch(e) {
         alert('الموقع يحتاج الوصول لمجلد على جهازك للعمل.');
     }
@@ -77,7 +80,7 @@ async function loadProjects() {
             }
         }
     }
-    projects.sort((a,b)=> new Date(b.date) - new Date(a.date));
+    projects.sort((a,b)=> new Date(b.date)-new Date(a.date));
     renderProjects();
 }
 
@@ -88,9 +91,10 @@ function renderProjects() {
     projects.forEach((p,index)=>{
         const div = document.createElement('div');
         div.className = 'project';
+        const thumbsHTML = p.thumbs.map(t=>`<img src="${t}" class="thumb-preview">`).join('');
         div.innerHTML = `
             <div class="project-header">
-                ${p.thumbs && p.thumbs.length>0? `<img src="${p.thumbs[0]}" class="thumb">` : ''}
+                ${thumbsHTML}
                 <div class="project-info">
                     <h3>${p.title}</h3>
                     <p>${p.description}</p>
@@ -117,9 +121,10 @@ document.getElementById('addProjectBtn').addEventListener('click', ()=>{
     document.getElementById('title').value='';
     document.getElementById('description').value='';
     document.getElementById('datetime').value=new Date().toISOString().slice(0,16);
+    document.getElementById('thumbPreview').innerHTML='';
 });
 
-// إدارة Drag & Drop للفيديو
+// Drag & Drop للفيديو
 const dropZone = document.getElementById('dropZone');
 dropZone.addEventListener('dragover', e=>{e.preventDefault(); dropZone.style.borderColor='#fff';});
 dropZone.addEventListener('dragleave', e=>{dropZone.style.borderColor='#6c63ff';});
@@ -130,7 +135,7 @@ dropZone.addEventListener('drop', e=>{
     dropZone.innerText = selectedVideoFile.name;
 });
 
-// إدارة Drag & Drop للصور المصغرة
+// Drag & Drop للصور المصغرة
 const dropThumbs = document.getElementById('dropThumbs');
 dropThumbs.addEventListener('dragover', e=>{e.preventDefault(); dropThumbs.style.borderColor='#fff';});
 dropThumbs.addEventListener('dragleave', e=>{dropThumbs.style.borderColor='#6c63ff';});
@@ -138,10 +143,11 @@ dropThumbs.addEventListener('drop', e=>{
     e.preventDefault();
     dropThumbs.style.borderColor='#6c63ff';
     selectedThumbsFiles = Array.from(e.dataTransfer.files).slice(0,3);
-    dropThumbs.innerText = selectedThumbsFiles.map(f=>f.name).join(', ');
+    const preview = selectedThumbsFiles.map(f=>URL.createObjectURL(f)).map(url=>`<img src="${url}" class="thumb-preview">`).join('');
+    document.getElementById('thumbPreview').innerHTML = preview;
 });
 
-// إدارة أزرار المنصات
+// أزرار المنصات
 document.querySelectorAll('.platformBtn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
         const name = btn.dataset.name;
@@ -161,30 +167,33 @@ document.getElementById('saveProject').addEventListener('click', async ()=>{
     const description = document.getElementById('description').value.trim();
     const date = document.getElementById('datetime').value;
     if(!title || !selectedVideoFile) { alert('يجب إدخال العنوان والفيديو'); return; }
-    
+
     let projectFolder;
     if(editingIndex!==null){
         projectFolder = projects[editingIndex].handle;
     } else {
-        projectFolder = await rootFolderHandle.getDirectoryHandle(title, { create:true });
+        projectFolder = await rootFolderHandle.getDirectoryHandle(title,{create:true});
     }
 
-    // حفظ الفيديو
+    // حفظ الفيديو بشكل منفصل
     const videoHandle = await projectFolder.getFileHandle('video.mp4',{create:true});
     const writableVideo = await videoHandle.createWritable();
     await writableVideo.write(await selectedVideoFile.arrayBuffer());
     await writableVideo.close();
 
     // حفظ الصور المصغرة
-    let thumbs = [];
+    let thumbs=[];
     for(let i=0;i<selectedThumbsFiles.length;i++){
-        const f = selectedThumbsFiles[i];
+        const f=selectedThumbsFiles[i];
         const name = `thumbnail${i+1}.png`;
         const thumbHandle = await projectFolder.getFileHandle(name,{create:true});
         const writableThumb = await thumbHandle.createWritable();
         await writableThumb.write(await f.arrayBuffer());
         await writableThumb.close();
-        thumbs.push(name);
+        // إعادة تحميل الصورة من الملف
+        const file = await thumbHandle.getFile();
+        const url = URL.createObjectURL(file);
+        thumbs.push(url);
     }
 
     // حفظ meta.json
@@ -195,9 +204,9 @@ document.getElementById('saveProject').addEventListener('click', async ()=>{
     await writableMeta.close();
 
     if(editingIndex!==null){
-        projects[editingIndex] = { handle:projectFolder, ...meta };
+        projects[editingIndex]={handle:projectFolder,...meta};
     } else {
-        projects.push({ handle:projectFolder, ...meta });
+        projects.push({handle:projectFolder,...meta});
     }
 
     projects.sort((a,b)=> new Date(b.date)-new Date(a.date));
@@ -218,12 +227,14 @@ async function editProject(index){
     document.getElementById('title').value=p.title;
     document.getElementById('description').value=p.description;
     document.getElementById('datetime').value=new Date(p.date).toISOString().slice(0,16);
-    selectedVideoFile=null; // يمكن اختيار فيديو جديد إذا أراد
-    selectedThumbsFiles=[];  // يمكن اختيار صور جديدة
-    selectedPlatforms = [...p.platforms];
+    selectedVideoFile=null;
+    selectedThumbsFiles=[];
+    selectedPlatforms=[...p.platforms];
     document.querySelectorAll('.platformBtn').forEach(btn=>{
-        btn.style.background = selectedPlatforms.includes(btn.dataset.name)?'#ff6c63':'#6c63ff';
+        btn.style.background=selectedPlatforms.includes(btn.dataset.name)?'#ff6c63':'#6c63ff';
     });
+    const preview = p.thumbs.map(t=>t).map(url=>`<img src="${url}" class="thumb-preview">`).join('');
+    document.getElementById('thumbPreview').innerHTML = preview;
     document.getElementById('projectForm').style.display='block';
 }
 
@@ -247,6 +258,5 @@ async function viewProject(index){
 }
 
 </script>
-
 </body>
 </html>
