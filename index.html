@@ -5,64 +5,79 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clip Flow</title>
 <style>
-  body { font-family: Arial, sans-serif; background: #1e1e2f; color: #fff; padding: 20px; }
-  h1 { color: #6c63ff; }
-  button { padding: 10px 20px; margin: 5px; cursor: pointer; border: none; border-radius: 8px; background: #6c63ff; color: #fff; }
-  input, select { padding: 5px; margin: 5px; border-radius: 5px; }
-  .project { border: 1px solid #444; padding: 10px; margin: 10px 0; border-radius: 8px; background: #2a2a3e; }
-  .thumb { width: 120px; height: 70px; object-fit: cover; margin-right: 10px; }
-  .project-header { display: flex; align-items: center; }
-  .project-info { flex: 1; }
+body { font-family: Arial, sans-serif; background: #1e1e2f; color: #fff; padding: 20px; }
+h1 { color: #6c63ff; }
+button { padding: 10px 20px; margin: 5px; cursor: pointer; border: none; border-radius: 8px; background: #6c63ff; color: #fff; }
+input, select { padding: 5px; margin: 5px; border-radius: 5px; }
+.project { border: 1px solid #444; padding: 10px; margin: 10px 0; border-radius: 8px; background: #2a2a3e; }
+.thumb { width: 120px; height: 70px; object-fit: cover; margin-right: 10px; }
+.project-header { display: flex; align-items: center; }
+.project-info { flex: 1; }
+#dropZone, #dropThumbs { border: 2px dashed #6c63ff; padding: 20px; text-align: center; margin: 10px 0; border-radius: 8px; cursor: pointer; }
+input[type="datetime-local"] { background: #333; color: #fff; border: 1px solid #6c63ff; padding: 5px 10px; }
 </style>
 </head>
 <body>
 
 <h1>Clip Flow</h1>
 <button id="chooseFolder">اختر مجلد المشاريع</button>
-<button id="addProject" disabled>مشروع جديد</button>
+<button id="addProjectBtn" disabled>مشروع جديد</button>
+
+<div id="projectForm" style="display:none; background:#2a2a3e; padding:10px; border-radius:8px; margin-top:20px;">
+    <h2 id="formTitle">إضافة مشروع جديد</h2>
+    <div id="dropZone">اسحب الفيديو هنا أو اضغط لاختياره</div>
+    <div id="dropThumbs">اسحب الصور المصغرة هنا أو اضغط لاختيارها (1-3)</div>
+    <input type="text" id="title" placeholder="عنوان المشروع"><br>
+    <textarea id="description" placeholder="الوصف"></textarea><br>
+    <div>
+        <span>اختر المنصات:</span>
+        <button class="platformBtn" data-name="YouTube">YouTube</button>
+        <button class="platformBtn" data-name="YouTube Shorts">YouTube Shorts</button>
+        <button class="platformBtn" data-name="TikTok">TikTok</button>
+        <button class="platformBtn" data-name="Instagram">Instagram Reels</button>
+    </div>
+    <label>اختر الوقت والتاريخ:</label>
+    <input type="datetime-local" id="datetime"><br>
+    <button id="saveProject">حفظ المشروع</button>
+    <button id="cancelProject">إلغاء</button>
+</div>
 
 <div id="projectsContainer"></div>
 
 <script>
 let rootFolderHandle;
 let projects = [];
+let editingIndex = null;
+let selectedVideoFile = null;
+let selectedThumbsFiles = [];
+let selectedPlatforms = [];
 
-// اختيار المجلد الرئيسي
+// اختيار مجلد المشاريع
 document.getElementById('chooseFolder').addEventListener('click', async () => {
     try {
         rootFolderHandle = await window.showDirectoryPicker();
-        // تأكد من وجود مجلد Clip Flow داخله
-        let clipFlowFolder;
-        try {
-            clipFlowFolder = await rootFolderHandle.getDirectoryHandle('Clip Flow', { create: true });
-        } catch(e) {
-            clipFlowFolder = await rootFolderHandle.getDirectoryHandle('Clip Flow', { create: true });
-        }
-        rootFolderHandle = clipFlowFolder;
-        document.getElementById('addProject').disabled = false;
+        rootFolderHandle = await rootFolderHandle.getDirectoryHandle('Clip Flow', { create: true });
+        document.getElementById('addProjectBtn').disabled = false;
         loadProjects();
     } catch(e) {
         alert('الموقع يحتاج الوصول لمجلد على جهازك للعمل.');
     }
 });
 
-// تحميل المشاريع الموجودة
+// تحميل المشاريع
 async function loadProjects() {
     projects = [];
-    const entries = rootFolderHandle.values();
-    for await (const entry of entries) {
-        if(entry.kind === 'directory') {
-            const metaFile = await entry.getFileHandle('meta.json').catch(() => null);
-            if(metaFile){
-                const file = await metaFile.getFile();
-                const text = await file.text();
-                const data = JSON.parse(text);
+    for await (const entry of rootFolderHandle.values()) {
+        if(entry.kind === 'directory'){
+            const metaHandle = await entry.getFileHandle('meta.json').catch(()=>null);
+            if(metaHandle){
+                const file = await metaHandle.getFile();
+                const data = JSON.parse(await file.text());
                 projects.push({ handle: entry, ...data });
             }
         }
     }
-    // ترتيب المشاريع حسب التاريخ من الأحدث إلى الأقدم
-    projects.sort((a,b) => new Date(b.date) - new Date(a.date));
+    projects.sort((a,b)=> new Date(b.date) - new Date(a.date));
     renderProjects();
 }
 
@@ -70,94 +85,165 @@ async function loadProjects() {
 function renderProjects() {
     const container = document.getElementById('projectsContainer');
     container.innerHTML = '';
-    projects.forEach((p, index) => {
+    projects.forEach((p,index)=>{
         const div = document.createElement('div');
         div.className = 'project';
         div.innerHTML = `
             <div class="project-header">
-                ${p.thumbs && p.thumbs.length > 0 ? `<img src="${p.thumbs[0]}" class="thumb">` : ''}
+                ${p.thumbs && p.thumbs.length>0? `<img src="${p.thumbs[0]}" class="thumb">` : ''}
                 <div class="project-info">
                     <h3>${p.title}</h3>
                     <p>${p.description}</p>
                     <p>منصات: ${p.platforms.join(', ')}</p>
-                    <p>تاريخ: ${p.date}</p>
+                    <p>تاريخ: ${new Date(p.date).toLocaleString()}</p>
                 </div>
             </div>
             <button onclick="editProject(${index})">تعديل</button>
+            <button onclick="viewProject(${index})">مشاهدة</button>
             <button onclick="deleteProject(${index})">حذف</button>
         `;
         container.appendChild(div);
     });
 }
 
-// إضافة مشروع جديد
-document.getElementById('addProject').addEventListener('click', async () => {
-    const videoFile = await window.showOpenFilePicker({ types: [{ description: 'MP4', accept: { 'video/mp4': ['.mp4'] } }] });
-    if(!videoFile) return;
-    const thumbsFiles = await window.showOpenFilePicker({ multiple: true, types: [{ description: 'Images', accept: { 'image/*': ['.png', '.jpg', '.jpeg'] } }] });
-    
-    const title = prompt('أدخل عنوان المشروع:');
-    if(!title) return;
-    const description = prompt('أدخل الوصف:') || '';
-    const platforms = prompt('أدخل المنصات (مثال: YouTube, TikTok):')?.split(',').map(p=>p.trim()) || [];
-    const date = prompt('أدخل التاريخ (مثال: 2026-03-20):') || new Date().toISOString();
-
-    // إنشاء مجلد المشروع
-    const projectFolder = await rootFolderHandle.getDirectoryHandle(title, { create: true });
-    // نسخ الفيديو
-    const videoHandle = videoFile[0];
-    const videoData = await videoHandle.getFile();
-    const videoArrayBuffer = await videoData.arrayBuffer();
-    const videoWriteHandle = await projectFolder.getFileHandle(videoData.name, { create: true });
-    const writable = await videoWriteHandle.createWritable();
-    await writable.write(videoArrayBuffer);
-    await writable.close();
-
-    // نسخ الصور المصغرة
-    let thumbs = [];
-    for(let i=0; i<Math.min(3, thumbsFiles.length); i++){
-        const thumbFile = thumbsFiles[i];
-        const thumbData = await thumbFile.getFile();
-        const thumbArrayBuffer = await thumbData.arrayBuffer();
-        const thumbWriteHandle = await projectFolder.getFileHandle(thumbData.name, { create: true });
-        const writableThumb = await thumbWriteHandle.createWritable();
-        await writableThumb.write(thumbArrayBuffer);
-        await writableThumb.close();
-        thumbs.push(URL.createObjectURL(thumbData));
-    }
-
-    // إنشاء ملف meta.json
-    const meta = { title, description, platforms, date, thumbs: thumbs.map(t => t) };
-    const metaHandle = await projectFolder.getFileHandle('meta.json', { create: true });
-    const metaWritable = await metaHandle.createWritable();
-    await metaWritable.write(JSON.stringify(meta));
-    await metaWritable.close();
-
-    projects.push({ handle: projectFolder, ...meta });
-    projects.sort((a,b) => new Date(b.date) - new Date(a.date));
-    renderProjects();
+// فتح واجهة إضافة مشروع
+document.getElementById('addProjectBtn').addEventListener('click', ()=>{
+    editingIndex = null;
+    selectedVideoFile = null;
+    selectedThumbsFiles = [];
+    selectedPlatforms = [];
+    document.getElementById('formTitle').innerText = 'إضافة مشروع جديد';
+    document.getElementById('projectForm').style.display = 'block';
+    document.getElementById('title').value='';
+    document.getElementById('description').value='';
+    document.getElementById('datetime').value=new Date().toISOString().slice(0,16);
 });
 
-// تعديل المشروع (مثال: تعديل الوصف فقط)
-async function editProject(index) {
-    const newDesc = prompt('عدل الوصف:', projects[index].description);
-    if(newDesc === null) return;
-    projects[index].description = newDesc;
-    // تحديث meta.json
-    const metaHandle = await projects[index].handle.getFileHandle('meta.json');
-    const writable = await metaHandle.createWritable();
-    await writable.write(JSON.stringify(projects[index]));
-    await writable.close();
+// إدارة Drag & Drop للفيديو
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e=>{e.preventDefault(); dropZone.style.borderColor='#fff';});
+dropZone.addEventListener('dragleave', e=>{dropZone.style.borderColor='#6c63ff';});
+dropZone.addEventListener('drop', e=>{
+    e.preventDefault();
+    dropZone.style.borderColor='#6c63ff';
+    selectedVideoFile = e.dataTransfer.files[0];
+    dropZone.innerText = selectedVideoFile.name;
+});
+
+// إدارة Drag & Drop للصور المصغرة
+const dropThumbs = document.getElementById('dropThumbs');
+dropThumbs.addEventListener('dragover', e=>{e.preventDefault(); dropThumbs.style.borderColor='#fff';});
+dropThumbs.addEventListener('dragleave', e=>{dropThumbs.style.borderColor='#6c63ff';});
+dropThumbs.addEventListener('drop', e=>{
+    e.preventDefault();
+    dropThumbs.style.borderColor='#6c63ff';
+    selectedThumbsFiles = Array.from(e.dataTransfer.files).slice(0,3);
+    dropThumbs.innerText = selectedThumbsFiles.map(f=>f.name).join(', ');
+});
+
+// إدارة أزرار المنصات
+document.querySelectorAll('.platformBtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+        const name = btn.dataset.name;
+        if(selectedPlatforms.includes(name)){
+            selectedPlatforms = selectedPlatforms.filter(p=>p!==name);
+            btn.style.background='#6c63ff';
+        }else{
+            selectedPlatforms.push(name);
+            btn.style.background='#ff6c63';
+        }
+    });
+});
+
+// حفظ المشروع
+document.getElementById('saveProject').addEventListener('click', async ()=>{
+    const title = document.getElementById('title').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const date = document.getElementById('datetime').value;
+    if(!title || !selectedVideoFile) { alert('يجب إدخال العنوان والفيديو'); return; }
+    
+    let projectFolder;
+    if(editingIndex!==null){
+        projectFolder = projects[editingIndex].handle;
+    } else {
+        projectFolder = await rootFolderHandle.getDirectoryHandle(title, { create:true });
+    }
+
+    // حفظ الفيديو
+    const videoHandle = await projectFolder.getFileHandle('video.mp4',{create:true});
+    const writableVideo = await videoHandle.createWritable();
+    await writableVideo.write(await selectedVideoFile.arrayBuffer());
+    await writableVideo.close();
+
+    // حفظ الصور المصغرة
+    let thumbs = [];
+    for(let i=0;i<selectedThumbsFiles.length;i++){
+        const f = selectedThumbsFiles[i];
+        const name = `thumbnail${i+1}.png`;
+        const thumbHandle = await projectFolder.getFileHandle(name,{create:true});
+        const writableThumb = await thumbHandle.createWritable();
+        await writableThumb.write(await f.arrayBuffer());
+        await writableThumb.close();
+        thumbs.push(name);
+    }
+
+    // حفظ meta.json
+    const meta = { title, description, platforms:selectedPlatforms, date, thumbs };
+    const metaHandle = await projectFolder.getFileHandle('meta.json',{create:true});
+    const writableMeta = await metaHandle.createWritable();
+    await writableMeta.write(JSON.stringify(meta));
+    await writableMeta.close();
+
+    if(editingIndex!==null){
+        projects[editingIndex] = { handle:projectFolder, ...meta };
+    } else {
+        projects.push({ handle:projectFolder, ...meta });
+    }
+
+    projects.sort((a,b)=> new Date(b.date)-new Date(a.date));
     renderProjects();
+    document.getElementById('projectForm').style.display='none';
+});
+
+// إلغاء المشروع
+document.getElementById('cancelProject').addEventListener('click', ()=>{
+    document.getElementById('projectForm').style.display='none';
+});
+
+// تعديل المشروع
+async function editProject(index){
+    editingIndex=index;
+    const p=projects[index];
+    document.getElementById('formTitle').innerText='تعديل المشروع';
+    document.getElementById('title').value=p.title;
+    document.getElementById('description').value=p.description;
+    document.getElementById('datetime').value=new Date(p.date).toISOString().slice(0,16);
+    selectedVideoFile=null; // يمكن اختيار فيديو جديد إذا أراد
+    selectedThumbsFiles=[];  // يمكن اختيار صور جديدة
+    selectedPlatforms = [...p.platforms];
+    document.querySelectorAll('.platformBtn').forEach(btn=>{
+        btn.style.background = selectedPlatforms.includes(btn.dataset.name)?'#ff6c63':'#6c63ff';
+    });
+    document.getElementById('projectForm').style.display='block';
 }
 
 // حذف المشروع
-async function deleteProject(index) {
+async function deleteProject(index){
     if(!confirm('هل أنت متأكد من حذف المشروع؟')) return;
-    await projects[index].handle.removeEntry('meta.json').catch(()=>{});
-    await rootFolderHandle.removeEntry(projects[index].handle.name, { recursive: true });
+    const p=projects[index];
+    await rootFolderHandle.removeEntry(p.handle.name,{recursive:true});
     projects.splice(index,1);
     renderProjects();
+}
+
+// مشاهدة الفيديو
+async function viewProject(index){
+    const p=projects[index];
+    const videoFileHandle = await p.handle.getFileHandle('video.mp4');
+    const file = await videoFileHandle.getFile();
+    const url = URL.createObjectURL(file);
+    const win = window.open('');
+    win.document.write(`<video src="${url}" controls autoplay style="width:100%"></video>`);
 }
 
 </script>
