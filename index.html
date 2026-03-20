@@ -1,286 +1,182 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClipFlow Dashboard</title>
+    <title>Clipflow Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Cairo:wght@400;700&display=swap');
 
         :root {
-            --bg-main: #0b0e14;
-            --bg-side: #11141d;
-            --card-bg: #1a1d26;
-            --primary: #6c63ff;
-            --text-main: #ffffff;
-            --text-muted: #8a8f9d;
-            --border: rgba(255, 255, 255, 0.05);
-            --accent-green: #00f298;
+            --primary: #6c63ff; --primary-hover: #5a52d6;
+            --bg: #05060f; --card-bg: rgba(17, 19, 34, 0.8);
+            --nav-bg: rgba(13, 15, 30, 0.9); --text: #ffffff;
+            --text-muted: #94a3b8; --border: rgba(255, 255, 255, 0.1);
+            --danger: #ff4757;
+        }
+
+        [data-theme="light"] {
+            --bg: #f8fafc; --card-bg: rgba(255, 255, 255, 0.8);
+            --nav-bg: rgba(255, 255, 255, 0.9); --text: #0f172a;
+            --text-muted: #64748b; --border: rgba(0, 0, 0, 0.1);
         }
 
         body {
-            margin: 0; padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: var(--bg-main);
-            color: var(--text-main);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
+            margin: 0; font-family: 'Inter', sans-serif;
+            background: var(--bg); color: var(--text);
+            transition: 0.3s; line-height: 1.6; overflow-x: hidden;
         }
 
-        /* --- SIDEBAR --- */
-        aside {
-            width: 260px;
-            background: var(--bg_side);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            padding: 24px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 40px;
-        }
-
-        .logo-icon {
-            width: 32px; height: 32px;
-            background: var(--primary);
-            border-radius: 8px;
-        }
-
-        nav ul { list-style: none; padding: 0; margin: 0; }
-        nav li {
-            padding: 12px 16px;
-            border-radius: 12px;
-            color: var(--text-muted);
-            cursor: pointer;
-            margin-bottom: 4px;
-            transition: 0.2s;
-            font-weight: 500;
-        }
-        nav li.active {
-            background: rgba(108, 99, 255, 0.1);
-            color: var(--primary);
-        }
-        nav li:hover:not(.active) { color: white; background: rgba(255,255,255,0.05); }
-
-        .pro-card {
-            margin-top: auto;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 16px;
-        }
-
-        /* --- MAIN CONTENT --- */
-        main {
-            flex: 1;
-            overflow-y: auto;
-            padding: 30px 50px;
-        }
+        #bgCanvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
 
         header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
+            position: sticky; top: 0; z-index: 1000;
+            background: var(--nav-bg); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border); padding: 15px 30px;
+            display: flex; align-items: center; justify-content: space-between;
         }
 
-        .search-container {
-            position: relative;
-            width: 400px;
+        .search-bar { flex: 1; max-width: 450px; margin: 0 20px; position: relative; }
+        .search-bar input {
+            width: 100%; background: var(--bg); border: 1px solid var(--border);
+            padding: 12px 15px 12px 40px; border-radius: 25px; color: var(--text);
+            outline: none; transition: 0.3s;
         }
 
-        .search-container input {
-            width: 100%;
-            background: #161922;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px 16px;
-            color: white;
-            outline: none;
+        /* --- THE FIX: Uniform Card Heights --- */
+        .grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px; padding: 40px 30px; max-width: 1500px; margin: 0 auto;
+            align-items: start;
         }
 
-        /* --- STATS CARDS --- */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-            margin-bottom: 40px;
+        .card {
+            background: var(--card-bg); border-radius: 24px; border: 1px solid var(--border);
+            overflow: hidden; position: relative; transition: 0.4s cubic-bezier(0.2, 1, 0.2, 1);
+            backdrop-filter: blur(10px);
+            height: 420px; /* Force uniform card size */
+            display: flex; flex-direction: column;
         }
 
-        .stat-card {
-            background: var(--card-bg);
-            padding: 24px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-        }
+        .card:hover { transform: translateY(-10px); border-color: var(--primary); }
 
-        .stat-val { font-size: 32px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-        .stat-label { color: var(--text-muted); font-size: 14px; margin-bottom: 8px; }
-        .trend { font-size: 14px; color: var(--accent-green); }
-
-        /* --- PROJECTS GRID --- */
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
+        /* Ensure Thumbnails stay consistent */
+        .card-thumb { 
+            width: 100%; height: 260px; background: #000; 
+            cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
-
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 24px;
-        }
-
-        .new-project-card {
-            border: 2px dashed var(--border);
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 300px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .new-project-card:hover { border-color: var(--primary); background: rgba(108, 99, 255, 0.05); }
-
-        .project-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            transition: 0.3s;
-        }
-
-        .thumb-wrapper {
-            position: relative;
-            height: 180px;
-            background: #ff8c00; /* Fallback for your orange style */
-        }
-        .thumb-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         
-        .badge {
-            position: absolute; top: 12px; left: 12px;
-            padding: 4px 10px; border-radius: 6px; font-size: 10px;
-            text-transform: uppercase; font-weight: 800; background: rgba(0,0,0,0.5);
-        }
+        /* The specific fix for vertical images inside thumbnails */
+        .card.vertical .card-thumb img { height: 100%; width: auto; object-fit: contain; }
+        .card.horizontal .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-        .project-info { padding: 16px; }
-        .project-info h3 { margin: 0 0 8px 0; font-size: 16px; }
-        .project-meta { font-size: 12px; color: var(--text-muted); display: flex; justify-content: space-between; }
+        .card-body { padding: 20px; flex-grow: 1; }
+        .card-body h3 { margin: 0; font-size: 18px; font-weight: 700; }
+        
+        .platform-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+        .tag { font-size: 10px; padding: 4px 10px; border-radius: 6px; background: var(--primary); color: white; font-weight: 800; text-transform: uppercase; }
 
-        /* Overlay & Modals kept from previous version but styled */
         .overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
-            display: none; align-items: center; justify-content: center; z-index: 9999;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            display: none; align-items: center; justify-content: center;
+            z-index: 2000; backdrop-filter: blur(15px);
         }
-        .modal { background: var(--bg-side); border: 1px solid var(--border); border-radius: 24px; padding: 30px; width: 500px; }
-        
-        .btn {
-            padding: 12px 20px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer;
+
+        .modal {
+            background: var(--card-bg); width: 90%; max-width: 550px;
+            border-radius: 30px; padding: 35px; border: 1px solid var(--border);
+            max-height: 85vh; overflow-y: auto;
         }
+
+        .btn { padding: 12px 25px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
-        
+        .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+        .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
+        .check-item { background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+
+        .dots-btn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.4); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
+        .dropdown { position: absolute; top: 55px; right: 15px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; display: none; flex-direction: column; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.5); z-index: 100; }
+        .dropdown button { padding: 12px 20px; border: none; background: none; color: var(--text); text-align: left; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--border); }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<aside>
-    <div class="logo">
-        <div class="logo-icon"></div>
-        ClipFlow
+<canvas id="bgCanvas"></canvas>
+
+<header>
+    <div style="display:flex; align-items:center; gap:10px;">
+        <div style="width:35px; height:35px; background:var(--primary); border-radius:8px;"></div>
+        <h1 style="font-size:22px; margin:0; letter-spacing:-1px;">Clipflow<span style="color:var(--primary)">.</span></h1>
     </div>
-    <nav>
-        <ul>
-            <li class="active">Dashboard</li>
-            <li>Projects</li>
-            <li>Assets</li>
-            <li>Analytics</li>
-            <li>Calendar</li>
-            <li>Community</li>
-        </ul>
-    </nav>
-    <div class="pro-card">
-        <p style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">Pro Plan</p>
-        <p style="font-size: 10px; color: var(--text-muted); margin-bottom: 12px;">45GB / 100GB Used</p>
-        <button class="btn btn-primary" style="width: 100%; font-size: 12px;">Upgrade Storage</button>
+    <div class="search-bar">
+        <input type="text" id="mainSearch" placeholder="Find a project..." oninput="renderProjects()">
     </div>
-</aside>
+    <div style="display:flex; gap:12px;">
+        <button id="restoreBtn" class="btn btn-primary hidden" onclick="restoreWorkspace()">📂 Restore Workspace</button>
+        <button class="btn btn-ghost" onclick="toggleTheme()">🌓</button>
+        <button class="btn btn-primary" onclick="openModal('add')">＋ New Project</button>
+    </div>
+</header>
 
 <main>
-    <header>
-        <div>
-            <h1 style="margin:0; font-size: 28px;">Welcome back, <span style="color:var(--primary)">Alex</span></h1>
-            <p style="color: var(--text-muted); margin-top: 5px;">Here's what's happening with your content today.</p>
-        </div>
-        <div style="display: flex; gap: 15px;">
-            <button id="restoreBtn" class="btn btn-primary hidden" onclick="restoreWorkspace()">📂 Connect Drive</button>
-            <div style="width: 40px; height: 40px; border-radius: 50%; background: #333; overflow: hidden;">
-                <img src="https://via.placeholder.com/40" alt="Avatar">
-            </div>
-        </div>
-    </header>
-
-    <div class="stats-grid">
-        <div class="stat-card">
-            <p class="stat-label">Total Views</p>
-            <div class="stat-val">146.7K <span class="trend">+12.5%</span></div>
-        </div>
-        <div class="stat-card">
-            <p class="stat-label">Watch Time (hrs)</p>
-            <div class="stat-val">3,240 <span class="trend">+8.2%</span></div>
-        </div>
-        <div class="stat-card">
-            <p class="stat-label">Subscribers</p>
-            <div class="stat-val">12,450 <span class="trend">+4.1%</span></div>
-        </div>
-    </div>
-
-    <div class="section-header">
-        <h2 style="font-size: 20px;">Recent Projects</h2>
-        <div class="search-container">
-            <input type="text" id="mainSearch" placeholder="Search projects, scripts, or tags..." oninput="renderProjects()">
-        </div>
-    </div>
-
-    <div id="projectsContainer" class="projects-grid">
-        </div>
-
+    <div id="projectsContainer" class="grid"></div>
     <div id="setupView" style="text-align:center; padding:100px 0;" class="hidden">
-        <h2 style="opacity:0.5">Please connect your workspace to start.</h2>
+        <h2 style="opacity:0.5">Welcome. Please connect your workspace.</h2>
         <button class="btn btn-primary" onclick="initWorkspace()">Select Workspace Folder</button>
     </div>
 </main>
 
 <div class="overlay" id="formModal">
     <div class="modal">
-        <h2 id="modalTitle">New Project</h2>
-        <input type="text" id="projTitle" placeholder="Project Title" style="width:100%; padding:12px; margin-bottom:15px; background:#161922; border:1px solid var(--border); color:white; border-radius:10px;">
-        <textarea id="projDesc" placeholder="Description" rows="3" style="width:100%; padding:12px; background:#161922; border:1px solid var(--border); color:white; border-radius:10px;"></textarea>
-        
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <button class="btn" style="background:transparent; border:1px solid var(--border); color:white; flex:1" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" style="flex:2" onclick="saveData()">Create Magic</button>
+        <h2 id="modalTitle" style="margin-top:0">Create Project</h2>
+        <div id="videoUploadBox" style="margin-bottom:20px;">
+            <label style="font-size:12px; color:var(--text-muted)">Project Video (.mp4)</label>
+            <div onclick="triggerVideo()" id="dropZone" style="border:2px dashed var(--primary); padding:30px; text-align:center; border-radius:20px; cursor:pointer; margin-top:10px;">
+                <span id="videoLabel">Click to Upload Video</span>
+            </div>
+        </div>
+        <label style="font-size:12px; color:var(--text-muted)">Thumbnails (Set of 3)</label>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin:10px 0 20px;">
+            <div onclick="pickThumb(0)" style="aspect-ratio:1; background:var(--bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                <img id="pre0" style="width:100%; height:100%; object-fit:cover; display:none"><span>+</span>
+            </div>
+            <div onclick="pickThumb(1)" style="aspect-ratio:1; background:var(--bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                <img id="pre1" style="width:100%; height:100%; object-fit:cover; display:none"><span>+</span>
+            </div>
+            <div onclick="pickThumb(2)" style="aspect-ratio:1; background:var(--bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                <img id="pre2" style="width:100%; height:100%; object-fit:cover; display:none"><span>+</span>
+            </div>
+        </div>
+        <input type="text" id="projTitle" placeholder="Project Title" style="width:100%; padding:15px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); margin-bottom:15px; box-sizing:border-box;">
+        <textarea id="projDesc" placeholder="Brief description..." rows="3" style="width:100%; padding:15px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); box-sizing:border-box;"></textarea>
+        <label style="display:block; margin-top:20px; font-size:12px; color:var(--text-muted)">Select Platforms:</label>
+        <div class="checkbox-group">
+            <label class="check-item"><input type="checkbox" value="youtube"> YouTube</label>
+            <label class="check-item"><input type="checkbox" value="shorts"> Shorts</label>
+            <label class="check-item"><input type="checkbox" value="reels"> Reels</label>
+            <label class="check-item"><input type="checkbox" value="tiktok"> TikTok</label>
+            <label class="check-item"><input type="checkbox" value="facebook"> Facebook</label>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:30px;">
+            <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" style="flex:2" onclick="saveData()">Save Project</button>
         </div>
     </div>
 </div>
 
 <script>
-    // Logic kept from your fixed script for performance and reliability
     let workspace = null;
     let projects = [];
+    let selectedVideo = null;
+    let tempThumbs = [null, null, null];
+    let editMode = false;
+    let currentEditName = null;
 
+    // --- Persistence Helper (The prompt fix) ---
     async function getDB() {
         return new Promise(res => {
             const req = indexedDB.open("ClipflowStorage", 1);
@@ -297,9 +193,11 @@
         });
         if (handle) {
             if (await handle.queryPermission({mode: 'readwrite'}) === 'granted') {
-                workspace = handle; onConnected();
+                workspace = handle;
+                onConnected();
             } else if (await handle.requestPermission({mode: 'readwrite'}) === 'granted') {
-                workspace = handle; onConnected();
+                workspace = handle;
+                onConnected();
             }
         }
     }
@@ -310,6 +208,39 @@
         loadProjects();
     }
 
+    // --- Background Shapes ---
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    let shapes = [];
+
+    function initShapes() {
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        shapes = Array.from({length: 12}, () => ({
+            x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+            s: Math.random()*150+50, dx: (Math.random()-0.5), dy: (Math.random()-0.5),
+            t: Math.floor(Math.random()*3)
+        }));
+    }
+
+    function drawShapes() {
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--text') + '1A'; 
+        ctx.lineWidth = 2;
+        shapes.forEach(p => {
+            ctx.beginPath();
+            if(p.t===0) ctx.arc(p.x, p.y, p.s/2, 0, Math.PI*2);
+            else if(p.t===1) ctx.rect(p.x, p.y, p.s, p.s);
+            else { ctx.moveTo(p.x, p.y); ctx.lineTo(p.x+p.s, p.y); ctx.lineTo(p.x+p.s/2, p.y-p.s); ctx.closePath(); }
+            ctx.stroke();
+            p.x += p.dx; p.y += p.dy;
+            if(p.x< -200 || p.x > canvas.width+200) p.dx *= -1;
+            if(p.y< -200 || p.y > canvas.height+200) p.dy *= -1;
+        });
+        requestAnimationFrame(drawShapes);
+    }
+    initShapes(); drawShapes(); window.onresize = initShapes;
+
+    // --- Core Logic ---
     async function initWorkspace() {
         workspace = await window.showDirectoryPicker({ mode: 'readwrite' });
         const db = await getDB();
@@ -319,75 +250,172 @@
 
     async function loadProjects() {
         projects = [];
-        try {
-            const root = await workspace.getDirectoryHandle('Clipflow_Projects', { create: true });
-            for await (const [name, handle] of root.entries()) {
-                if(handle.kind === 'directory') {
+        const root = await workspace.getDirectoryHandle('Clipflow_Projects', { create: true });
+        for await (const [name, handle] of root.entries()) {
+            if(handle.kind === 'directory') {
+                try {
                     const mFile = await (await handle.getFileHandle('meta.json')).getFile();
                     const meta = JSON.parse(await mFile.text());
-                    projects.push({ name, meta, handle });
-                }
+                    const vFile = await handle.getFileHandle('video.mp4');
+                    projects.push({ name, meta, videoFile: vFile, handle });
+                } catch(e) {}
             }
-        } catch(e) { console.log(e); }
+        }
         renderProjects();
     }
 
     function renderProjects() {
         const container = document.getElementById('projectsContainer');
-        container.innerHTML = `
-            <div class="new-project-card" onclick="openModal('add')">
-                <div style="font-size:30px; margin-bottom:10px; color:var(--primary)">+</div>
-                <div style="font-weight:600">New Project</div>
-                <div style="font-size:12px; color:var(--text-muted)">Start creating magic</div>
-            </div>
-        `;
-
-        projects.forEach((p, idx) => {
-            const card = document.createElement('div');
-            card.className = 'project-card';
-            card.innerHTML = `
-                <div class="thumb-wrapper">
-                    <div class="badge" style="background:#ff9f43">Draft</div>
-                    <img src="${p.meta.thumbs[0] || ''}" onerror="this.style.display='none'">
-                    <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:4px; font-size:10px;">00:00</div>
+        const q = document.getElementById('mainSearch').value.toLowerCase();
+        container.innerHTML = '';
+        const sorted = projects.sort((a,b) => b.meta.timestamp - a.meta.timestamp);
+        sorted.forEach((p, idx) => {
+            if(!p.meta.title.toLowerCase().includes(q)) return;
+            const isVertical = p.meta.platforms.some(x => ['reels','tiktok','shorts'].includes(x));
+            const div = document.createElement('div');
+            div.className = `card ${isVertical ? 'vertical' : 'horizontal'}`;
+            div.innerHTML = `
+                <div class="dots-btn" onclick="toggleMenu(event, ${idx})">⋮</div>
+                <div class="dropdown" id="menu-${idx}">
+                    <button onclick="openModal('edit', ${idx})">✏️ Edit</button>
+                    <button onclick="downloadZip(${idx})">📦 Download ZIP</button>
+                    <button onclick="deleteProject(${idx})" style="color:var(--danger)">🗑️ Delete</button>
                 </div>
-                <div class="project-info">
+                <div class="card-thumb" onclick="playVideo(${idx})">
+                    <img src="${p.meta.thumbs[0] || ''}">
+                </div>
+                <div class="card-body">
                     <h3>${p.meta.title}</h3>
-                    <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px; height:32px; overflow:hidden;">${p.meta.desc}</p>
-                    <div class="project-meta">
-                        <span>👁️ 0</span>
-                        <span>Mar 17, 2026</span>
-                    </div>
+                    <div class="platform-tags">${p.meta.platforms.map(t => `<span class="tag">${t}</span>`).join('')}</div>
                 </div>
             `;
-            container.appendChild(card);
+            container.appendChild(div);
         });
     }
 
-    function openModal() { document.getElementById('formModal').style.display = 'flex'; }
-    function closeModal() { document.getElementById('formModal').style.display = 'none'; }
+    function openModal(mode, idx = null) {
+        editMode = mode === 'edit';
+        document.getElementById('modalTitle').innerText = editMode ? "Edit Project" : "New Project";
+        document.getElementById('videoUploadBox').style.display = editMode ? 'none' : 'block';
+        document.querySelectorAll('.check-item input').forEach(c => c.checked = false);
+        if(editMode) {
+            const p = projects[idx];
+            currentEditName = p.name;
+            document.getElementById('projTitle').value = p.meta.title;
+            document.getElementById('projDesc').value = p.meta.desc;
+            tempThumbs = [...p.meta.thumbs];
+            p.meta.platforms.forEach(plt => {
+                const cb = document.querySelector(`input[value="${plt}"]`);
+                if(cb) cb.checked = true;
+            });
+        } else {
+            document.getElementById('projTitle').value = "";
+            document.getElementById('projDesc').value = "";
+            tempThumbs = [null, null, null];
+            selectedVideo = null;
+            document.getElementById('videoLabel').innerText = "Click to Upload Video";
+        }
+        refreshThumbs();
+        document.getElementById('formModal').style.display = 'flex';
+    }
 
     async function saveData() {
         const title = document.getElementById('projTitle').value;
-        const desc = document.getElementById('projDesc').value;
-        if(!title) return;
-
+        const plats = Array.from(document.querySelectorAll('.check-item input:checked')).map(i => i.value);
+        if(!title || (!selectedVideo && !editMode)) return alert("Required fields missing");
         const root = await workspace.getDirectoryHandle('Clipflow_Projects', { create: true });
-        const pFolder = await root.getDirectoryHandle(title.replace(/\s+/g,'_'), { create: true });
+        const folderName = editMode ? currentEditName : title.replace(/\s+/g,'_') + "_" + Date.now();
+        const pFolder = await root.getDirectoryHandle(folderName, { create: true });
         const mHandle = await pFolder.getFileHandle('meta.json', { create: true });
         const writer = await mHandle.createWritable();
-        await writer.write(JSON.stringify({ title, desc, thumbs: [], timestamp: Date.now() }));
+        await writer.write(JSON.stringify({
+            title, desc: document.getElementById('projDesc').value,
+            platforms: plats, thumbs: tempThumbs,
+            timestamp: editMode ? projects.find(p => p.name === currentEditName).meta.timestamp : Date.now()
+        }));
         await writer.close();
-        
+        if(selectedVideo) {
+            const vHandle = await pFolder.getFileHandle('video.mp4', { create: true });
+            const vWriter = await vHandle.createWritable();
+            await vWriter.write(selectedVideo);
+            await vWriter.close();
+        }
         closeModal(); loadProjects();
     }
 
+    async function downloadZip(idx) {
+        const p = projects[idx];
+        const zip = new JSZip();
+        zip.file("video.mp4", await p.videoFile.getFile());
+        zip.file("info.txt", `Title: ${p.meta.title}\nDescription: ${p.meta.desc}\nPlatforms: ${p.meta.platforms.join(', ')}`);
+        p.meta.thumbs.forEach((img, i) => { if(img) zip.file(`thumb_${i}.png`, img.split(',')[1], {base64: true}); });
+        const blob = await zip.generateAsync({type:"blob"});
+        saveAs(blob, `${p.meta.title}_Clipflow.zip`);
+    }
+
+    async function deleteProject(idx) {
+        if(confirm("Delete this project permanently?")) {
+            const root = await workspace.getDirectoryHandle('Clipflow_Projects');
+            await root.removeEntry(projects[idx].name, { recursive: true });
+            loadProjects();
+        }
+    }
+
+    function toggleMenu(e, idx) {
+        e.stopPropagation();
+        document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
+        document.getElementById(`menu-${idx}`).style.display = 'flex';
+    }
+    window.onclick = () => document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
+
+    function closeModal() { document.getElementById('formModal').style.display = 'none'; }
+    function toggleTheme() {
+        const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+    }
+
+    function triggerVideo() {
+        const i = document.createElement('input'); i.type = 'file'; i.accept = 'video/mp4';
+        i.onchange = e => { selectedVideo = e.target.files[0]; document.getElementById('videoLabel').innerText = selectedVideo.name; };
+        i.click();
+    }
+
+    function pickThumb(i) {
+        const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
+        input.onchange = e => {
+            const r = new FileReader();
+            r.onload = f => { tempThumbs[i] = f.target.result; refreshThumbs(); };
+            r.readAsDataURL(e.target.files[0]);
+        };
+        input.click();
+    }
+
+    function refreshThumbs() {
+        tempThumbs.forEach((src, i) => {
+            const img = document.getElementById(`pre${i}`);
+            if(src) { img.src = src; img.style.display = 'block'; img.nextElementSibling.style.display = 'none'; }
+            else { img.style.display = 'none'; img.nextElementSibling.style.display = 'block'; }
+        });
+    }
+
+    async function playVideo(idx) {
+        const f = await projects[idx].videoFile.getFile();
+        const url = URL.createObjectURL(f);
+        const win = window.open("");
+        win.document.write(`<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;"><video src="${url}" controls autoplay style="max-height:100vh;max-width:100%"></video></body>`);
+    }
+
+    // Initialize checking for stored handle
     window.onload = async () => {
         const db = await getDB();
         const req = db.transaction("handles").objectStore("handles").get("last_folder");
         req.onsuccess = () => {
-            if (req.result) document.getElementById('restoreBtn').classList.remove('hidden');
-            else document.getElementById('setupView').classList.remove('hidden');
+            if (req.result) {
+                document.getElementById('restoreBtn').classList.remove('hidden');
+                document.getElementById('setupView').classList.add('hidden');
+            } else {
+                document.getElementById('setupView').classList.remove('hidden');
+            }
         };
     };
 </script>
