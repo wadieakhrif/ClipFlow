@@ -5,57 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clipflow</title>
     <style>
-        :root {
-            --bg: #0a0b1e; --card: #16183d; --text: #ffffff; --muted: #a0a4d0;
-            --accent: #6c63ff; --border: rgba(255,255,255,0.1);
-        }
-        [data-theme="light"] {
-            --bg: #f4f7fe; --card: #ffffff; --text: #1a1c3d; --muted: #64748b; --border: rgba(0,0,0,0.1);
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Cairo:wght@400;700&display=swap');
+
+        :root[data-theme="dark"] {
+            --bg: #08091a; --secondary: #121430; --nav-bg: #1a1c3d; --text: #ffffff;
+            --text-muted: #8b8ea8; --accent: #6c63ff; --border: rgba(255,255,255,0.08);
+            --yt: #FF0000; --fb: #1877F2; --snap: #FFFC00; --ig: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
         }
 
-        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); transition: 0.3s; }
+        :root[data-theme="light"] {
+            --bg: #f0f2f5; --secondary: #ffffff; --nav-bg: #ffffff; --text: #1a1c3d;
+            --text-muted: #64748b; --accent: #3b82f6; --border: rgba(0,0,0,0.08);
+        }
+
+        body { margin: 0; font-family: 'Roboto', sans-serif; background: var(--bg); color: var(--text); transition: 0.3; overflow-x: hidden; }
+        body[dir="rtl"] { font-family: 'Cairo', sans-serif; }
+
+        .u-icon { width: 24px; height: 24px; vertical-align: middle; object-fit: contain; }
         
         /* Navbar & Search */
-        nav { padding: 15px 25px; background: var(--card); border-bottom: 1px solid var(--border); }
+        nav { padding: 15px 24px; background: var(--nav-bg); border-bottom: 1px solid var(--border); sticky: top; z-index: 100; }
         .nav-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
-        .logo { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 20px; }
         
-        .search-area { display: flex; align-items: center; gap: 10px; background: var(--bg); padding: 8px 15px; border-radius: 8px; border: 1px solid var(--border); }
-        .search-area input { background: none; border: none; color: var(--text); width: 100%; outline: none; }
+        .search-container { display: flex; align-items: center; background: var(--bg); padding: 8px 15px; border-radius: 10px; border: 1px solid var(--border); flex: 0.8; margin: 0 20px; }
+        .search-container input { background: none; border: none; color: var(--text); padding: 5px; width: 100%; outline: none; }
 
-        /* Platform Categories - Below Search */
-        .categories { display: flex; gap: 10px; padding: 10px 25px; overflow-x: auto; background: var(--bg); }
-        .cat-btn { display: flex; align-items: center; gap: 8px; padding: 8px 15px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; cursor: pointer; color: var(--text); white-space: nowrap; }
-        .cat-btn.active { border-color: var(--accent); background: rgba(108, 99, 255, 0.1); }
+        /* Categories Bar */
+        .categories { display: flex; gap: 12px; padding: 10px 24px; overflow-x: auto; scrollbar-width: none; background: var(--bg); border-bottom: 1px solid var(--border); }
+        .cat-tab { padding: 8px 16px; background: var(--secondary); border: 1px solid var(--border); border-radius: 20px; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text); }
+        .cat-tab.active { background: var(--accent); border-color: var(--accent); color: white; }
 
-        /* Grid & Cards */
-        #mainGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 25px; }
-        .video-card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; position: relative; }
+        /* Grid */
+        #projectsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; padding: 25px; }
         
-        .thumb-wrap { width: 100%; background: #000; cursor: pointer; position: relative; }
-        .ratio-16-9 { aspect-ratio: 16/9; }
-        .ratio-9-16 { aspect-ratio: 9/16; max-height: 450px; }
-        .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
-
-        .card-content { padding: 15px; position: relative; }
-        .edit-trigger { position: absolute; top: 15px; right: 10px; cursor: pointer; padding: 5px; z-index: 10; }
-
-        /* Modal Layout: Video TOP, then Thumbs, then Meta */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { background: var(--card); padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .project { background: var(--secondary); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); position: relative; cursor: pointer; transition: 0.3s; }
+        .project:hover { transform: translateY(-5px); border-color: var(--accent); }
         
+        .thumb-container { width: 100%; background: #000; position: relative; overflow: hidden; }
+        .ratio-16-9 .thumb-container { aspect-ratio: 16/9; }
+        .ratio-9-16 .thumb-container { aspect-ratio: 9/16; max-height: 450px; }
+        .thumb-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        .platform-badge { position: absolute; top: 10px; left: 10px; padding: 5px; border-radius: 6px; display: flex; align-items: center; }
+        .edit-dots { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); border-radius: 50%; padding: 5px; opacity: 0; transition: 0.2s; }
+        .project:hover .edit-dots { opacity: 1; }
+
+        /* Modals */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        .popup { background: var(--secondary); width: 100%; max-width: 500px; border-radius: 20px; padding: 25px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border); }
+
         .field { margin-bottom: 15px; }
-        .field label { display: block; margin-bottom: 5px; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
-        input, textarea, select { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 5px; box-sizing: border-box; }
+        .field label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+        input, textarea, select { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); box-sizing: border-box; }
 
-        .thumb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .thumb-box { aspect-ratio: 16/9; border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+        .thumb-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .thumb-upload { aspect-ratio: 16/9; border: 1px dashed var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
+        .thumb-upload img { width: 100%; height: 100%; object-fit: cover; }
 
-        .icon-btn { background: none; border: none; cursor: pointer; padding: 5px; }
-        .u-icon { width: 24px; height: 24px; object-fit: contain; }
+        .btn-save { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-del { width: 100%; padding: 10px; background: none; color: #ff4757; border: none; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
-        #bgCanvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
+        #bgCanvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -65,67 +75,60 @@
 <nav>
     <div class="nav-top">
         <div class="logo">
-            <img src="youtube.png" class="u-icon"> Clipflow
+            <img src="youtube.png" class="u-icon" id="mainLogo"> <span>Clipflow</span>
         </div>
         <div style="display:flex; gap:15px;">
-            <button class="icon-btn" onclick="toggleTheme()">
-                <img src="brightness.png" id="themeIcon" class="u-icon">
-            </button>
-            <button class="icon-btn" onclick="toggleLang()">
-                <img src="arabic.png" class="u-icon">
-            </button>
-            <button class="icon-btn" onclick="openForm()">
-                <img src="sign.png" class="u-icon" style="width:30px;">
-            </button>
+            <img src="brightness.png" class="u-icon" style="cursor:pointer" onclick="toggleTheme()" id="themeIcon">
+            <img src="arabic.png" class="u-icon" style="cursor:pointer" onclick="toggleLang()">
+            <img src="sign.png" class="u-icon" style="width:30px; cursor:pointer" onclick="openForm('add')">
         </div>
     </div>
-
-    <div class="search-area">
-        <img src="serch.png" class="u-icon" style="width:18px;">
-        <input type="text" id="searchInp" placeholder="Search videos..." oninput="drawGrid()">
+    <div class="search-container">
+        <img src="serch.png" class="u-icon" style="width:18px">
+        <input type="text" id="searchInput" placeholder="Search title or age..." oninput="renderProjects()">
     </div>
 </nav>
 
-<div class="categories" id="platformTabs">
-    <button class="cat-btn active" onclick="filterBy('all')">All</button>
-    <button class="cat-btn" onclick="filterBy('yt')"><img src="youtube.png" class="u-icon" style="width:16px;"> YouTube</button>
-    <button class="cat-btn" onclick="filterBy('reels')"><img src="reels.png" class="u-icon" style="width:16px;"> Instagram</button>
-    <button class="cat-btn" onclick="filterBy('fb')"><img src="facebook.png" class="u-icon" style="width:16px;"> Facebook</button>
-    <button class="cat-btn" onclick="filterBy('snap')"><img src="snap.png" class="u-icon" style="width:16px;"> Snapchat</button>
+<div class="categories" id="catBar">
+    <div class="cat-tab active" onclick="filterPlat('all')">All</div>
+    <div class="cat-tab" onclick="filterPlat('yt')"><img src="youtube.png" class="u-icon" style="width:16px"> YouTube</div>
+    <div class="cat-tab" onclick="filterPlat('reels')"><img src="reels.png" class="u-icon" style="width:16px"> Instagram</div>
+    <div class="cat-tab" onclick="filterPlat('fb')"><img src="facebook.png" class="u-icon" style="width:16px"> Facebook</div>
+    <div class="cat-tab" onclick="filterPlat('snap')"><img src="snap.png" class="u-icon" style="width:16px"> Snapchat</div>
 </div>
 
-<div id="mainGrid"></div>
+<div id="projectsContainer"></div>
 
-<div class="modal" id="formModal">
-    <div class="modal-content">
-        <h2 id="mHeader">New Video</h2>
-        
+<div class="overlay" id="formOverlay">
+    <div class="popup">
+        <h2 id="modalTitle">New Video</h2>
+
         <div class="field">
-            <label><img src="upload video.png" class="u-icon" style="width:16px;"> Step 1: Select Video File</label>
+            <label><img src="upload video.png" class="u-icon" style="width:16px"> Step 1: Video File</label>
             <input type="file" id="vFile" accept="video/*">
         </div>
 
-        <label style="font-size:12px; color:var(--muted);">Step 2: Add 3 Thumbnails (First is Cover)</label>
-        <div class="thumb-grid">
-            <div class="thumb-box" onclick="pickThumb(0)"><img id="p0" src="upload thimb.png"></div>
-            <div class="thumb-box" onclick="pickThumb(1)"><img id="p1" src="upload thimb.png"></div>
-            <div class="thumb-box" onclick="pickThumb(2)"><img id="p2" src="upload thimb.png"></div>
+        <label style="font-size:12px; color:var(--text-muted); margin-bottom:8px; display:block">Step 2: Thumbnails (First is Cover)</label>
+        <div class="thumb-row">
+            <div class="thumb-upload" onclick="pickThumb(0)"><img id="pre0" src="upload thimb.png" style="width:30px"></div>
+            <div class="thumb-upload" onclick="pickThumb(1)"><img id="pre1" src="upload thimb.png" style="width:30px"></div>
+            <div class="thumb-upload" onclick="pickThumb(2)"><img id="pre2" src="upload thimb.png" style="width:30px"></div>
         </div>
 
         <div class="field">
-            <label><img src="title.png" class="u-icon" style="width:16px;"> Title</label>
+            <label><img src="title.png" class="u-icon" style="width:16px"> Title</label>
             <input type="text" id="vTitle">
         </div>
         <div class="field">
-            <label><img src="description.png" class="u-icon" style="width:16px;"> Description</label>
+            <label><img src="description.png" class="u-icon" style="width:16px"> Description</label>
             <textarea id="vDesc" rows="2"></textarea>
         </div>
         <div class="field">
-            <label><img src="calendar.png" class="u-icon" style="width:16px;"> Date</label>
+            <label><img src="calendar.png" class="u-icon" style="width:16px"> Date</label>
             <input type="date" id="vDate">
         </div>
         <div class="field">
-            <label>Platform & Ratio</label>
+            <label>Platform</label>
             <select id="vPlat">
                 <option value="yt">YouTube (16:9)</option>
                 <option value="fb">Facebook (16:9)</option>
@@ -136,154 +139,158 @@
             </select>
         </div>
 
-        <button onclick="save()" style="width:100%; padding:12px; background:var(--accent); color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">Save Project</button>
-        <button id="delBtn" onclick="remove()" style="width:100%; padding:8px; background:none; color:#ff4757; border:none; cursor:pointer; margin-top:10px; display:none;">
-            <img src="trash.png" class="u-icon" style="width:14px;"> Delete Permanently
+        <button class="btn-save" onclick="saveData()">Save Project</button>
+        <button class="btn-del" id="delBtn" onclick="deleteProject()" style="display:none">
+            <img src="trash.png" class="u-icon" style="width:16px"> Delete Permanently
         </button>
-        <button onclick="closeModal()" style="width:100%; padding:8px; background:none; color:var(--muted); border:none; cursor:pointer;">Cancel</button>
+        <button class="btn-del" style="color:var(--text-muted)" onclick="closeModal()">Cancel</button>
     </div>
 </div>
 
-<div class="modal" id="playModal" onclick="this.style.display='none'; document.getElementById('mainVid').pause();">
-    <video id="mainVid" controls style="width:90%; max-height:80vh; border-radius:10px;"></video>
+<div class="overlay" id="playerOverlay" onclick="closePlayer()">
+    <video id="vidPlayer" controls style="width:90%; border-radius:15px;"></video>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('clipflow_db') || '[]');
-    let currentFilter = 'all';
+    let projects = JSON.parse(localStorage.getItem('clipflow_data') || '[]');
     let editIdx = null;
-    let thumbs = [null, null, null];
+    let currentPlat = 'all';
+    let tempThumbs = [null, null, null];
 
-    // THEME TOGGLE FIX
+    const platMeta = {
+        yt: { icon: 'youtube.png', color: 'var(--yt)', ratio: '16-9' },
+        fb: { icon: 'facebook.png', color: 'var(--fb)', ratio: '16-9' },
+        reels: { icon: 'reels.png', color: 'var(--ig)', ratio: '9-16' },
+        shorts: { icon: 'youtube-shorts.png', color: 'var(--yt)', ratio: '9-16' },
+        snap: { icon: 'snap.png', color: 'var(--snap)', ratio: '9-16' },
+        tiktok: { icon: 'tik-tok.png', color: '#000', ratio: '9-16' }
+    };
+
     function toggleTheme() {
-        const root = document.documentElement;
-        const isDark = root.getAttribute('data-theme') === 'dark';
-        root.setAttribute('data-theme', isDark ? 'light' : 'dark');
-        document.getElementById('themeIcon').src = isDark ? 'moon.png' : 'brightness.png';
+        const theme = document.documentElement.getAttribute('data-theme');
+        const next = theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        document.getElementById('themeIcon').src = next === 'dark' ? 'brightness.png' : 'moon.png';
     }
 
-    function openForm() {
-        editIdx = null;
-        document.getElementById('mHeader').innerText = "New Video";
-        document.getElementById('delBtn').style.display = 'none';
-        document.getElementById('vTitle').value = '';
-        document.getElementById('vDesc').value = '';
-        document.getElementById('vDate').value = new Date().toISOString().split('T')[0];
-        thumbs = [null, null, null];
-        [0,1,2].forEach(i => document.getElementById('p'+i).src = 'upload thimb.png');
-        document.getElementById('formModal').style.display = 'flex';
+    function openForm(mode, idx = null) {
+        editIdx = idx;
+        tempThumbs = [null, null, null];
+        document.getElementById('delBtn').style.display = idx !== null ? 'flex' : 'none';
+        
+        if(idx !== null) {
+            const p = projects[idx];
+            document.getElementById('vTitle').value = p.title;
+            document.getElementById('vDesc').value = p.desc;
+            document.getElementById('vDate').value = p.date;
+            document.getElementById('vPlat').value = p.plat;
+            tempThumbs = [...p.thumbs];
+            tempThumbs.forEach((t, i) => {
+                if(t) { document.getElementById(`pre${i}`).src = t; document.getElementById(`pre${i}`).style.width = '100%'; }
+            });
+        } else {
+            document.getElementById('vTitle').value = '';
+            document.getElementById('vDate').value = new Date().toISOString().split('T')[0];
+            [0,1,2].forEach(i => { document.getElementById(`pre${i}`).src = 'upload thimb.png'; document.getElementById(`pre${i}`).style.width = '30px'; });
+        }
+        document.getElementById('formOverlay').style.display = 'flex';
     }
 
     function pickThumb(i) {
-        const inp = document.createElement('input');
-        inp.type = 'file'; inp.accept = 'image/*';
-        inp.onchange = (e) => {
+        const input = document.createElement('input');
+        input.type = 'file'; input.accept = 'image/*';
+        input.onchange = (e) => {
             const reader = new FileReader();
             reader.onload = (f) => {
-                thumbs[i] = f.target.result;
-                document.getElementById('p'+i).src = f.target.result;
+                tempThumbs[i] = f.target.result;
+                document.getElementById(`pre${i}`).src = f.target.result;
+                document.getElementById(`pre${i}`).style.width = '100%';
             };
             reader.readAsDataURL(e.target.files[0]);
         };
-        inp.click();
+        input.click();
     }
 
-    function save() {
-        const item = {
+    function saveData() {
+        const p = {
             title: document.getElementById('vTitle').value,
             desc: document.getElementById('vDesc').value,
             date: document.getElementById('vDate').value,
             plat: document.getElementById('vPlat').value,
-            images: [...thumbs]
+            thumbs: [...tempThumbs]
         };
-        if(editIdx !== null) db[editIdx] = item;
-        else db.push(item);
-        
-        localStorage.setItem('clipflow_db', JSON.stringify(db));
+        if(editIdx !== null) projects[editIdx] = p; else projects.push(p);
+        localStorage.setItem('clipflow_data', JSON.stringify(projects));
         closeModal();
-        drawGrid();
+        renderProjects();
     }
 
-    function drawGrid() {
-        const container = document.getElementById('mainGrid');
+    function renderProjects() {
+        const container = document.getElementById('projectsContainer');
         container.innerHTML = '';
-        const search = document.getElementById('searchInp').value.toLowerCase();
+        const query = document.getElementById('searchInput').value.toLowerCase();
 
-        // Sort Newest to Oldest
-        const filtered = db
-            .filter(i => (currentFilter === 'all' || i.plat === currentFilter) && i.title.toLowerCase().includes(search))
+        // Filter and Sort (Newest to Oldest)
+        const display = projects
+            .filter(p => (currentPlat === 'all' || p.plat === currentPlat) && p.title.toLowerCase().includes(query))
             .sort((a,b) => new Date(b.date) - new Date(a.date));
 
-        filtered.forEach((item) => {
-            const isVertical = ['reels','shorts','snap','tiktok'].includes(item.plat);
+        display.forEach((p, index) => {
+            const meta = platMeta[p.plat];
             const card = document.createElement('div');
-            card.className = 'video-card';
+            card.className = `project ratio-${meta.ratio}`;
             card.innerHTML = `
-                <div class="thumb-wrap ${isVertical ? 'ratio-9-16' : 'ratio-16-9'}" onclick="watch()">
-                    <img src="${item.images[0] || 'upload thimb.png'}">
-                </div>
-                <div class="card-content">
-                    <div class="edit-trigger" onclick="event.stopPropagation(); startEdit(${db.indexOf(item)})">
-                        <img src="edit.png" class="u-icon" style="width:18px;">
+                <div class="thumb-container" onclick="playVideo()">
+                    <img src="${p.thumbs[0] || 'upload thimb.png'}">
+                    <div class="platform-badge" style="background:${meta.color}">
+                        <img src="${meta.icon}" class="u-icon" style="width:14px">
                     </div>
-                    <div style="font-weight:bold; margin-bottom:5px;">${item.title}</div>
-                    <div style="font-size:12px; color:var(--muted);">${item.date}</div>
+                    <div class="edit-dots" onclick="event.stopPropagation(); openForm('edit', ${projects.indexOf(p)})">
+                        <img src="edit.png" class="u-icon" style="width:16px">
+                    </div>
+                </div>
+                <div style="padding:15px">
+                    <h3 style="margin:0 0 5px; font-size:15px">${p.title}</h3>
+                    <div style="font-size:12px; color:var(--text-muted)">${p.date}</div>
                 </div>
             `;
             container.appendChild(card);
         });
     }
 
-    function startEdit(idx) {
-        editIdx = idx;
-        const i = db[idx];
-        document.getElementById('mHeader').innerText = "Edit Video";
-        document.getElementById('vTitle').value = i.title;
-        document.getElementById('vDesc').value = i.desc;
-        document.getElementById('vDate').value = i.date;
-        document.getElementById('vPlat').value = i.plat;
-        thumbs = [...i.images];
-        thumbs.forEach((src, idx) => document.getElementById('p'+idx).src = src || 'upload thimb.png');
-        document.getElementById('delBtn').style.display = 'block';
-        document.getElementById('formModal').style.display = 'flex';
-    }
-
-    function remove() {
-        if(confirm("PERMANENT DELETE: This cannot be recovered. Are you sure?")) {
-            db.splice(editIdx, 1);
-            localStorage.setItem('clipflow_db', JSON.stringify(db));
+    function deleteProject() {
+        if(confirm("⚠️ PERMANENT DELETE: This will be deleted from the file and cannot be recovered. Continue?")) {
+            projects.splice(editIdx, 1);
+            localStorage.setItem('clipflow_data', JSON.stringify(projects));
             closeModal();
-            drawGrid();
+            renderProjects();
         }
     }
 
-    function watch() {
-        // Since we are simulating local storage, real video files need a Blob URL
-        // For this demo, we trigger the modal window
-        document.getElementById('playModal').style.display = 'flex';
-    }
-
-    function filterBy(p) {
-        currentFilter = p;
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    function filterPlat(pl) {
+        currentPlat = pl;
+        document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
         event.currentTarget.classList.add('active');
-        drawGrid();
+        renderProjects();
     }
 
-    function closeModal() { document.getElementById('formModal').style.display = 'none'; }
-    
-    // Background Shapes
+    function playVideo() { document.getElementById('playerOverlay').style.display = 'flex'; }
+    function closePlayer() { document.getElementById('playerOverlay').style.display = 'none'; document.getElementById('vidPlayer').pause(); }
+    function closeModal() { document.getElementById('formOverlay').style.display = 'none'; }
+
+    // BG Animation
     const canvas = document.getElementById('bgCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    function drawShapes() {
+    function draw() {
         ctx.clearRect(0,0,canvas.width, canvas.height);
         ctx.strokeStyle = 'rgba(108, 99, 255, 0.1)';
-        ctx.strokeRect(100, 100, 50, 50);
-        ctx.beginPath(); ctx.arc(canvas.width-100, 200, 30, 0, Math.PI*2); ctx.stroke();
+        ctx.strokeRect(50, 50, 40, 40);
+        ctx.beginPath(); ctx.arc(canvas.width-50, 100, 20, 0, 7); ctx.stroke();
+        requestAnimationFrame(draw);
     }
-    drawShapes();
-    drawGrid();
+    draw();
+    renderProjects();
 </script>
 </body>
 </html>
