@@ -1,423 +1,286 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clip Flow Pro</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Cairo:wght@400;700&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipflow</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Cairo:wght@400;700&display=swap');
 
-:root[data-theme="dark"] {
-    --bg: #08091a;
-    --secondary: #121430;
-    --nav-bg: #1a1c3d;
-    --text: #ffffff;
-    --text-muted: #8b8ea8;
-    --accent: #6c63ff;
-    --accent-hover: #5a52d6;
-    --border: rgba(255,255,255,0.08);
-    --glass: rgba(255, 255, 255, 0.03);
-}
+        :root[data-theme="dark"] {
+            --bg: #0b0c1f; --secondary: #16193a; --nav-bg: #1a1c3d; --text: #ffffff;
+            --text-muted: #8b8ea8; --accent: #6c63ff; --border: rgba(255,255,255,0.1);
+            --yt: #FF0000; --fb: #1877F2; --snap: #FFFC00; --ig: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+        }
 
-:root[data-theme="light"] {
-    --bg: #f0f2f5;
-    --secondary: #ffffff;
-    --nav-bg: #ffffff;
-    --text: #1a1c3d;
-    --text-muted: #64748b;
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
-    --border: rgba(0,0,0,0.08);
-    --glass: rgba(0, 0, 0, 0.02);
-}
+        :root[data-theme="light"] {
+            --bg: #f8fafc; --secondary: #ffffff; --nav-bg: #ffffff; --text: #1e293b;
+            --text-muted: #64748b; --accent: #4f46e5; --border: rgba(0,0,0,0.08);
+        }
 
-body {
-    margin: 0;
-    font-family: 'Roboto', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    transition: 0.3s;
-}
+        body { margin: 0; font-family: 'Roboto', sans-serif; background: var(--bg); color: var(--text); transition: 0.3s; overflow-x: hidden; }
+        
+        /* Layout */
+        nav { padding: 15px 24px; background: var(--nav-bg); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .nav-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .logo { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 1.2rem; }
+        
+        .search-container { display: flex; align-items: center; background: var(--bg); padding: 10px 18px; border-radius: 12px; border: 1px solid var(--border); flex: 1; max-width: 600px; margin: 0 auto; }
+        .search-container input { background: none; border: none; color: var(--text); padding-left: 10px; width: 100%; outline: none; }
 
-body[dir="rtl"] { font-family: 'Cairo', sans-serif; }
+        .categories { display: flex; gap: 12px; padding: 12px 24px; overflow-x: auto; background: var(--bg); border-bottom: 1px solid var(--border); }
+        .cat-tab { padding: 8px 18px; background: var(--secondary); border: 1px solid var(--border); border-radius: 25px; cursor: pointer; white-space: nowrap; font-size: 14px; transition: 0.2s; }
+        .cat-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-/* SVG Icon Helper */
-.icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; vertical-align: middle; }
+        /* Project Cards */
+        #projectsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; padding: 25px; }
+        .project { background: var(--secondary); border-radius: 18px; overflow: hidden; border: 1px solid var(--border); position: relative; transition: 0.3s; }
+        .project:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        
+        .thumb-main { width: 100%; aspect-ratio: 16/9; background: #000; position: relative; cursor: pointer; }
+        .ratio-9-16 .thumb-main { aspect-ratio: 9/16; max-height: 500px; }
+        .thumb-main img { width: 100%; height: 100%; object-fit: cover; }
 
-/* Navbar */
-nav {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 24px; background: var(--nav-bg);
-    border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 100;
-}
-.logo { display: flex; align-items: center; gap: 12px; }
-.logo h1 { font-size: 20px; margin: 0; letter-spacing: 1px; }
+        /* Project Menu */
+        .project-menu-btn { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; z-index: 10; font-weight: bold; }
+        .menu-dropdown { position: absolute; top: 50px; right: 12px; background: var(--secondary); border: 1px solid var(--border); border-radius: 10px; display: none; flex-direction: column; width: 140px; box-shadow: 0 8px 16px rgba(0,0,0,0.3); z-index: 20; }
+        .menu-dropdown div { padding: 10px 15px; font-size: 13px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid var(--border); }
+        .menu-dropdown div:hover { background: var(--accent); color: white; }
 
-.nav-actions { display: flex; gap: 10px; }
+        /* Modals */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
+        .popup { background: var(--secondary); width: 100%; max-width: 550px; border-radius: 24px; padding: 30px; max-height: 85vh; overflow-y: auto; border: 1px solid var(--border); position: relative; }
+        
+        .field { margin-bottom: 18px; }
+        .field label { display: block; margin-bottom: 8px; font-size: 13px; opacity: 0.8; }
+        input, textarea, select { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text); box-sizing: border-box; }
 
-/* Layout Components */
-#categories {
-    display: flex; gap: 12px; padding: 20px 24px; overflow-x: auto;
-    scrollbar-width: none;
-}
-.category-tab {
-    padding: 10px 18px; background: var(--secondary); border: 1px solid var(--border);
-    border-radius: 12px; cursor: pointer; white-space: nowrap; transition: 0.2s;
-    display: flex; align-items: center; gap: 8px; font-weight: 500;
-}
-.category-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+        .thumb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .thumb-box { aspect-ratio: 16/9; border: 2px dashed var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; background: var(--bg); }
+        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+        .thumb-box.active { border-color: var(--accent); }
 
-/* Projects Grid */
-#projectsContainer {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 24px; padding: 0 24px 40px;
-}
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-primary { flex: 1; padding: 14px; background: var(--accent); border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; }
+        .btn-cancel { padding: 14px; background: transparent; border: 1px solid var(--border); border-radius: 12px; color: var(--text); cursor: pointer; }
 
-/* Card Aspect Ratios */
-.project {
-    background: var(--secondary); border-radius: 16px; overflow: hidden;
-    border: 1px solid var(--border); transition: 0.3s; cursor: pointer;
-    position: relative; animation: slideUp 0.4s ease-out;
-}
-@keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-.project:hover { transform: translateY(-5px); border-color: var(--accent); }
-
-.thumb-container { width: 100%; background: #000; position: relative; overflow: hidden; display: flex; justify-content: center; }
-
-/* 16:9 Ratios */
-.ratio-16-9 .thumb-container { aspect-ratio: 16/9; }
-.ratio-16-9 img { width: 100%; height: 100%; object-fit: cover; }
-
-/* 9:16 Ratios (Vertical) */
-.ratio-9-16 .thumb-container { aspect-ratio: 9/16; max-height: 450px; }
-.ratio-9-16 img { height: 100%; width: auto; object-fit: contain; }
-
-.project-meta { padding: 16px; }
-.project-meta h3 { margin: 0 0 8px; font-size: 16px; }
-.platform-tags { display: flex; flex-wrap: wrap; gap: 5px; }
-.tag { font-size: 10px; padding: 3px 8px; border-radius: 4px; background: var(--glass); border: 1px solid var(--border); }
-
-/* Modal & Popups */
-.overlay { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
-    display: none; z-index: 1000; justify-content: center; align-items: center;
-}
-.popup {
-    background: var(--secondary); width: 500px; max-width: 95%; 
-    border-radius: 20px; padding: 24px; position: relative;
-    max-height: 90vh; overflow-y: auto; border: 1px solid var(--border);
-}
-
-/* Video Viewer */
-#videoViewerContent { width: 90%; max-width: 1000px; display: flex; flex-direction: column; gap: 15px; }
-#mainPlayer { width: 100%; border-radius: 12px; background: #000; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-
-/* Forms */
-.platform-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
-.platform-choice { 
-    padding: 10px; border: 1px solid var(--border); border-radius: 8px; 
-    cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px;
-}
-.platform-choice.selected { border-color: var(--accent); background: var(--glass); }
-
-input, textarea, select {
-    width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text); margin-bottom: 12px; box-sizing: border-box;
-}
-
-button.primary-btn {
-    width: 100%; padding: 14px; background: var(--accent); border: none;
-    color: white; border-radius: 8px; font-weight: bold; cursor: pointer;
-}
-
-/* Shapes Background */
-#bgCanvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
-</style>
+        .u-icon { width: 20px; height: 20px; vertical-align: middle; }
+    </style>
 </head>
 <body>
 
-<canvas id="bgCanvas"></canvas>
-
 <nav>
-    <div class="logo">
-        <svg class="icon" style="width:30px; height:30px; stroke:var(--accent);"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-        <h1 data-i18n="title">Clip Flow Pro</h1>
+    <div class="nav-top">
+        <div class="logo">
+            <span style="color:var(--accent)">●</span> Clipflow
+        </div>
+        <div style="display:flex; gap:15px; align-items: center;">
+            <div onclick="toggleTheme()" id="themeIcon" style="cursor:pointer; font-size: 20px;">🌓</div>
+            <button class="btn-primary" style="padding: 8px 20px;" onclick="openForm('add')">+ New Project</button>
+        </div>
     </div>
-    <div class="nav-actions">
-        <button class="category-tab" id="langToggle"><span id="langText">عربي</span></button>
-        <button class="category-tab" id="themeToggle"><svg class="icon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>
-        <button class="category-tab active" id="newProjectBtn"><svg class="icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> <span data-i18n="new_project">New Project</span></button>
+    <div class="search-container">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Search by video title..." oninput="renderProjects()">
     </div>
 </nav>
 
-<div id="categories"></div>
-<div id="projectsContainer"></div>
-
-<div class="overlay" id="videoViewer">
-    <div id="videoViewerContent">
-        <video id="mainPlayer" controls></video>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 id="viewTitle" style="margin:0;"></h2>
-            <button class="category-tab" onclick="closeViewer()"><svg class="icon"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-        </div>
-    </div>
+<div class="categories">
+    <div class="cat-tab active" onclick="filterPlat('all', this)">All Projects</div>
+    <div class="cat-tab" onclick="filterPlat('yt', this)">YouTube</div>
+    <div class="cat-tab" onclick="filterPlat('reels', this)">Reels & Shorts</div>
+    <div class="cat-tab" onclick="filterPlat('fb', this)">Facebook</div>
 </div>
+
+<div id="projectsContainer"></div>
 
 <div class="overlay" id="formOverlay">
     <div class="popup">
-        <h2 data-i18n="new_project">New Project</h2>
+        <h2 id="modalTitle">Project Settings</h2>
         
-        <div id="dropZone" style="border: 2px dashed var(--accent); padding: 30px; text-align: center; border-radius: 12px; cursor: pointer; margin-bottom: 15px;">
-            <svg class="icon" style="width:40px; height:40px; margin-bottom:10px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-            <p id="videoStatus" data-i18n="drag_video">Click to select Video</p>
+        <div class="field">
+            <label>Project Title</label>
+            <input type="text" id="vTitle" placeholder="Enter video name...">
         </div>
 
-        <input type="text" id="projTitle" placeholder="Project Title" data-i18n-placeholder="proj_title">
-        <textarea id="projDesc" placeholder="Description" rows="3" data-i18n-placeholder="proj_desc"></textarea>
+        <label style="font-size: 12px; opacity: 0.7;">Thumbnails (Upload up to 3 - First is the main cover)</label>
+        <div class="thumb-grid">
+            <div class="thumb-box" onclick="pickThumb(0)"><img id="pre0" src="" style="display:none"><span>+</span></div>
+            <div class="thumb-box" onclick="pickThumb(1)"><img id="pre1" src="" style="display:none"><span>+</span></div>
+            <div class="thumb-box" onclick="pickThumb(2)"><img id="pre2" src="" style="display:none"><span>+</span></div>
+        </div>
 
-        <label style="font-size:12px; color:var(--text-muted);" data-i18n="select_platforms">Select Platforms (Cross-platform support):</label>
-        <div class="platform-grid" id="platformGrid"></div>
+        <div class="field">
+            <label>Description</label>
+            <textarea id="vDesc" rows="3" placeholder="Write something about this clip..."></textarea>
+        </div>
 
-        <button class="primary-btn" id="saveBtn" data-i18n="save_project">Save Project</button>
-        <button class="primary-btn" style="background:none; color:var(--text-muted);" onclick="closeForm()" data-i18n="cancel">Cancel</button>
+        <div class="field">
+            <label>Platform Style</label>
+            <select id="vPlat">
+                <option value="yt">YouTube (16:9)</option>
+                <option value="reels">TikTok / Reels / Shorts (9:16)</option>
+                <option value="fb">Facebook (16:9)</option>
+            </select>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn-primary" onclick="saveData()">Save Project</button>
+        </div>
     </div>
 </div>
 
+<div class="overlay" id="playerOverlay" onclick="this.style.display='none'">
+    <div style="color:white; font-size: 20px;">Video Preview Placeholder</div>
+</div>
+
 <script>
-const platforms = [
-    { id: 'yt', name: 'YouTube', ratio: '16-9' },
-    { id: 'fb', name: 'Facebook', ratio: '16-9' },
-    { id: 'shorts', name: 'YT Shorts', ratio: '9-16' },
-    { id: 'tiktok', name: 'TikTok', ratio: '9-16' },
-    { id: 'reels', name: 'IG Reels', ratio: '9-16' },
-    { id: 'snap', name: 'Snapchat', ratio: '9-16' }
-];
+    let projects = JSON.parse(localStorage.getItem('clipflow_v2') || '[]');
+    let editIdx = null;
+    let currentFilter = 'all';
+    let tempThumbs = [null, null, null];
 
-const i18n = {
-    en: { title: "Clip Flow Pro", new_project: "New Project", drag_video: "Click to select Video", proj_title: "Project Title", proj_desc: "Description", select_platforms: "Select Platforms", save_project: "Save Project", cancel: "Cancel", all: "All" },
-    ar: { title: "كليب فلو برو", new_project: "مشروع جديد", drag_video: "انقر لاختيار فيديو", proj_title: "عنوان المشروع", proj_desc: "وصف المشروع", select_platforms: "اختر المنصات", save_project: "حفظ المشروع", cancel: "إلغاء", all: "الكل" }
-};
+    function toggleTheme() {
+        const theme = document.documentElement.getAttribute('data-theme');
+        document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'light' : 'dark');
+    }
 
-let currentLang = 'en';
-let folderHandle = null;
-let selectedVideo = null;
-let projects = [];
+    function openForm(mode, idx = null) {
+        editIdx = idx;
+        tempThumbs = [null, null, null];
+        document.getElementById('modalTitle').innerText = idx !== null ? 'Edit Project' : 'New Project';
+        
+        if(idx !== null) {
+            const p = projects[idx];
+            document.getElementById('vTitle').value = p.title;
+            document.getElementById('vDesc').value = p.desc;
+            document.getElementById('vPlat').value = p.plat;
+            tempThumbs = [...p.thumbs];
+            tempThumbs.forEach((t, i) => updateThumbPreview(i, t));
+        } else {
+            document.getElementById('vTitle').value = '';
+            document.getElementById('vDesc').value = '';
+            [0,1,2].forEach(i => updateThumbPreview(i, null));
+        }
+        document.getElementById('formOverlay').style.display = 'flex';
+    }
 
-// Initialize
-window.onload = async () => {
-    renderPlatformGrid();
-    setupShapes();
-    checkExistingFolder();
-};
+    function pickThumb(i) {
+        const input = document.createElement('input');
+        input.type = 'file'; input.accept = 'image/*';
+        input.onchange = (e) => {
+            const reader = new FileReader();
+            reader.onload = (f) => {
+                tempThumbs[i] = f.target.result;
+                updateThumbPreview(i, f.target.result);
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        };
+        input.click();
+    }
 
-function renderPlatformGrid() {
-    const grid = document.getElementById('platformGrid');
-    platforms.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'platform-choice';
-        div.dataset.id = p.id;
-        div.innerHTML = `<div class="check" style="width:12px; height:12px; border:1px solid var(--border); border-radius:3px;"></div> ${p.name}`;
-        div.onclick = () => div.classList.toggle('selected');
-        grid.appendChild(div);
-    });
-}
-
-// Language Toggle
-document.getElementById('langToggle').onclick = () => {
-    currentLang = currentLang === 'en' ? 'ar' : 'en';
-    document.body.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-    document.getElementById('langText').innerText = currentLang === 'en' ? 'عربي' : 'English';
-    document.querySelectorAll('[data-i18n]').forEach(el => el.innerText = i18n[currentLang][el.dataset.i18n]);
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => el.placeholder = i18n[currentLang][el.dataset.i18nPlaceholder]);
-};
-
-// Video Upload Logic
-document.getElementById('dropZone').onclick = () => {
-    const input = document.createElement('input');
-    input.type = 'file'; input.accept = 'video/*';
-    input.onchange = (e) => {
-        selectedVideo = e.target.files[0];
-        document.getElementById('videoStatus').innerText = selectedVideo.name;
-    };
-    input.click();
-};
-
-async function checkExistingFolder() {
-    // Basic auto-folder logic using DirectoryPicker
-    document.getElementById('categories').innerHTML = `<button class="category-tab active" onclick="requestFolder()">Click to select Workspace Folder</button>`;
-}
-
-async function requestFolder() {
-    folderHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-    loadProjects();
-}
-
-async function loadProjects() {
-    projects = [];
-    const root = await folderHandle.getDirectoryHandle('ClipFlow_Storage', { create: true });
-    for await (const [name, handle] of root.entries()) {
-        if(handle.kind === 'directory') {
-            const metaFile = await handle.getFileHandle('meta.json');
-            const meta = JSON.parse(await (await metaFile.getFile()).text());
-            const videoFile = await handle.getFileHandle('video.mp4');
-            projects.push({ name, meta, videoFile });
+    function updateThumbPreview(i, data) {
+        const img = document.getElementById(`pre${i}`);
+        const span = img.nextElementSibling;
+        if(data) {
+            img.src = data; img.style.display = 'block';
+            if(span) span.style.display = 'none';
+        } else {
+            img.style.display = 'none';
+            if(span) span.style.display = 'block';
         }
     }
+
+    function saveData() {
+        const title = document.getElementById('vTitle').value;
+        if(!title) return alert("Please enter a title");
+
+        const p = {
+            title,
+            desc: document.getElementById('vDesc').value,
+            plat: document.getElementById('vPlat').value,
+            thumbs: [...tempThumbs],
+            date: new Date().toLocaleDateString()
+        };
+
+        if(editIdx !== null) projects[editIdx] = p; else projects.unshift(p);
+        
+        localStorage.setItem('clipflow_v2', JSON.stringify(projects));
+        closeModal();
+        renderProjects();
+    }
+
+    function renderProjects() {
+        const container = document.getElementById('projectsContainer');
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        container.innerHTML = '';
+
+        projects.forEach((p, index) => {
+            if(currentFilter !== 'all' && p.plat !== currentFilter) return;
+            if(!p.title.toLowerCase().includes(searchTerm)) return;
+
+            const card = document.createElement('div');
+            card.className = `project ${p.plat === 'reels' ? 'ratio-9-16' : ''}`;
+            card.innerHTML = `
+                <div class="project-menu-btn" onclick="toggleMenu(event, ${index})">⋮</div>
+                <div class="menu-dropdown" id="menu-${index}">
+                    <div onclick="openForm('edit', ${index})">✏️ Edit</div>
+                    <div onclick="downloadProject(${index})">📥 Download</div>
+                    <div onclick="deleteProject(${index})" style="color:#ff4757">🗑️ Delete</div>
+                </div>
+                <div class="thumb-main" onclick="document.getElementById('playerOverlay').style.display='flex'">
+                    <img src="${p.thumbs[0] || 'https://via.placeholder.com/400x225?text=No+Thumbnail'}">
+                </div>
+                <div style="padding:15px">
+                    <h3 style="margin:0 0 5px; font-size:16px">${p.title}</h3>
+                    <p style="margin:0; font-size:12px; color:var(--text-muted); height: 32px; overflow: hidden;">${p.desc || 'No description'}</p>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function toggleMenu(e, idx) {
+        e.stopPropagation();
+        const allMenus = document.querySelectorAll('.menu-dropdown');
+        allMenus.forEach(m => m.style.display = 'none');
+        const menu = document.getElementById(`menu-${idx}`);
+        menu.style.display = 'flex';
+    }
+
+    function deleteProject(idx) {
+        if(confirm("⚠️ WARNING: This will delete the entire project file permanently from your device. This cannot be undone!")) {
+            projects.splice(idx, 1);
+            localStorage.setItem('clipflow_v2', JSON.stringify(projects));
+            renderProjects();
+        }
+    }
+
+    function downloadProject(idx) {
+        const p = projects[idx];
+        const content = `Project: ${p.title}\nDescription: ${p.desc}\nPlatform: ${p.plat}\nDate: ${p.date}\n\nNote: This is a manifest of your Clipflow project.`;
+        const blob = new Blob([content], {type: 'text/plain'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${p.title}_clipflow_bundle.txt`;
+        a.click();
+    }
+
+    function filterPlat(plat, btn) {
+        currentFilter = plat;
+        document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderProjects();
+    }
+
+    function closeModal() { document.getElementById('formOverlay').style.display = 'none'; }
+
+    // Close menus on outside click
+    window.onclick = () => document.querySelectorAll('.menu-dropdown').forEach(m => m.style.display = 'none');
+
     renderProjects();
-    renderTabs();
-}
-
-function renderProjects(filter = 'all') {
-    const container = document.getElementById('projectsContainer');
-    container.innerHTML = '';
-    
-    const displayList = filter === 'all' ? projects : projects.filter(p => p.meta.platforms.includes(filter));
-
-    displayList.forEach(p => {
-        const primaryPlatform = platforms.find(pl => pl.id === p.meta.platforms[0]) || platforms[0];
-        const card = document.createElement('div');
-        card.className = `project ratio-${primaryPlatform.ratio}`;
-        
-        card.innerHTML = `
-            <div class="thumb-container">
-                <img id="thumb-${p.name}" src="" alt="Thumbnail">
-                <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.7); padding:5px; border-radius:50%;">
-                    <svg class="icon" style="stroke:white;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                </div>
-            </div>
-            <div class="project-meta">
-                <h3>${p.meta.title}</h3>
-                <div class="platform-tags">
-                    ${p.meta.platforms.map(pl => `<span class="tag">${pl.toUpperCase()}</span>`).join('')}
-                </div>
-            </div>
-        `;
-        card.onclick = () => openViewer(p);
-        container.appendChild(card);
-        generateThumbnail(p);
-    });
-}
-
-function renderTabs() {
-    const cat = document.getElementById('categories');
-    cat.innerHTML = `<div class="category-tab active" onclick="renderProjects('all')">${i18n[currentLang].all}</div>`;
-    platforms.forEach(p => {
-        const count = projects.filter(proj => proj.meta.platforms.includes(p.id)).length;
-        if(count > 0) {
-            const tab = document.createElement('div');
-            tab.className = 'category-tab';
-            tab.innerHTML = `${p.name} <span style="font-size:10px; opacity:0.6">${count}</span>`;
-            tab.onclick = () => renderProjects(p.id);
-            cat.appendChild(tab);
-        }
-    });
-}
-
-// Auto-Thumbnail from first frame
-async function generateThumbnail(project) {
-    const file = await project.videoFile.getFile();
-    const url = URL.createObjectURL(file);
-    const video = document.createElement('video');
-    video.src = url;
-    video.currentTime = 1; // Capture at 1 second
-    video.onloadeddata = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-        document.getElementById(`thumb-${project.name}`).src = canvas.toDataURL();
-    };
-}
-
-// Viewer Logic
-function openViewer(project) {
-    project.videoFile.getFile().then(file => {
-        const url = URL.createObjectURL(file);
-        const player = document.getElementById('mainPlayer');
-        player.src = url;
-        document.getElementById('viewTitle').innerText = project.meta.title;
-        document.getElementById('videoViewer').style.display = 'flex';
-        player.play();
-    });
-}
-
-function closeViewer() {
-    const player = document.getElementById('mainPlayer');
-    player.pause();
-    player.src = "";
-    document.getElementById('videoViewer').style.display = 'none';
-}
-
-// Form Logic
-document.getElementById('newProjectBtn').onclick = () => {
-    if(!folderHandle) return requestFolder();
-    document.getElementById('formOverlay').style.display = 'flex';
-};
-
-function closeForm() { document.getElementById('formOverlay').style.display = 'none'; }
-
-document.getElementById('saveBtn').onclick = async () => {
-    const title = document.getElementById('projTitle').value;
-    const selectedPlats = Array.from(document.querySelectorAll('.platform-choice.selected')).map(el => el.dataset.id);
-    
-    if(!title || !selectedVideo || selectedPlats.length === 0) return alert("Fill all fields");
-
-    const root = await folderHandle.getDirectoryHandle('ClipFlow_Storage', { create: true });
-    const pFolder = await root.getDirectoryHandle(title.replace(/\s/g, '_'), { create: true });
-    
-    // Save Meta
-    const metaH = await pFolder.getFileHandle('meta.json', { create: true });
-    const metaW = await metaH.createWritable();
-    await metaW.write(JSON.stringify({ title, platforms: selectedPlats, date: new Date() }));
-    await metaW.close();
-
-    // Save Video
-    const vidH = await pFolder.getFileHandle('video.mp4', { create: true });
-    const vidW = await vidH.createWritable();
-    await vidW.write(selectedVideo);
-    await vidW.close();
-
-    closeForm();
-    loadProjects();
-};
-
-// Geometric Background
-function setupShapes() {
-    const canvas = document.getElementById('bgCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    
-    const shapes = [];
-    for(let i=0; i<15; i++) {
-        shapes.push({
-            x: Math.random()*canvas.width, y: Math.random()*canvas.height,
-            size: Math.random()*50+20,
-            type: Math.floor(Math.random()*3),
-            dx: (Math.random()-0.5)*0.5, dy: (Math.random()-0.5)*0.5
-        });
-    }
-
-    function draw() {
-        ctx.clearRect(0,0,canvas.width, canvas.height);
-        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border');
-        ctx.lineWidth = 1;
-        
-        shapes.forEach(s => {
-            ctx.beginPath();
-            if(s.type === 0) ctx.rect(s.x, s.y, s.size, s.size);
-            else if(s.type === 1) ctx.arc(s.x, s.y, s.size/2, 0, Math.PI*2);
-            else { ctx.moveTo(s.x, s.y); ctx.lineTo(s.x+s.size, s.y); ctx.lineTo(s.x+s.size/2, s.y-s.size); ctx.closePath(); }
-            ctx.stroke();
-            
-            s.x += s.dx; s.y += s.dy;
-            if(s.x < 0 || s.x > canvas.width) s.dx *= -1;
-            if(s.y < 0 || s.y > canvas.height) s.dy *= -1;
-        });
-        requestAnimationFrame(draw);
-    }
-    draw();
-}
 </script>
 </body>
 </html>
