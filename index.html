@@ -29,15 +29,17 @@
             transition: 0.3s; line-height: 1.6; overflow-x: hidden;
         }
 
-        /* --- Animations --- */
+        /* --- Focus & Pulse Animations --- */
         @keyframes pulse-focus {
             0% { box-shadow: 0 0 0 0px rgba(108, 99, 255, 0.4); }
-            100% { box-shadow: 0 0 0 10px rgba(108, 99, 255, 0); }
+            70% { box-shadow: 0 0 0 10px rgba(108, 99, 255, 0); }
+            100% { box-shadow: 0 0 0 0px rgba(108, 99, 255, 0); }
         }
 
-        .focus-anim:focus-within {
+        .focus-anim:focus-within, .focus-anim:focus {
             border-color: var(--primary) !important;
-            animation: pulse-focus 0.6s ease-out;
+            animation: pulse-focus 1.5s infinite;
+            outline: none;
         }
 
         header {
@@ -51,7 +53,7 @@
         .search-bar input {
             width: 100%; background: var(--bg); border: 1px solid var(--border);
             padding: 12px 15px 12px 40px; border-radius: 25px; color: var(--text);
-            outline: none; transition: 0.3s;
+            transition: 0.3s;
         }
 
         .grid {
@@ -71,17 +73,14 @@
         .card-thumb { 
             width: 100%; height: 280px; background: #000; 
             cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center;
-            position: relative;
         }
         
-        /* The logic: Vertical clips get contained (show all), wide clips cover */
+        /* Logic for Ratio Display */
         .card.vertical .card-thumb img { height: 100%; width: auto; object-fit: contain; }
         .card.horizontal .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
         .card-body { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
         .card-body h3 { margin: 0; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        .tag { font-size: 10px; padding: 4px 10px; border-radius: 6px; background: var(--primary); color: white; font-weight: 800; text-transform: uppercase; }
 
         .overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.85);
@@ -100,12 +99,18 @@
         .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
         .btn-danger { background: var(--danger); color: white; }
 
+        /* Thumbnail Slot Styles */
         .thumb-box { 
             aspect-ratio: 1; background: var(--bg); border: 1px solid var(--border); 
             border-radius: 15px; overflow: hidden; position: relative; 
             display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
-        .thumb-del { position: absolute; top: 5px; right: 5px; background: var(--danger); border-radius: 50%; width: 22px; height: 22px; color: white; font-size: 12px; display: none; align-items: center; justify-content: center; z-index: 5; }
+        .thumb-del { 
+            position: absolute; top: 8px; right: 8px; background: var(--danger); 
+            border-radius: 50%; width: 24px; height: 24px; color: white; 
+            display: none; align-items: center; justify-content: center; z-index: 10; font-weight: bold;
+        }
+        .thumb-box:hover .thumb-del { display: flex; }
 
         .hidden { display: none !important; }
     </style>
@@ -119,22 +124,22 @@
     </div>
     
     <div class="search-bar">
-        <input type="text" id="mainSearch" placeholder="🔍 Search your clips..." oninput="renderProjects()">
+        <input type="text" id="mainSearch" placeholder="🔍 Search projects..." oninput="renderProjects()">
     </div>
 
     <div style="display:flex; gap:12px;">
-        <button id="restoreBtn" class="btn btn-ghost hidden" onclick="restoreWorkspace()">📂 Restore</button>
+        <button id="restoreBtn" class="btn btn-ghost hidden" onclick="restoreWorkspace()">📂 Restore Folder</button>
         <button class="btn btn-ghost" onclick="toggleTheme()">🌓</button>
         <button class="btn btn-primary" onclick="openModal('add')">＋ New Project</button>
     </div>
 </header>
 
-<main id="mainContent">
+<main>
     <div id="projectsContainer" class="grid"></div>
     <div id="setupView" style="text-align:center; padding:120px 20px;" class="hidden">
-        <h2 style="font-size:32px; margin-bottom:10px;">Ready to organize?</h2>
-        <p style="color:var(--text-muted); margin-bottom:30px;">Select a local folder to use as your high-speed workspace.</p>
-        <button class="btn btn-primary" style="padding:18px 40px; font-size:18px;" onclick="initWorkspace()">🚀 Select Workspace Folder</button>
+        <h2 style="font-size:32px; margin-bottom:10px;">Select a Workspace</h2>
+        <p style="color:var(--text-muted); margin-bottom:30px;">Choose a local folder where your projects will be saved securely.</p>
+        <button class="btn btn-primary" style="padding:18px 40px; font-size:18px;" onclick="initWorkspace()">🚀 Select Folder</button>
     </div>
 </main>
 
@@ -142,37 +147,37 @@
     <div class="modal">
         <h2 id="modalTitle" style="margin-top:0">Create Project</h2>
         
-        <div id="videoUploadBox" class="focus-anim" style="margin-bottom:20px;">
-            <label style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">1. Source Video</label>
-            <div onclick="triggerVideo()" id="dropZone" style="border:2px dashed var(--border); padding:40px; text-align:center; border-radius:20px; cursor:pointer; margin-top:10px; transition:0.3s;">
-                <div id="videoIcon" style="font-size:30px; margin-bottom:10px;">🎬</div>
+        <div id="videoUploadBox" style="margin-bottom:20px;">
+            <label style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">1. Video File</label>
+            <div onclick="triggerVideo()" id="dropZone" class="focus-anim" style="border:2px dashed var(--border); padding:40px; text-align:center; border-radius:20px; cursor:pointer; margin-top:10px; transition:0.3s;">
+                <div style="font-size:30px; margin-bottom:10px;">🎬</div>
                 <span id="videoLabel" style="font-weight:600;">Click to upload MP4</span>
-                <p id="videoStatus" style="font-size:11px; color:var(--text-muted); margin-top:5px;">System will auto-generate thumb if left blank</p>
+                <p style="font-size:11px; color:var(--text-muted); margin-top:5px;">First frame will be used if no thumb is provided</p>
             </div>
         </div>
 
-        <label style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">2. Visuals (Set of 3)</label>
+        <label style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">2. Thumbnails (Set of 3)</label>
         <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px; margin:10px 0 25px;">
-            <div class="thumb-box focus-anim" id="box0" onclick="pickThumb(0)">
-                <div class="thumb-del" id="del0" onclick="removeThumb(event, 0)">×</div>
+            <div class="thumb-box focus-anim" onclick="pickThumb(0)">
+                <div class="thumb-del" onclick="removeThumb(event, 0)">×</div>
                 <img id="pre0" style="width:100%; height:100%; object-fit:contain; display:none">
-                <span style="font-size:20px; opacity:0.3;">📸</span>
+                <span id="plus0" style="font-size:20px; opacity:0.3;">📸</span>
             </div>
-            <div class="thumb-box focus-anim" id="box1" onclick="pickThumb(1)">
-                <div class="thumb-del" id="del1" onclick="removeThumb(event, 1)">×</div>
+            <div class="thumb-box focus-anim" onclick="pickThumb(1)">
+                <div class="thumb-del" onclick="removeThumb(event, 1)">×</div>
                 <img id="pre1" style="width:100%; height:100%; object-fit:contain; display:none">
-                <span style="font-size:20px; opacity:0.3;">📸</span>
+                <span id="plus1" style="font-size:20px; opacity:0.3;">📸</span>
             </div>
-            <div class="thumb-box focus-anim" id="box2" onclick="pickThumb(2)">
-                <div class="thumb-del" id="del2" onclick="removeThumb(event, 2)">×</div>
+            <div class="thumb-box focus-anim" onclick="pickThumb(2)">
+                <div class="thumb-del" onclick="removeThumb(event, 2)">×</div>
                 <img id="pre2" style="width:100%; height:100%; object-fit:contain; display:none">
-                <span style="font-size:20px; opacity:0.3;">📸</span>
+                <span id="plus2" style="font-size:20px; opacity:0.3;">📸</span>
             </div>
         </div>
 
-        <label style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">3. Details</label>
-        <input type="text" id="projTitle" placeholder="Project Title..." class="focus-anim" style="width:100%; padding:15px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); margin:10px 0; box-sizing:border-box; outline:none;">
-        <textarea id="projDesc" placeholder="Caption/Description..." rows="3" class="focus-anim" style="width:100%; padding:15px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); box-sizing:border-box; outline:none; resize:none;"></textarea>
+        <label style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">3. Metadata</label>
+        <input type="text" id="projTitle" placeholder="Project Title..." class="focus-anim" style="width:100%; padding:15px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); margin:10px 0; box-sizing:border-box;">
+        <textarea id="projDesc" placeholder="Description..." rows="3" class="focus-anim" style="width:100%; padding:15px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); box-sizing:border-box; resize:none;"></textarea>
 
         <div style="display:flex; gap:12px; margin-top:30px;">
             <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Cancel</button>
@@ -189,6 +194,7 @@
     let editMode = false;
     let currentEditName = null;
 
+    // --- DB & Restore System ---
     async function getDB() {
         return new Promise(res => {
             const req = indexedDB.open("ClipflowStorage", 1);
@@ -198,12 +204,10 @@
     }
 
     async function initWorkspace() {
-        try {
-            workspace = await window.showDirectoryPicker({ mode: 'readwrite' });
-            const db = await getDB();
-            db.transaction("handles", "readwrite").objectStore("handles").put(workspace, "last_folder");
-            onConnected();
-        } catch(e) { console.log("User cancelled folder picker"); }
+        workspace = await window.showDirectoryPicker({ mode: 'readwrite' });
+        const db = await getDB();
+        db.transaction("handles", "readwrite").objectStore("handles").put(workspace, "last_folder");
+        onConnected();
     }
 
     async function restoreWorkspace() {
@@ -212,11 +216,9 @@
             const req = db.transaction("handles").objectStore("handles").get("last_folder");
             req.onsuccess = () => res(req.result);
         });
-        if (handle) {
-            if (await handle.requestPermission({mode: 'readwrite'}) === 'granted') {
-                workspace = handle;
-                onConnected();
-            }
+        if (handle && await handle.requestPermission({mode: 'readwrite'}) === 'granted') {
+            workspace = handle;
+            onConnected();
         }
     }
 
@@ -226,6 +228,7 @@
         loadProjects();
     }
 
+    // --- Core Logic ---
     async function loadProjects() {
         projects = [];
         const root = await workspace.getDirectoryHandle('Clipflow_Projects', { create: true });
@@ -246,9 +249,7 @@
         const container = document.getElementById('projectsContainer');
         const q = document.getElementById('mainSearch').value.toLowerCase();
         container.innerHTML = '';
-        const sorted = projects.sort((a,b) => b.meta.timestamp - a.meta.timestamp);
-        
-        sorted.forEach((p, idx) => {
+        projects.sort((a,b) => b.meta.timestamp - a.meta.timestamp).forEach((p, idx) => {
             if(!p.meta.title.toLowerCase().includes(q)) return;
             const isVertical = p.meta.isVertical;
             const div = document.createElement('div');
@@ -258,11 +259,8 @@
                     <img src="${p.meta.thumbs[0] || ''}">
                 </div>
                 <div class="card-body">
-                    <div>
-                        <h3>${p.meta.title}</h3>
-                        <p style="font-size:12px; color:var(--text-muted); margin:5px 0;">${isVertical ? '📱 Vertical' : '🖥️ Horizontal'}</p>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>${p.meta.title}</h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
                         <button class="btn btn-ghost" style="padding:6px 12px; font-size:12px;" onclick="downloadZip(${idx})">📦 ZIP</button>
                         <div style="display:flex; gap:5px;">
                             <button class="btn btn-ghost" style="padding:6px 12px;" onclick="openModal('edit', ${idx})">✏️</button>
@@ -275,15 +273,13 @@
         });
     }
 
-    // --- Video First Frame Extractor ---
-    async function captureFirstFrame(file) {
+    // --- Auto Thumbnail Extraction ---
+    async function getFirstFrame(file) {
         return new Promise((res) => {
             const video = document.createElement('video');
             video.preload = 'metadata';
             video.src = URL.createObjectURL(file);
-            video.onloadeddata = () => {
-                video.currentTime = 0.1; // Seek slightly to avoid black frame
-            };
+            video.onloadeddata = () => { video.currentTime = 0.5; };
             video.onseeked = () => {
                 const canvas = document.createElement('canvas');
                 canvas.width = video.videoWidth;
@@ -291,7 +287,7 @@
                 canvas.getContext('2d').drawImage(video, 0, 0);
                 const data = canvas.toDataURL('image/jpeg', 0.8);
                 URL.revokeObjectURL(video.src);
-                res({data, isVertical: video.videoHeight > video.videoWidth});
+                res({ data, isVertical: video.videoHeight > video.videoWidth });
             };
         });
     }
@@ -300,11 +296,12 @@
         const title = document.getElementById('projTitle').value;
         if(!title || (!selectedVideo && !editMode)) return alert("Missing Title or Video");
 
-        let videoMeta = { isVertical: false };
+        let isVertical = editMode ? projects.find(p => p.name === currentEditName).meta.isVertical : false;
+
         if (selectedVideo) {
-            const frame = await captureFirstFrame(selectedVideo);
-            videoMeta.isVertical = frame.isVertical;
-            if (!tempThumbs[0]) tempThumbs[0] = frame.data;
+            const frameData = await getFirstFrame(selectedVideo);
+            isVertical = frameData.isVertical;
+            if (!tempThumbs[0]) tempThumbs[0] = frameData.data;
         }
 
         const root = await workspace.getDirectoryHandle('Clipflow_Projects', { create: true });
@@ -312,10 +309,8 @@
         const pFolder = await root.getDirectoryHandle(folderName, { create: true });
         
         const meta = {
-            title, 
-            desc: document.getElementById('projDesc').value,
-            thumbs: tempThumbs,
-            isVertical: editMode ? projects.find(p => p.name === currentEditName).meta.isVertical : videoMeta.isVertical,
+            title, desc: document.getElementById('projDesc').value,
+            thumbs: tempThumbs, isVertical,
             timestamp: editMode ? projects.find(p => p.name === currentEditName).meta.timestamp : Date.now()
         };
 
@@ -334,12 +329,7 @@
         closeModal(); loadProjects();
     }
 
-    function removeThumb(e, i) {
-        e.stopPropagation();
-        tempThumbs[i] = null;
-        refreshThumbs();
-    }
-
+    // --- UI Helpers ---
     function pickThumb(i) {
         const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
         input.onchange = e => {
@@ -350,19 +340,18 @@
         input.click();
     }
 
+    function removeThumb(e, i) {
+        e.stopPropagation();
+        tempThumbs[i] = null;
+        refreshThumbs();
+    }
+
     function refreshThumbs() {
         tempThumbs.forEach((src, i) => {
             const img = document.getElementById(`pre${i}`);
-            const del = document.getElementById(`del${i}`);
-            if(src) { 
-                img.src = src; img.style.display = 'block'; 
-                img.nextElementSibling.style.display = 'none';
-                del.style.display = 'flex';
-            } else { 
-                img.style.display = 'none'; 
-                img.nextElementSibling.style.display = 'block';
-                del.style.display = 'none';
-            }
+            const plus = document.getElementById(`plus${i}`);
+            if(src) { img.src = src; img.style.display = 'block'; plus.style.display = 'none'; }
+            else { img.style.display = 'none'; plus.style.display = 'block'; }
         });
     }
 
@@ -399,6 +388,7 @@
     }
 
     function closeModal() { document.getElementById('formModal').style.display = 'none'; }
+    function toggleTheme() { document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
 
     async function playVideo(idx) {
         const f = await projects[idx].videoFile.getFile();
@@ -408,7 +398,7 @@
     }
 
     async function deleteProject(idx) {
-        if(confirm("Delete this clip permanently?")) {
+        if(confirm("Permanently delete this project?")) {
             const root = await workspace.getDirectoryHandle('Clipflow_Projects');
             await root.removeEntry(projects[idx].name, { recursive: true });
             loadProjects();
@@ -419,24 +409,16 @@
         const p = projects[idx];
         const zip = new JSZip();
         zip.file("video.mp4", await p.videoFile.getFile());
-        zip.file("metadata.txt", `Title: ${p.meta.title}\nDescription: ${p.meta.desc}`);
-        p.meta.thumbs.forEach((img, i) => { if(img) zip.file(`thumbnail_${i}.png`, img.split(',')[1], {base64: true}); });
+        zip.file("info.txt", `Title: ${p.meta.title}\nDescription: ${p.meta.desc}`);
+        p.meta.thumbs.forEach((img, i) => { if(img) zip.file(`thumb_${i}.png`, img.split(',')[1], {base64: true}); });
         const blob = await zip.generateAsync({type:"blob"});
-        saveAs(blob, `${p.meta.title}_Export.zip`);
-    }
-
-    function toggleTheme() {
-        const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', t);
+        saveAs(blob, `${p.meta.title}_Backup.zip`);
     }
 
     window.onload = async () => {
         const db = await getDB();
         const req = db.transaction("handles").objectStore("handles").get("last_folder");
-        req.onsuccess = () => {
-            if (req.result) document.getElementById('restoreBtn').classList.remove('hidden');
-            else document.getElementById('setupView').classList.remove('hidden');
-        };
+        req.onsuccess = () => { if (req.result) document.getElementById('restoreBtn').classList.remove('hidden'); else document.getElementById('setupView').classList.remove('hidden'); };
     };
 </script>
 </body>
