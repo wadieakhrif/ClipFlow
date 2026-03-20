@@ -1,407 +1,576 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clipflow</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Cairo:wght@400;700&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipflow | Project Manager</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Cairo:wght@400;700&display=swap');
 
-:root[data-theme="dark"] {
-    --bg: #08091a; --secondary: #121430; --nav-bg: #1a1c3d; --text: #ffffff;
-    --text-muted: #8b8ea8; --accent: #6c63ff; --accent-hover: #5a52d6;
-    --border: rgba(255,255,255,0.08); --glass: rgba(255, 255, 255, 0.03);
-}
+        :root {
+            --primary: #6c63ff;
+            --primary-hover: #5a52d6;
+            --bg: #05060f;
+            --card-bg: #111322;
+            --nav-bg: rgba(13, 15, 30, 0.8);
+            --text: #ffffff;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --danger: #ff4757;
+            --success: #2ed573;
+        }
 
-:root[data-theme="light"] {
-    --bg: #f0f2f5; --secondary: #ffffff; --nav-bg: #ffffff; --text: #1a1c3d;
-    --text-muted: #64748b; --accent: #3b82f6; --accent-hover: #2563eb;
-    --border: rgba(0,0,0,0.08); --glass: rgba(0, 0, 0, 0.02);
-}
+        [data-theme="light"] {
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --nav-bg: rgba(255, 255, 255, 0.9);
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: rgba(0, 0, 0, 0.05);
+        }
 
-body { margin: 0; font-family: 'Roboto', sans-serif; background: var(--bg); color: var(--text); transition: 0.3s; }
-body[dir="rtl"] { font-family: 'Cairo', sans-serif; }
-.icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; vertical-align: middle; }
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            transition: all 0.3s ease;
+            line-height: 1.6;
+        }
 
-/* Navbar & Search */
-nav {
-    display: flex; flex-direction: column; gap: 10px;
-    padding: 12px 24px; background: var(--nav-bg);
-    border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 100;
-}
-.nav-top { display: flex; align-items: center; justify-content: space-between; }
-.search-bar { width: 100%; max-width: 400px; position: relative; }
-.search-bar input { margin-bottom: 0; padding-left: 35px; }
-.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
+        body[dir="rtl"] { font-family: 'Cairo', sans-serif; }
 
-/* Projects Grid */
-#projectsContainer {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 24px; padding: 20px 24px 40px;
-}
+        /* --- Header & Navigation --- */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--nav-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 24px;
+        }
 
-.project {
-    background: var(--secondary); border-radius: 16px; overflow: hidden;
-    border: 1px solid var(--border); transition: 0.3s; position: relative;
-}
-.project:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 20px;
+        }
 
-/* Menu Dots */
-.menu-dots {
-    position: absolute; top: 10px; right: 10px; z-index: 10;
-    background: rgba(0,0,0,0.5); border-radius: 50%; width: 30px; height: 30px;
-    display: flex; align-items: center; justify-content: center; cursor: pointer;
-}
-.menu-dropdown {
-    position: absolute; top: 45px; right: 10px; background: var(--nav-bg);
-    border: 1px solid var(--border); border-radius: 8px; display: none;
-    flex-direction: column; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.3); z-index: 11;
-}
-.menu-dropdown button {
-    background: none; border: none; color: var(--text); padding: 10px 15px;
-    text-align: left; cursor: pointer; font-size: 13px; border-bottom: 1px solid var(--border);
-}
-.menu-dropdown button:hover { background: var(--accent); }
+        .logo {
+            font-weight: 700;
+            font-size: 22px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
 
-.thumb-container { width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; cursor: pointer; }
-.ratio-9-16 .thumb-container { aspect-ratio: 9/16; max-height: 400px; }
-.thumb-container img { width: 100%; height: 100%; object-fit: cover; }
+        .search-wrapper {
+            flex: 1;
+            max-width: 500px;
+            position: relative;
+        }
 
-/* Thumbnail Selection in Form */
-.thumb-upload-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-.thumb-box { 
-    aspect-ratio: 1/1; border: 2px dashed var(--border); border-radius: 8px; 
-    display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden;
-}
-.thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+        .search-wrapper input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 10px 15px 10px 40px;
+            border-radius: 10px;
+            color: var(--text);
+            outline: none;
+            transition: border 0.3s;
+        }
 
-.overlay { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
-    display: none; z-index: 1000; justify-content: center; align-items: center;
-}
-.popup {
-    background: var(--secondary); width: 500px; max-width: 95%; 
-    border-radius: 20px; padding: 24px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border);
-}
+        .search-wrapper input:focus { border-color: var(--primary); }
+        .search-wrapper::before {
+            content: "🔍";
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.5;
+        }
 
-input, textarea, select {
-    width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text); margin-bottom: 12px; box-sizing: border-box;
-}
+        .nav-btns { display: flex; gap: 12px; align-items: center; }
 
-.primary-btn {
-    width: 100%; padding: 14px; background: var(--accent); border: none;
-    color: white; border-radius: 8px; font-weight: bold; cursor: pointer;
-}
-#bgCanvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
-</style>
+        /* --- Buttons --- */
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-ghost:hover { background: var(--border); }
+
+        /* --- Content Layout --- */
+        main { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+        .category-scroll {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            white-space: nowrap;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* --- Project Grid --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+        }
+
+        .card-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        .card-body { padding: 18px; }
+        .card-body h3 { margin: 0 0 8px; font-size: 18px; }
+        .card-body p { margin: 0; font-size: 13px; color: var(--text-muted); height: 40px; overflow: hidden; }
+
+        /* Menu Dots */
+        .dots-btn {
+            position: absolute; top: 10px; right: 10px;
+            width: 34px; height: 34px; border-radius: 50%;
+            background: rgba(0,0,0,0.6); color: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 10;
+        }
+
+        .dropdown {
+            position: absolute; top: 50px; right: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            display: none; flex-direction: column;
+            width: 160px; z-index: 100;
+        }
+
+        .dropdown button {
+            padding: 12px 15px; border: none; background: none; color: var(--text);
+            text-align: left; cursor: pointer; border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .dropdown button:hover { background: var(--primary); color: white; }
+
+        /* --- Modals --- */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            display: none; align-items: center; justify-content: center;
+            z-index: 2000; backdrop-filter: blur(8px);
+        }
+
+        .modal {
+            background: var(--card-bg);
+            width: 100%; max-width: 600px;
+            border-radius: 24px; padding: 32px;
+            border: 1px solid var(--border);
+            max-height: 90vh; overflow-y: auto;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); }
+        input, textarea, select {
+            width: 100%; padding: 12px; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 12px;
+            color: var(--text); outline: none; box-sizing: border-box;
+        }
+
+        .thumb-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;
+        }
+
+        .thumb-upload {
+            aspect-ratio: 1; border: 2px dashed var(--border);
+            border-radius: 12px; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; overflow: hidden;
+            background: var(--bg);
+        }
+        .thumb-upload img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Utility */
+        .hidden { display: none; }
+        .visible { display: flex; }
+    </style>
 </head>
 <body>
 
-<canvas id="bgCanvas"></canvas>
-
-<nav>
-    <div class="nav-top">
-        <div class="logo">
-            <svg class="icon" style="width:30px; height:30px; stroke:var(--accent);"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            <h1>Clipflow</h1>
-        </div>
-        <div class="nav-actions">
-            <button class="category-tab" id="langToggle"><span id="langText">عربي</span></button>
-            <button class="category-tab" id="themeToggle">🌓</button>
-            <button class="category-tab active" id="newProjectBtn">＋ <span data-i18n="new_project">New Project</span></button>
-        </div>
-    </div>
-    <div class="search-bar">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="projSearch" placeholder="Search project title..." oninput="renderProjects()">
-    </div>
-</nav>
-
-<div id="categories"></div>
-<div id="projectsContainer"></div>
-
-<div class="overlay" id="formOverlay">
-    <div class="popup">
-        <h2 id="formModalTitle">New Project</h2>
+<header>
+    <div class="top-bar">
+        <a href="#" class="logo">⚡ Clipflow</a>
         
-        <div id="dropZone" style="border: 2px dashed var(--accent); padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; margin-bottom: 15px;">
-            <p id="videoStatus">Click to select Video</p>
+        <div class="search-wrapper">
+            <input type="text" id="mainSearch" placeholder="Search by title..." oninput="renderProjects()">
         </div>
 
-        <label style="font-size:12px; color:var(--text-muted);">Step 2: Add up to 3 Thumbnails (1st is Cover)</label>
-        <div class="thumb-upload-group">
-            <div class="thumb-box" onclick="pickThumb(0)"><img id="pre0" style="display:none"><span>+</span></div>
-            <div class="thumb-box" onclick="pickThumb(1)"><img id="pre1" style="display:none"><span>+</span></div>
-            <div class="thumb-box" onclick="pickThumb(2)"><img id="pre2" style="display:none"><span>+</span></div>
+        <div class="nav-btns">
+            <button class="btn btn-ghost" onclick="toggleTheme()">🌓</button>
+            <button class="btn btn-primary" onclick="openModal('add')">＋ New Project</button>
         </div>
-
-        <input type="text" id="projTitle" placeholder="Project Title">
-        <textarea id="projDesc" placeholder="Description" rows="3"></textarea>
-
-        <label style="font-size:12px; color:var(--text-muted);">Primary Platform:</label>
-        <select id="mainPlatform">
-            <option value="yt">YouTube (16:9)</option>
-            <option value="reels">Instagram Reels (9:16)</option>
-            <option value="tiktok">TikTok (9:16)</option>
-            <option value="fb">Facebook (16:9)</option>
-        </select>
-
-        <button class="primary-btn" id="saveBtn">Save Project</button>
-        <button class="primary-btn" style="background:none; color:var(--text-muted);" onclick="closeForm()">Cancel</button>
     </div>
-</div>
+</header>
 
-<div class="overlay" id="videoViewer" onclick="closeViewer()">
-    <video id="mainPlayer" controls style="max-width:90%; border-radius:12px;"></video>
+<main>
+    <div class="category-scroll" id="catBar">
+        <div class="tab active" onclick="filterBy('all')">All Projects</div>
+        <div class="tab" onclick="filterBy('yt')">YouTube</div>
+        <div class="tab" onclick="filterBy('reels')">Reels / Shorts</div>
+        <div class="tab" onclick="filterBy('fb')">Facebook</div>
+    </div>
+
+    <div id="projectsContainer" class="grid">
+        </div>
+
+    <div id="setupView" style="text-align: center; padding: 100px 20px;" class="hidden">
+        <h2>Welcome to Clipflow</h2>
+        <p>Please select a folder on your computer to use as a workspace.</p>
+        <button class="btn btn-primary" style="margin: 0 auto;" onclick="initWorkspace()">Select Workspace Folder</button>
+    </div>
+</main>
+
+<div class="overlay" id="formModal">
+    <div class="modal">
+        <h2 id="modalTitle">New Project</h2>
+        
+        <div class="form-group" id="videoInputGroup">
+            <label>1. Select Video</label>
+            <div id="dropZone" style="border: 2px dashed var(--primary); padding: 30px; text-align: center; border-radius: 15px; cursor: pointer;">
+                <span id="videoLabel">Click to upload .mp4</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>2. Thumbnails (First image is the cover)</label>
+            <div class="thumb-grid">
+                <div class="thumb-upload" onclick="pickImage(0)"><img id="pre0" class="hidden"><span>+</span></div>
+                <div class="thumb-upload" onclick="pickImage(1)"><img id="pre1" class="hidden"><span>+</span></div>
+                <div class="thumb-upload" onclick="pickImage(2)"><img id="pre2" class="hidden"><span>+</span></div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Project Title</label>
+            <input type="text" id="projTitle" placeholder="Awesome Video Title">
+        </div>
+
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="projDesc" rows="3" placeholder="What's this video about?"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Platform Layout</label>
+            <select id="projPlat">
+                <option value="yt">YouTube (16:9)</option>
+                <option value="reels">TikTok / Reels / Shorts (9:16)</option>
+                <option value="fb">Facebook (16:9)</option>
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 30px;">
+            <button class="btn btn-ghost" style="flex: 1;" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" style="flex: 2;" onclick="saveProject()">Save Project</button>
+        </div>
+    </div>
 </div>
 
 <script>
-let folderHandle = null;
-let projects = [];
-let selectedVideo = null;
-let tempThumbs = [null, null, null];
-let editMode = false;
-let editingProjectName = null;
+    let workspace = null;
+    let projects = [];
+    let selectedVideoFile = null;
+    let tempThumbs = [null, null, null];
+    let editMode = false;
+    let currentEditName = null;
+    let currentFilter = 'all';
 
-const i18n = {
-    en: { new_project: "New Project", all: "All" },
-    ar: { new_project: "مشروع جديد", all: "الكل" }
-};
-let currentLang = 'en';
-
-window.onload = () => {
-    setupShapes();
-    checkExistingFolder();
-};
-
-async function checkExistingFolder() {
-    document.getElementById('categories').innerHTML = `<button class="category-tab active" onclick="requestFolder()" style="margin:20px">Select Workspace Folder to Start</button>`;
-}
-
-async function requestFolder() {
-    folderHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-    loadProjects();
-}
-
-async function loadProjects() {
-    projects = [];
-    const root = await folderHandle.getDirectoryHandle('Clipflow_Storage', { create: true });
-    for await (const [name, handle] of root.entries()) {
-        if(handle.kind === 'directory') {
-            try {
-                const metaFile = await handle.getFileHandle('meta.json');
-                const meta = JSON.parse(await (await metaFile.getFile()).text());
-                const videoFile = await handle.getFileHandle('video.mp4');
-                projects.push({ name, meta, videoFile, handle });
-            } catch(e) { console.log("Incomplete project found: " + name); }
+    // Initialize
+    async function checkStorage() {
+        if (!workspace) {
+            document.getElementById('setupView').classList.remove('hidden');
+            document.getElementById('projectsContainer').classList.add('hidden');
         }
     }
-    renderProjects();
-    renderTabs();
-}
+    checkStorage();
 
-function renderProjects() {
-    const container = document.getElementById('projectsContainer');
-    const query = document.getElementById('projSearch').value.toLowerCase();
-    container.innerHTML = '';
-    
-    projects.filter(p => p.meta.title.toLowerCase().includes(query)).forEach((p, idx) => {
-        const isVertical = p.meta.platform === 'reels' || p.meta.platform === 'tiktok';
-        const card = document.createElement('div');
-        card.className = `project ${isVertical ? 'ratio-9-16' : 'ratio-16-9'}`;
+    async function initWorkspace() {
+        try {
+            workspace = await window.showDirectoryPicker({ mode: 'readwrite' });
+            document.getElementById('setupView').classList.add('hidden');
+            document.getElementById('projectsContainer').classList.remove('hidden');
+            loadProjects();
+        } catch (e) { console.error("Workspace access denied"); }
+    }
+
+    async function loadProjects() {
+        projects = [];
+        const root = await workspace.getDirectoryHandle('Clipflow_Data', { create: true });
         
-        card.innerHTML = `
-            <div class="menu-dots" onclick="event.stopPropagation(); toggleMenu(${idx})">⋮</div>
-            <div class="menu-dropdown" id="menu-${idx}">
-                <button onclick="editProject(${idx})">✏️ Edit</button>
-                <button onclick="downloadProject(${idx})">📥 Download Bundle</button>
-                <button onclick="deleteProject(${idx})" style="color:#ff4757">🗑️ Delete Permanently</button>
-            </div>
-            <div class="thumb-container" onclick="openViewer('${p.name}')">
-                <img src="${p.meta.thumbs?.[0] || ''}" id="img-${p.name}">
-            </div>
-            <div style="padding:15px">
-                <h3 style="margin:0">${p.meta.title}</h3>
-                <small style="opacity:0.6">${p.meta.platform.toUpperCase()}</small>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-}
+        for await (const [name, handle] of root.entries()) {
+            if (handle.kind === 'directory') {
+                try {
+                    const mFile = await handle.getFileHandle('meta.json');
+                    const meta = JSON.parse(await (await mFile.getFile()).text());
+                    const vFile = await handle.getFileHandle('video.mp4');
+                    projects.push({ folderName: name, meta, videoFile: vFile, handle });
+                } catch (e) { console.warn("Skipping corrupt project: " + name); }
+            }
+        }
+        renderProjects();
+    }
 
-function toggleMenu(idx) {
-    const menus = document.querySelectorAll('.menu-dropdown');
-    menus.forEach((m, i) => m.style.display = i === idx && m.style.display !== 'flex' ? 'flex' : 'none');
-}
+    function renderProjects() {
+        const container = document.getElementById('projectsContainer');
+        const query = document.getElementById('mainSearch').value.toLowerCase();
+        container.innerHTML = '';
 
-// Global click to close menus
-window.onclick = () => document.querySelectorAll('.menu-dropdown').forEach(m => m.style.display = 'none');
+        // SORTING: Newest to Oldest
+        const sorted = projects.sort((a, b) => b.meta.timestamp - a.meta.timestamp);
 
-// Thumbnail Logic
-function pickThumb(index) {
-    const input = document.createElement('input');
-    input.type = 'file'; input.accept = 'image/*';
-    input.onchange = (e) => {
-        const reader = new FileReader();
-        reader.onload = (f) => {
-            tempThumbs[index] = f.target.result;
-            const img = document.getElementById(`pre${index}`);
-            img.src = f.target.result;
-            img.style.display = 'block';
-            img.nextElementSibling.style.display = 'none';
+        sorted.forEach((p, idx) => {
+            if (currentFilter !== 'all' && p.meta.platform !== currentFilter) return;
+            if (!p.meta.title.toLowerCase().includes(query)) return;
+
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `
+                <div class="dots-btn" onclick="toggleMenu(event, ${idx})">⋮</div>
+                <div class="dropdown" id="dropdown-${idx}">
+                    <button onclick="openModal('edit', ${idx})">✏️ Edit Details</button>
+                    <button onclick="downloadBundle(${idx})">📦 Download ZIP</button>
+                    <button onclick="deleteProject(${idx})" style="color:var(--danger)">🗑️ Delete File</button>
+                </div>
+                <div class="card-thumb" onclick="previewVideo(${idx})">
+                    <img src="${p.meta.thumbs[0] || ''}">
+                </div>
+                <div class="card-body">
+                    <h3>${p.meta.title}</h3>
+                    <p>${p.meta.desc || 'No description provided.'}</p>
+                    <div style="font-size: 11px; margin-top: 10px; opacity: 0.5;">
+                        ${new Date(p.meta.timestamp).toLocaleString()}
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // --- Actions ---
+    function openModal(mode, idx = null) {
+        editMode = (mode === 'edit');
+        currentEditName = idx !== null ? projects[idx].folderName : null;
+        
+        document.getElementById('modalTitle').innerText = editMode ? "Edit Project" : "New Project";
+        document.getElementById('videoInputGroup').style.display = editMode ? 'none' : 'block';
+
+        if (editMode) {
+            const p = projects[idx];
+            document.getElementById('projTitle').value = p.meta.title;
+            document.getElementById('projDesc').value = p.meta.desc;
+            document.getElementById('projPlat').value = p.meta.platform;
+            tempThumbs = [...p.meta.thumbs];
+        } else {
+            document.getElementById('projTitle').value = "";
+            document.getElementById('projDesc').value = "";
+            selectedVideoFile = null;
+            tempThumbs = [null, null, null];
+            document.getElementById('videoLabel').innerText = "Click to upload .mp4";
+        }
+
+        updateThumbUI();
+        document.getElementById('formModal').style.display = 'flex';
+    }
+
+    async function saveProject() {
+        const title = document.getElementById('projTitle').value;
+        const desc = document.getElementById('projDesc').value;
+        const plat = document.getElementById('projPlat').value;
+
+        if (!title || (!selectedVideoFile && !editMode)) return alert("Please fill in the title and select a video.");
+
+        const root = await workspace.getDirectoryHandle('Clipflow_Data', { create: true });
+        
+        // If editing, use the old folder name, otherwise create new unique name
+        const folderName = editMode ? currentEditName : title.replace(/\s+/g, '_') + "_" + Date.now();
+        const pFolder = await root.getDirectoryHandle(folderName, { create: true });
+
+        // Meta File
+        const mFile = await pFolder.getFileHandle('meta.json', { create: true });
+        const writer = await mFile.createWritable();
+        const metaData = {
+            title, desc, 
+            platform: plat, 
+            thumbs: tempThumbs, 
+            timestamp: editMode ? projects.find(p => p.folderName === currentEditName).meta.timestamp : Date.now()
         };
-        reader.readAsDataURL(e.target.files[0]);
-    };
-    input.click();
-}
+        await writer.write(JSON.stringify(metaData));
+        await writer.close();
 
-async function deleteProject(idx) {
-    const p = projects[idx];
-    const confirmDelete = confirm(`⚠️ PERMANENT DELETE: This will delete "${p.meta.title}" and its video from your device. Continue?`);
-    if(confirmDelete) {
-        const root = await folderHandle.getDirectoryHandle('Clipflow_Storage');
-        await root.removeEntry(p.name, { recursive: true });
+        // Video File (Only save if a new file was picked)
+        if (selectedVideoFile) {
+            const vFile = await pFolder.getFileHandle('video.mp4', { create: true });
+            const vWriter = await vFile.createWritable();
+            await vWriter.write(selectedVideoFile);
+            await vWriter.close();
+        }
+
+        closeModal();
         loadProjects();
     }
-}
 
-async function downloadProject(idx) {
-    const p = projects[idx];
-    const textData = `Title: ${p.meta.title}\nDescription: ${p.meta.desc}\nPlatform: ${p.meta.platform}`;
-    const blob = new Blob([textData], {type: 'text/plain'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${p.meta.title}_details.txt`;
-    a.click();
-    alert("Metadata downloaded. Use the project folder in your workspace for the video file.");
-}
+    async function downloadBundle(idx) {
+        const p = projects[idx];
+        const zip = new JSZip();
+        
+        // 1. Add Text Info
+        const info = `Title: ${p.meta.title}\nDescription: ${p.meta.desc}\nPlatform: ${p.meta.platform}\nDate: ${new Date(p.meta.timestamp).toString()}`;
+        zip.file("project_info.txt", info);
 
-function editProject(idx) {
-    const p = projects[idx];
-    editMode = true;
-    editingProjectName = p.name;
-    document.getElementById('formModalTitle').innerText = "Edit Project";
-    document.getElementById('projTitle').value = p.meta.title;
-    document.getElementById('projDesc').value = p.meta.desc || "";
-    document.getElementById('mainPlatform').value = p.meta.platform;
-    tempThumbs = p.meta.thumbs || [null, null, null];
-    
-    tempThumbs.forEach((t, i) => {
-        const img = document.getElementById(`pre${i}`);
-        if(t) {
-            img.src = t; img.style.display = 'block';
-            img.nextElementSibling.style.display = 'none';
-        } else {
-            img.style.display = 'none';
-            img.nextElementSibling.style.display = 'block';
+        // 2. Add Video
+        const vBlob = await p.videoFile.getFile();
+        zip.file("video.mp4", vBlob);
+
+        // 3. Add Thumbnails (Base64 conversion)
+        p.meta.thumbs.forEach((data, i) => {
+            if (data) {
+                const imgData = data.split(',')[1];
+                zip.file(`thumbnail_${i+1}.png`, imgData, {base64: true});
+            }
+        });
+
+        // Generate and Download
+        const content = await zip.generateAsync({type:"blob"});
+        saveAs(content, `${p.meta.title}_bundle.zip`);
+    }
+
+    async function deleteProject(idx) {
+        if (confirm("⚠️ PERMANENT DELETE: This will remove the folder from your workspace. This cannot be undone.")) {
+            const root = await workspace.getDirectoryHandle('Clipflow_Data');
+            await root.removeEntry(projects[idx].folderName, { recursive: true });
+            loadProjects();
         }
-    });
-
-    document.getElementById('formOverlay').style.display = 'flex';
-}
-
-document.getElementById('newProjectBtn').onclick = () => {
-    if(!folderHandle) return requestFolder();
-    editMode = false;
-    document.getElementById('formModalTitle').innerText = "New Project";
-    document.getElementById('projTitle').value = "";
-    document.getElementById('projDesc').value = "";
-    tempThumbs = [null, null, null];
-    [0,1,2].forEach(i => {
-        document.getElementById(`pre${i}`).style.display = 'none';
-        document.getElementById(`pre${i}`).nextElementSibling.style.display = 'block';
-    });
-    document.getElementById('formOverlay').style.display = 'flex';
-};
-
-document.getElementById('saveBtn').onclick = async () => {
-    const title = document.getElementById('projTitle').value;
-    const desc = document.getElementById('projDesc').value;
-    const platform = document.getElementById('mainPlatform').value;
-    
-    if(!title || (!selectedVideo && !editMode)) return alert("Please provide title and video");
-
-    const root = await folderHandle.getDirectoryHandle('Clipflow_Storage', { create: true });
-    const pFolderName = editMode ? editingProjectName : title.replace(/\s/g, '_') + '_' + Date.now();
-    const pFolder = await root.getDirectoryHandle(pFolderName, { create: true });
-
-    // Meta Save
-    const metaH = await pFolder.getFileHandle('meta.json', { create: true });
-    const metaW = await metaH.createWritable();
-    await metaW.write(JSON.stringify({ title, desc, platform, thumbs: tempThumbs, date: new Date() }));
-    await metaW.close();
-
-    // Video Save (only if new one selected)
-    if(selectedVideo) {
-        const vidH = await pFolder.getFileHandle('video.mp4', { create: true });
-        const vidW = await vidH.createWritable();
-        await vidW.write(selectedVideo);
-        await vidW.close();
     }
 
-    closeForm();
-    loadProjects();
-};
+    // --- UI Helpers ---
+    function pickImage(i) {
+        const input = document.createElement('input');
+        input.type = 'file'; input.accept = 'image/*';
+        input.onchange = e => {
+            const reader = new FileReader();
+            reader.onload = f => {
+                tempThumbs[i] = f.target.result;
+                updateThumbUI();
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        };
+        input.click();
+    }
 
-function closeForm() { document.getElementById('formOverlay').style.display = 'none'; }
+    function updateThumbUI() {
+        tempThumbs.forEach((src, i) => {
+            const img = document.getElementById(`pre${i}`);
+            if (src) {
+                img.src = src; img.classList.remove('hidden');
+                img.nextElementSibling.classList.add('hidden');
+            } else {
+                img.classList.add('hidden');
+                img.nextElementSibling.classList.remove('hidden');
+            }
+        });
+    }
 
-async function openViewer(name) {
-    const p = projects.find(proj => proj.name === name);
-    const file = await p.videoFile.getFile();
-    document.getElementById('mainPlayer').src = URL.createObjectURL(file);
-    document.getElementById('videoViewer').style.display = 'flex';
-}
-
-function closeViewer() {
-    const player = document.getElementById('mainPlayer');
-    player.pause();
-    document.getElementById('videoViewer').style.display = 'none';
-}
-
-document.getElementById('dropZone').onclick = () => {
-    const input = document.createElement('input');
-    input.type = 'file'; input.accept = 'video/*';
-    input.onchange = (e) => {
-        selectedVideo = e.target.files[0];
-        document.getElementById('videoStatus').innerText = selectedVideo.name;
+    document.getElementById('dropZone').onclick = () => {
+        const input = document.createElement('input');
+        input.type = 'file'; input.accept = 'video/mp4';
+        input.onchange = e => {
+            selectedVideoFile = e.target.files[0];
+            document.getElementById('videoLabel').innerText = selectedVideoFile.name;
+        };
+        input.click();
     };
-    input.click();
-};
 
-// Simple background setup
-function setupShapes() {
-    const canvas = document.getElementById('bgCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    ctx.strokeStyle = 'rgba(108, 99, 255, 0.1)';
-    function draw() {
-        ctx.clearRect(0,0,canvas.width, canvas.height);
-        ctx.strokeRect(100, 100, 50, 50);
-        ctx.beginPath(); ctx.arc(canvas.width-100, 200, 30, 0, Math.PI*2); ctx.stroke();
-        requestAnimationFrame(draw);
+    function toggleMenu(e, idx) {
+        e.stopPropagation();
+        const menu = document.getElementById(`dropdown-${idx}`);
+        const isVisible = menu.style.display === 'flex';
+        document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
+        menu.style.display = isVisible ? 'none' : 'flex';
     }
-    draw();
-}
 
-function renderTabs() {
-    const cat = document.getElementById('categories');
-    cat.innerHTML = `<div class="category-tab active" style="margin-left:24px" onclick="renderProjects()">All Projects (${projects.length})</div>`;
-}
+    window.onclick = () => document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
 
-document.getElementById('themeToggle').onclick = () => {
-    const theme = document.documentElement.getAttribute('data-theme');
-    document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'light' : 'dark');
-};
+    function closeModal() { document.getElementById('formModal').style.display = 'none'; }
 
-document.getElementById('langToggle').onclick = () => {
-    currentLang = currentLang === 'en' ? 'ar' : 'en';
-    document.body.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-    document.getElementById('langText').innerText = currentLang === 'en' ? 'عربي' : 'English';
-};
+    function toggleTheme() {
+        const theme = document.documentElement.getAttribute('data-theme');
+        document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'light' : 'dark');
+    }
+
+    function filterBy(plat) {
+        currentFilter = plat;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        renderProjects();
+    }
+
+    async function previewVideo(idx) {
+        const p = projects[idx];
+        const file = await p.videoFile.getFile();
+        const url = URL.createObjectURL(file);
+        const win = window.open("", "_blank");
+        win.document.write(`<video src="${url}" controls style="width:100%; height:100%; background:black;"></video>`);
+    }
 </script>
+
 </body>
 </html>
