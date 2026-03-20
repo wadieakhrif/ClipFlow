@@ -40,104 +40,98 @@
             display: flex; align-items: center; justify-content: space-between;
         }
 
-        /* Search Fix */
+        /* Center Header: Search + Categories */
         .header-center { flex: 1; max-width: 650px; margin: 0 20px; display: flex; flex-direction: column; gap: 12px; }
         
-        .search-bar { position: relative; width: 100%; display: flex; align-items: center; }
-        .search-bar i { position: absolute; left: 15px; color: var(--text-muted); pointer-events: none; z-index: 5; }
+        .search-bar { position: relative; width: 100%; }
+        .search-bar i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
         .search-bar input {
             width: 100%; background: var(--bg); border: 1px solid var(--border);
             padding: 12px 15px 12px 45px; border-radius: 12px; color: var(--text);
             outline: none; transition: 0.3s; box-sizing: border-box;
         }
 
-        /* Horizontal Scroll Categories */
-        .category-nav { 
-            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; 
-            scrollbar-width: none; -ms-overflow-style: none;
-        }
-        .category-nav::-webkit-scrollbar { display: none; }
+        .category-nav { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
         .cat-item {
             background: var(--card-bg); border: 1px solid var(--border); color: var(--text-muted);
-            padding: 8px 16px; border-radius: 10px; font-size: 13px; cursor: pointer;
+            padding: 6px 14px; border-radius: 10px; font-size: 13px; cursor: pointer;
             display: flex; align-items: center; gap: 8px; transition: 0.2s; white-space: nowrap;
         }
         .cat-item:hover { border-color: var(--primary); color: var(--text); }
         .cat-item.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .cat-count { font-size: 10px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 6px; font-weight: bold; }
 
-        /* Card System & Vertical Fix */
+        /* Grid */
         .grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px; padding: 40px 30px; max-width: 1600px; margin: 0 auto;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px; padding: 40px 30px; max-width: 1500px; margin: 0 auto;
         }
 
+        /* Card with Animations */
         .card {
-            background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border);
-            overflow: hidden; position: relative; transition: 0.3s cubic-bezier(0.2, 1, 0.2, 1);
-            backdrop-filter: blur(10px);
+            background: var(--card-bg); border-radius: 24px; border: 1px solid var(--border);
+            overflow: hidden; position: relative; transition: 0.4s cubic-bezier(0.2, 1, 0.2, 1);
+            backdrop-filter: blur(10px); animation: fadeInUp 0.6s ease-out forwards;
         }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .card:hover { transform: translateY(-10px); border-color: var(--primary); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
 
-        /* Vertical Scaling Fix: Half length/Narrower */
-        .card.vertical { width: 220px; justify-self: center; }
-        .card.vertical .card-thumb { aspect-ratio: 9/16; }
+        /* Elegant Vertical Sizing */
+        .card.vertical { max-width: 280px; justify-self: center; }
+        .card.vertical .card-thumb { aspect-ratio: 9/16; max-height: 420px; }
         .card.horizontal .card-thumb { aspect-ratio: 16/9; }
 
-        .card-thumb { 
-            width: 100%; background: #000; cursor: pointer; overflow: hidden; 
-            display: flex; align-items: center; justify-content: center; position: relative; 
-        }
-        .card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .card-thumb { width: 100%; background: #000; cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
+        .card-thumb img { width: 100%; height: 100%; object-fit: contain; transition: 0.5s; }
+        .card:hover .card-thumb img { transform: scale(1.05); }
+
+        .card-body { padding: 20px; }
+        .card-body h3 { margin: 5px 0; font-size: 18px; font-weight: 700; }
         
-        /* Play Indicator */
-        .play-overlay {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; transition: 0.3s;
+        .project-date { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
+        .project-date i { color: var(--primary); } /* Dark mode fix for icon visibility */
+
+        /* Three Dots Menu & Animated Dropdown */
+        .dots-btn { 
+            position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); 
+            color: white; border-radius: 50%; width: 36px; height: 36px; 
+            display: flex; align-items: center; justify-content: center; cursor: pointer; 
+            z-index: 10; transition: 0.3s;
         }
-        .card-thumb:hover .play-overlay { opacity: 1; }
-        .play-icon-circle {
-            width: 50px; height: 50px; background: var(--primary); 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 20px rgba(108,99,255,0.6); color: white;
-        }
+        .dots-btn:hover { background: var(--primary); transform: scale(1.1); }
 
-        .card-body { padding: 15px; }
-        .card-body h3 { margin: 5px 0; font-size: 16px; }
-
-        /* Unified Buttons */
-        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
-
-        /* Dropdown & Modals */
         .dropdown { 
-            position: absolute; top: 55px; right: 10px; background: var(--nav-bg); 
-            border: 1px solid var(--border); border-radius: 12px; display: none; 
-            flex-direction: column; overflow: hidden; z-index: 100;
+            position: absolute; top: 58px; right: 15px; background: var(--nav-bg); 
+            border: 1px solid var(--border); border-radius: 16px; display: none; 
+            flex-direction: column; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.6); 
+            z-index: 100; transform-origin: top right; transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .dropdown.active { display: flex; animation: menuIn 0.2s ease-out; }
-        @keyframes menuIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .dropdown button { padding: 12px 20px; border: none; background: none; color: var(--text); text-align: left; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .dropdown.active { display: flex; animation: menuIn 0.25s ease-out; }
+        @keyframes menuIn { from { opacity: 0; transform: scale(0.85) translateY(-10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+        .dropdown button { padding: 12px 20px; border: none; background: none; color: var(--text); text-align: left; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
         .dropdown button:hover { background: var(--primary); color: white; }
 
-        /* In-App Player Modal */
-        #videoPlayerOverlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            z-index: 3000; display: none; align-items: center; justify-content: center;
-        }
-        .player-container { width: 90%; max-width: 1000px; position: relative; }
-        .close-player { position: absolute; top: -50px; right: 0; color: white; cursor: pointer; background: none; border: none; }
+        /* Elegant Unified Button */
+        .btn { display: inline-flex; align-items: center; gap: 10px; padding: 12px 24px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s cubic-bezier(0.2, 1, 0.2, 1); }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(108, 99, 255, 0.3); }
+        .btn-primary:hover { transform: translateY(-3px); background: var(--primary-hover); box-shadow: 0 12px 25px rgba(108, 99, 255, 0.4); }
+        .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-ghost:hover { background: var(--border); }
 
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(10px); }
-        .modal { background: var(--card-bg); width: 95%; max-width: 550px; border-radius: 25px; padding: 30px; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
+        /* Modal & Form Fixes */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(15px); animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal { background: var(--card-bg); width: 90%; max-width: 550px; border-radius: 30px; padding: 35px; border: 1px solid var(--border); max-height: 85vh; overflow-y: auto; }
 
-        .video-preview-box { width: 100%; border-radius: 15px; background: #000; margin-bottom: 15px; overflow: hidden; display: none; }
-        .video-preview-box video { width: 100%; max-height: 250px; }
-
-        .check-item { background: var(--bg); border: 1px solid var(--border); padding: 10px; border-radius: 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; }
-        .check-item:has(input:checked) { border-color: var(--primary); background: rgba(108,99,255,0.1); }
+        .thumb-slot { position: relative; aspect-ratio: 1; background: var(--bg); border: 1.5px dashed var(--border); border-radius: 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .thumb-slot:hover { border-color: var(--primary); background: rgba(108, 99, 255, 0.05); }
         
-        .logo-img { height: 32px; border-radius: 6px; }
+        .check-item { background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s; }
+        .check-item:has(input:checked) { border-color: var(--primary); background: rgba(108, 99, 255, 0.1); }
+
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.7; cursor: pointer; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -146,91 +140,85 @@
 
 <header>
     <div style="display:flex; align-items:center; gap:12px;">
-        <img src="https://freeimage.host/i/qOZgrWx" alt="Clipflow" class="logo-img" onerror="this.src='https://via.placeholder.com/32?text=C'">
-        <h1 style="font-size:22px; margin:0; letter-spacing:-1px; font-weight:800;">Clipflow</h1>
+        <div style="width:42px; height:42px; background:var(--primary); border-radius:12px; display:flex; align-items:center; justify-content:center; box-shadow: 0 4px 15px rgba(108,99,255,0.4);"><i data-lucide="zap" size="24" color="white"></i></div>
+        <h1 style="font-size:24px; margin:0; letter-spacing:-1px; font-weight:800;">Clipflow<span style="color:var(--primary)">.</span></h1>
     </div>
 
     <div class="header-center">
         <div class="search-bar">
             <i data-lucide="search" size="18"></i>
-            <input type="text" id="mainSearch" placeholder="Search your projects..." oninput="renderProjects()">
+            <input type="text" id="mainSearch" data-i18n="searchPlaceholder" placeholder="Search projects..." oninput="renderProjects()">
         </div>
         <div class="category-nav" id="catNav">
-            <div class="cat-item active" onclick="setFilter('all')">All</div>
-            <div class="cat-item" onclick="setFilter('youtube')">YouTube</div>
-            <div class="cat-item" onclick="setFilter('shorts')">Shorts</div>
-            <div class="cat-item" onclick="setFilter('tiktok')">TikTok</div>
-            <div class="cat-item" onclick="setFilter('reels')">Instagram</div>
-            <div class="cat-item" onclick="setFilter('facebook')">Facebook</div>
+            <div class="cat-item active" onclick="setFilter('all')"><i data-lucide="layout-grid" size="14"></i> <span data-i18n="catAll">All</span> <span class="cat-count" id="cnt-all">0</span></div>
+            <div class="cat-item" onclick="setFilter('youtube')"><i data-lucide="youtube" size="14"></i> YouTube <span class="cat-count" id="cnt-youtube">0</span></div>
+            <div class="cat-item" onclick="setFilter('shorts')"><i data-lucide="play" size="14"></i> YT Shorts <span class="cat-count" id="cnt-shorts">0</span></div>
+            <div class="cat-item" onclick="setFilter('reels')"><i data-lucide="instagram" size="14"></i> Instagram <span class="cat-count" id="cnt-reels">0</span></div>
+            <div class="cat-item" onclick="setFilter('fbshorts')"><i data-lucide="facebook" size="14"></i> FB Shorts <span class="cat-count" id="cnt-fb">0</span></div>
         </div>
     </div>
 
-    <div style="display:flex; gap:10px;">
+    <div style="display:flex; gap:12px;">
         <button class="btn btn-ghost" onclick="toggleLanguage()" id="langBtn">AR</button>
-        <button class="btn btn-primary" onclick="openModal('add')"><i data-lucide="plus"></i> New Project</button>
+        <button class="btn btn-ghost" onclick="toggleTheme()"><i data-lucide="sun" id="themeIcon"></i></button>
+        <button class="btn btn-primary" onclick="openModal('add')"><i data-lucide="plus"></i> <span data-i18n="newProject">New</span></button>
     </div>
 </header>
 
 <main>
     <div id="projectsContainer" class="grid"></div>
-    <div id="setupView" style="text-align:center; padding:100px 0;" class="hidden">
-        <i data-lucide="folder-search" size="64" style="opacity:0.2; margin-bottom:20px;"></i>
-        <h2 style="opacity:0.6">Connect workspace to begin</h2>
-        <button class="btn btn-primary" onclick="initWorkspace()">Select Workspace Folder</button>
+    <div id="setupView" style="text-align:center; padding:120px 0;" class="hidden">
+        <i data-lucide="folder-lock" size="64" style="opacity:0.2; margin-bottom:20px;"></i>
+        <h2 style="opacity:0.6" data-i18n="welcomeMsg">Welcome. Please connect your workspace.</h2>
+        <button class="btn btn-primary" onclick="initWorkspace()"><i data-lucide="hard-drive"></i> <span data-i18n="selectFolder">Select Folder</span></button>
     </div>
 </main>
 
-<div id="videoPlayerOverlay" onclick="closePlayer()">
-    <div class="player-container" onclick="event.stopPropagation()">
-        <button class="close-player" onclick="closePlayer()"><i data-lucide="x" size="32"></i></button>
-        <video id="mainPlayer" controls autoplay style="width:100%; border-radius:15px; box-shadow: 0 0 50px rgba(0,0,0,0.8);"></video>
-    </div>
-</div>
-
 <div class="overlay" id="formModal">
     <div class="modal">
-        <h2 id="modalTitle" style="margin-top:0">New Project</h2>
+        <h2 id="modalTitle" style="margin-top:0" data-i18n="createProject">Create Project</h2>
         
-        <div id="videoPreviewBox" class="video-preview-box">
-            <video id="newVideoPreview" controls></video>
-        </div>
-
         <div id="videoUploadBox" style="margin-bottom:20px;">
-            <div onclick="triggerVideo()" style="border:2px dashed var(--primary); padding:30px; text-align:center; border-radius:15px; cursor:pointer;">
-                <i data-lucide="video" size="24"></i><br>
-                <span id="videoLabelText">Upload Video</span>
+            <div onclick="triggerVideo()" id="dropZone" style="border:2.5px dashed var(--primary); padding:35px; text-align:center; border-radius:20px; cursor:pointer;">
+                <i data-lucide="upload-cloud" size="32"></i><br>
+                <span id="videoLabelText" data-i18n="clickUpload">Click to Upload Video (.mp4)</span>
             </div>
         </div>
 
-        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:20px;">
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:20px;">
             <div class="thumb-slot" onclick="pickThumb(0)">
-                <button class="remove-thumb-btn" id="rm0" onclick="removeThumb(event, 0)" style="display:none; position:absolute; top:2px; right:2px; background:var(--danger); border:none; color:white; border-radius:50%; cursor:pointer;">×</button>
-                <img id="pre0" style="width:100%; height:100%; object-fit:cover; display:none"><i data-lucide="image"></i>
+                <button class="remove-thumb-btn" style="position:absolute; top:5px; right:5px; background:var(--danger); border:none; border-radius:50%; color:white; width:24px; height:24px; cursor:pointer; display:none;" id="rm0" onclick="removeThumb(event, 0)">×</button>
+                <img id="pre0" style="width:100%; height:100%; object-fit:contain; display:none"><i data-lucide="image-plus"></i>
             </div>
             <div class="thumb-slot" onclick="pickThumb(1)">
-                <button class="remove-thumb-btn" id="rm1" onclick="removeThumb(event, 1)" style="display:none; position:absolute; top:2px; right:2px; background:var(--danger); border:none; color:white; border-radius:50%; cursor:pointer;">×</button>
-                <img id="pre1" style="width:100%; height:100%; object-fit:cover; display:none"><i data-lucide="image"></i>
+                <button class="remove-thumb-btn" style="position:absolute; top:5px; right:5px; background:var(--danger); border:none; border-radius:50%; color:white; width:24px; height:24px; cursor:pointer; display:none;" id="rm1" onclick="removeThumb(event, 1)">×</button>
+                <img id="pre1" style="width:100%; height:100%; object-fit:contain; display:none"><i data-lucide="image-plus"></i>
             </div>
             <div class="thumb-slot" onclick="pickThumb(2)">
-                <button class="remove-thumb-btn" id="rm2" onclick="removeThumb(event, 2)" style="display:none; position:absolute; top:2px; right:2px; background:var(--danger); border:none; color:white; border-radius:50%; cursor:pointer;">×</button>
-                <img id="pre2" style="width:100%; height:100%; object-fit:cover; display:none"><i data-lucide="image"></i>
+                <button class="remove-thumb-btn" style="position:absolute; top:5px; right:5px; background:var(--danger); border:none; border-radius:50%; color:white; width:24px; height:24px; cursor:pointer; display:none;" id="rm2" onclick="removeThumb(event, 2)">×</button>
+                <img id="pre2" style="width:100%; height:100%; object-fit:contain; display:none"><i data-lucide="image-plus"></i>
             </div>
         </div>
 
-        <input type="date" id="projDate" style="width:100%; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text); margin-bottom:10px;">
-        <input type="text" id="projTitle" placeholder="Title" style="width:100%; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text); margin-bottom:15px; box-sizing:border-box;">
-        
-        <div class="checkbox-group" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
-            <label class="check-item"><input type="checkbox" value="youtube"> YouTube</label>
-            <label class="check-item"><input type="checkbox" value="shorts"> Shorts</label>
-            <label class="check-item"><input type="checkbox" value="tiktok"> TikTok</label>
-            <label class="check-item"><input type="checkbox" value="reels"> Instagram</label>
-            <label class="check-item"><input type="checkbox" value="facebook"> Facebook</label>
+        <div style="display:grid; grid-template-columns: 1fr; gap:15px;">
+            <div>
+                <label style="font-size:12px; color:var(--text-muted)" data-i18n="dateLabel">Project Date</label>
+                <input type="date" id="projDate" style="width:100%; padding:14px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); box-sizing:border-box;">
+            </div>
+            <input type="text" id="projTitle" data-i18n="titlePlaceholder" placeholder="Project Title" style="width:100%; padding:14px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); box-sizing:border-box;">
+            <textarea id="projDesc" data-i18n="descPlaceholder" placeholder="Description..." rows="3" style="width:100%; padding:14px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); box-sizing:border-box;"></textarea>
         </div>
 
-        <div style="display:flex; gap:10px;">
-            <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" style="flex:2" onclick="saveData()">Save Project</button>
+        <div class="checkbox-group" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
+            <label class="check-item"><input type="checkbox" value="youtube"> YouTube</label>
+            <label class="check-item"><input type="checkbox" value="shorts"> YT Shorts</label>
+            <label class="check-item"><input type="checkbox" value="reels"> Instagram</label>
+            <label class="check-item"><input type="checkbox" value="fbshorts"> FB Shorts</label>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:30px;">
+            <button class="btn btn-ghost" style="flex:1" onclick="closeModal()" data-i18n="cancel">Cancel</button>
+            <button class="btn btn-primary" style="flex:2" onclick="saveData()"><i data-lucide="save"></i> <span data-i18n="saveBtn">Save Project</span></button>
         </div>
     </div>
 </div>
@@ -242,23 +230,48 @@
     let tempThumbs = [null, null, null];
     let editMode = false;
     let currentEditName = null;
+    let currentLang = localStorage.getItem('clipflow_lang') || 'en';
     let currentFilter = 'all';
 
-    const PLATFORM_ICONS = {
-        youtube: 'youtube', shorts: 'play', tiktok: 'music', reels: 'instagram', facebook: 'facebook'
+    const i18n = {
+        en: { searchPlaceholder: "Find a project...", newProject: "New Project", welcomeMsg: "Connect workspace", selectFolder: "Select Folder", createProject: "Create Project", editProject: "Edit Project", videoLabel: "Video (.mp4)", clickUpload: "Upload Video", thumbLabel: "Thumbnails", dateLabel: "Project Date", titlePlaceholder: "Project Title", descPlaceholder: "Description...", platformLabel: "Platforms:", cancel: "Cancel", saveBtn: "Save Project", edit: "Edit", download: "Download ZIP", delete: "Delete", catAll: "All" },
+        ar: { searchPlaceholder: "ابحث عن مشروع...", newProject: "مشروع جديد", welcomeMsg: "يرجى ربط مجلد العمل", selectFolder: "اختيار المجلد", createProject: "إنشاء مشروع", editProject: "تعديل مشروع", videoLabel: "الفيديو (.mp4)", clickUpload: "اضغط لرفع فيديو", thumbLabel: "الصور المصغرة", dateLabel: "تاريخ المشروع", titlePlaceholder: "عنوان المشروع", descPlaceholder: "وصف المشروع...", platformLabel: "المنصات:", cancel: "إلغاء", saveBtn: "حفظ المشروع", edit: "تعديل", download: "تحميل ZIP", delete: "حذف", catAll: "الكل" }
     };
 
-    // Auto-connect workspace
-    async function autoConnect() {
-        const db = await new Promise(r => {
+    const PLATFORM_ICONS = {
+        youtube: '<i data-lucide="youtube" size="16"></i>',
+        shorts: '<i data-lucide="play-circle" size="16"></i>',
+        reels: '<i data-lucide="instagram" size="16"></i>',
+        fbshorts: '<i data-lucide="facebook" size="16"></i>'
+    };
+
+    // IndexedDB & Workspace Handlers
+    async function openDB() {
+        return new Promise(res => {
             const req = indexedDB.open("ClipflowDB", 1);
             req.onupgradeneeded = () => req.result.createObjectStore("settings");
-            req.onsuccess = () => r(req.result);
+            req.onsuccess = () => res(req.result);
         });
+    }
+
+    async function initWorkspace() {
+        try {
+            workspace = await window.showDirectoryPicker({ mode: 'readwrite' });
+            const db = await openDB();
+            const tx = db.transaction("settings", "readwrite");
+            tx.objectStore("settings").put(workspace, "folderHandle");
+            document.getElementById('setupView').classList.add('hidden');
+            loadProjects();
+        } catch(e) {}
+    }
+
+    async function autoConnect() {
+        const db = await openDB();
         const req = db.transaction("settings").objectStore("settings").get("folderHandle");
         req.onsuccess = async () => {
-            if (req.result && (await req.result.queryPermission({mode: 'readwrite'})) === 'granted') {
-                workspace = req.result;
+            const handle = req.result;
+            if (handle && (await handle.queryPermission({mode: 'readwrite'})) === 'granted') {
+                workspace = handle;
                 document.getElementById('setupView').classList.add('hidden');
                 loadProjects();
             } else {
@@ -267,29 +280,30 @@
         };
     }
 
-    async function initWorkspace() {
-        workspace = await window.showDirectoryPicker({ mode: 'readwrite' });
-        const db = await new Promise(r => {
-            const req = indexedDB.open("ClipflowDB", 1);
-            req.onsuccess = () => r(req.result);
-        });
-        db.transaction("settings", "readwrite").objectStore("settings").put(workspace, "folderHandle");
-        document.getElementById('setupView').classList.add('hidden');
-        loadProjects();
-    }
-
+    // Projects Engine
     async function loadProjects() {
         projects = [];
         const root = await workspace.getDirectoryHandle('Clipflow_Projects', { create: true });
         for await (const [name, handle] of root.entries()) {
             if(handle.kind === 'directory') {
-                const mFile = await (await handle.getFileHandle('meta.json')).getFile();
-                const meta = JSON.parse(await mFile.text());
-                const vFile = await handle.getFileHandle('video.mp4');
-                projects.push({ name, meta, videoFile: vFile });
+                try {
+                    const mFile = await (await handle.getFileHandle('meta.json')).getFile();
+                    const meta = JSON.parse(await mFile.text());
+                    const vFile = await handle.getFileHandle('video.mp4');
+                    projects.push({ name, meta, videoFile: vFile });
+                } catch(e) {}
             }
         }
+        updateCounters();
         renderProjects();
+    }
+
+    function updateCounters() {
+        document.getElementById('cnt-all').innerText = projects.length;
+        document.getElementById('cnt-youtube').innerText = projects.filter(p => p.meta.platforms.includes('youtube')).length;
+        document.getElementById('cnt-shorts').innerText = projects.filter(p => p.meta.platforms.includes('shorts')).length;
+        document.getElementById('cnt-reels').innerText = projects.filter(p => p.meta.platforms.includes('reels')).length;
+        document.getElementById('cnt-fb').innerText = projects.filter(p => p.meta.platforms.includes('fbshorts')).length;
     }
 
     function setFilter(cat) {
@@ -304,31 +318,33 @@
         const q = document.getElementById('mainSearch').value.toLowerCase();
         container.innerHTML = '';
 
-        // Newest First
-        const sorted = projects.sort((a,b) => new Date(b.meta.date) - new Date(a.meta.date));
+        // NEWEST ALWAYS TOP
+        const sorted = projects.sort((a,b) => new Date(b.meta.date || 0) - new Date(a.meta.date || 0));
 
         sorted.forEach((p, idx) => {
-            if(!p.meta.title.toLowerCase().includes(q)) return;
-            if(currentFilter !== 'all' && !p.meta.platforms.includes(currentFilter)) return;
+            const matchesSearch = p.meta.title.toLowerCase().includes(q);
+            const matchesCat = currentFilter === 'all' || p.meta.platforms.includes(currentFilter);
+            
+            if(!matchesSearch || !matchesCat) return;
 
-            const isShort = p.meta.platforms.some(x => ['shorts','reels','tiktok','facebook'].includes(x));
+            const isShort = p.meta.platforms.some(x => ['shorts','reels','fbshorts'].includes(x));
             const div = document.createElement('div');
             div.className = `card ${isShort ? 'vertical' : 'horizontal'}`;
             div.innerHTML = `
-                <div class="dots-btn" onclick="toggleMenu(event, ${idx})"><i data-lucide="more-horizontal" size="18"></i></div>
+                <div class="dots-btn" onclick="toggleMenu(event, ${idx})"><i data-lucide="more-vertical" size="18"></i></div>
                 <div class="dropdown" id="menu-${idx}">
-                    <button onclick="openModal('edit', ${idx})"><i data-lucide="edit-3" size="14"></i> Edit</button>
-                    <button onclick="deleteProject(${idx})" style="color:var(--danger)"><i data-lucide="trash-2" size="14"></i> Delete</button>
+                    <button onclick="openModal('edit', ${idx})"><i data-lucide="edit-3" size="14"></i> ${i18n[currentLang].edit}</button>
+                    <button onclick="downloadZip(${idx})"><i data-lucide="download" size="14"></i> ZIP</button>
+                    <button onclick="deleteProject(${idx})" style="color:var(--danger)"><i data-lucide="trash-2" size="14"></i> ${i18n[currentLang].delete}</button>
                 </div>
-                <div class="card-thumb" onclick="playInApp(${idx})">
+                <div class="card-thumb" onclick="playVideo(${idx})">
                     <img src="${p.meta.thumbs[0] || ''}">
-                    <div class="play-overlay"><div class="play-icon-circle"><i data-lucide="play" fill="white"></i></div></div>
                 </div>
                 <div class="card-body">
-                    <span style="font-size:10px; opacity:0.6;"><i data-lucide="calendar" size="10"></i> ${p.meta.date}</span>
+                    <span class="project-date"><i data-lucide="calendar" size="12"></i> ${p.meta.date || ''}</span>
                     <h3>${p.meta.title}</h3>
-                    <div style="display:flex; gap:6px; margin-top:5px;">
-                        ${p.meta.platforms.map(t => `<i data-lucide="${PLATFORM_ICONS[t]}" size="14" color="var(--primary)"></i>`).join('')}
+                    <div style="display:flex; gap:8px; margin-top:10px;">
+                        ${p.meta.platforms.map(t => `<span style="color:var(--primary)">${PLATFORM_ICONS[t] || t}</span>`).join('')}
                     </div>
                 </div>
             `;
@@ -337,142 +353,126 @@
         lucide.createIcons();
     }
 
-    // Capture first frame if no thumbnail is provided
-    async function getFirstFrame(videoFile) {
-        return new Promise((resolve) => {
-            const video = document.createElement('video');
-            video.preload = 'metadata';
-            video.src = URL.createObjectURL(videoFile);
-            video.onloadeddata = () => {
-                video.currentTime = 0.1; // Seek slightly in
-            };
-            video.onseeked = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                canvas.getContext('2d').drawImage(video, 0, 0);
-                resolve(canvas.toDataURL('image/jpeg', 0.8));
-                URL.revokeObjectURL(video.src);
-            };
-        });
+    // Modal & Action Logic
+    function toggleMenu(e, idx) {
+        e.stopPropagation();
+        const menu = document.getElementById(`menu-${idx}`);
+        const wasOpen = menu.classList.contains('active');
+        document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
+        if(!wasOpen) menu.classList.add('active');
     }
 
-    function triggerVideo() {
-        const input = document.createElement('input');
-        input.type = 'file'; input.accept = 'video/mp4';
-        input.onchange = e => {
-            selectedVideo = e.target.files[0];
-            const url = URL.createObjectURL(selectedVideo);
-            const previewBox = document.getElementById('videoPreviewBox');
-            const previewVid = document.getElementById('newVideoPreview');
-            previewVid.src = url;
-            previewBox.style.display = 'block';
-            document.getElementById('videoUploadBox').style.display = 'none';
-        };
-        input.click();
+    window.onclick = () => document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
+
+    function openModal(mode, idx = null) {
+        editMode = mode === 'edit';
+        document.getElementById('modalTitle').innerText = editMode ? i18n[currentLang].editProject : i18n[currentLang].createProject;
+        document.getElementById('videoUploadBox').classList.toggle('hidden', editMode);
+        
+        if(editMode) {
+            const p = projects[idx];
+            currentEditName = p.name;
+            document.getElementById('projTitle').value = p.meta.title;
+            document.getElementById('projDesc').value = p.meta.desc;
+            document.getElementById('projDate').value = p.meta.date || "";
+            tempThumbs = [...p.meta.thumbs];
+            document.querySelectorAll('.check-item input').forEach(cb => {
+                cb.checked = p.meta.platforms.includes(cb.value);
+            });
+        } else {
+            document.getElementById('projTitle').value = "";
+            document.getElementById('projDesc').value = "";
+            document.getElementById('projDate').value = new Date().toISOString().split('T')[0];
+            tempThumbs = [null, null, null];
+            selectedVideo = null;
+            document.getElementById('videoLabelText').innerText = i18n[currentLang].clickUpload;
+            document.querySelectorAll('.check-item input').forEach(cb => cb.checked = false);
+        }
+        refreshThumbs();
+        document.getElementById('formModal').style.display = 'flex';
     }
 
     async function saveData() {
         const title = document.getElementById('projTitle').value;
         const date = document.getElementById('projDate').value;
         const plats = Array.from(document.querySelectorAll('.check-item input:checked')).map(i => i.value);
-        if(!title || (!selectedVideo && !editMode)) return alert("Required fields missing");
-
-        // Auto-thumbnail logic
-        if(!tempThumbs[0] && selectedVideo) {
-            tempThumbs[0] = await getFirstFrame(selectedVideo);
-        }
+        if(!title || (!selectedVideo && !editMode)) return alert("Missing Data");
 
         const root = await workspace.getDirectoryHandle('Clipflow_Projects', { create: true });
         const folderName = editMode ? currentEditName : title.replace(/\s+/g,'_') + "_" + Date.now();
         const pFolder = await root.getDirectoryHandle(folderName, { create: true });
 
-        const writer = await (await pFolder.getFileHandle('meta.json', { create: true })).createWritable();
-        await writer.write(JSON.stringify({ title, date, platforms: plats, thumbs: tempThumbs }));
+        const mHandle = await pFolder.getFileHandle('meta.json', { create: true });
+        const writer = await mHandle.createWritable();
+        await writer.write(JSON.stringify({
+            title, date, desc: document.getElementById('projDesc').value,
+            platforms: plats, thumbs: tempThumbs,
+            timestamp: Date.now()
+        }));
         await writer.close();
 
         if(selectedVideo) {
-            const vWriter = await (await pFolder.getFileHandle('video.mp4', { create: true })).createWritable();
+            const vHandle = await pFolder.getFileHandle('video.mp4', { create: true });
+            const vWriter = await vHandle.createWritable();
             await vWriter.write(selectedVideo);
             await vWriter.close();
         }
         closeModal(); loadProjects();
     }
 
-    function playInApp(idx) {
-        const p = projects[idx];
-        const player = document.getElementById('mainPlayer');
-        p.videoFile.getFile().then(file => {
-            player.src = URL.createObjectURL(file);
-            document.getElementById('videoPlayerOverlay').style.display = 'flex';
-        });
-    }
-
-    function closePlayer() {
-        const player = document.getElementById('mainPlayer');
-        player.pause();
-        player.src = "";
-        document.getElementById('videoPlayerOverlay').style.display = 'none';
-    }
-
-    function toggleMenu(e, idx) {
-        e.stopPropagation();
-        const m = document.getElementById(`menu-${idx}`);
-        const active = m.classList.contains('active');
-        document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
-        if(!active) m.classList.add('active');
-    }
-
-    window.onclick = () => document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
-    
-    function closeModal() { 
-        document.getElementById('formModal').style.display = 'none'; 
-        document.getElementById('videoPreviewBox').style.display = 'none';
-        document.getElementById('videoUploadBox').style.display = 'block';
-        document.getElementById('newVideoPreview').src = "";
-    }
-
-    function openModal(mode, idx = null) {
-        editMode = mode === 'edit';
-        document.getElementById('modalTitle').innerText = editMode ? "Edit Project" : "New Project";
-        if(!editMode) {
-            document.getElementById('projTitle').value = "";
-            document.getElementById('projDate').value = new Date().toISOString().split('T')[0];
-            tempThumbs = [null, null, null];
-            document.querySelectorAll('.check-item input').forEach(c => c.checked = false);
-        }
-        refreshThumbs();
-        document.getElementById('formModal').style.display = 'flex';
-    }
-
-    function refreshThumbs() {
-        tempThumbs.forEach((src, i) => {
-            const img = document.getElementById(`pre${i}`);
-            const rm = document.getElementById(`rm${i}`);
-            if(src) { img.src = src; img.style.display = 'block'; rm.style.display = 'block'; }
-            else { img.style.display = 'none'; rm.style.display = 'none'; }
-        });
-    }
-
-    function pickThumb(i) {
-        const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
-        input.onchange = e => {
-            const r = new FileReader();
-            r.onload = f => { tempThumbs[i] = f.target.result; refreshThumbs(); };
-            r.readAsDataURL(e.target.files[0]);
-        };
-        input.click();
-    }
-
-    function removeThumb(e, i) { e.stopPropagation(); tempThumbs[i] = null; refreshThumbs(); }
-
     async function deleteProject(idx) {
-        if(confirm("Delete permanently?")) {
+        if(confirm("Delete this project permanently?")) {
             const root = await workspace.getDirectoryHandle('Clipflow_Projects');
             await root.removeEntry(projects[idx].name, { recursive: true });
             loadProjects();
         }
     }
+
+    async function downloadZip(idx) {
+        const p = projects[idx];
+        const zip = new JSZip();
+        zip.file("video.mp4", await p.videoFile.getFile());
+        zip.file("metadata.txt", `Title: ${p.meta.title}\nDate: ${p.meta.date}\nPlatforms: ${p.meta.platforms.join(', ')}`);
+        p.meta.thumbs.forEach((img, i) => { if(img) zip.file(`thumb_${i}.png`, img.split(',')[1], {base64: true}); });
+        const blob = await zip.generateAsync({type:"blob"});
+        saveAs(blob, `${p.meta.title}_Archive.zip`);
+    }
+
+    // UI Helpers
+    function toggleLanguage() {
+        currentLang = currentLang === 'en' ? 'ar' : 'en';
+        localStorage.setItem('clipflow_lang', currentLang);
+        location.reload();
+    }
+
+    function toggleTheme() {
+        const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+        localStorage.setItem('clipflow_theme', t);
+        lucide.createIcons();
+    }
+
+    function refreshThumbs() {
+        tempThumbs.forEach((src, i) => {
+            const img = document.getElementById(`pre${i}`);
+            const rmBtn = document.getElementById(`rm${i}`);
+            if(src) {
+                img.src = src; img.style.display = 'block';
+                img.nextElementSibling.style.display = 'none';
+                rmBtn.style.display = 'block';
+            } else {
+                img.style.display = 'none';
+                img.nextElementSibling.style.display = 'block';
+                rmBtn.style.display = 'none';
+            }
+        });
+    }
+
+    function removeThumb(e, i) { e.stopPropagation(); tempThumbs[i] = null; refreshThumbs(); }
+    function triggerVideo() { const i = document.createElement('input'); i.type = 'file'; i.accept = 'video/mp4'; i.onchange = e => { selectedVideo = e.target.files[0]; document.getElementById('videoLabelText').innerText = selectedVideo.name; }; i.click(); }
+    function pickThumb(i) { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = e => { const r = new FileReader(); r.onload = f => { tempThumbs[i] = f.target.result; refreshThumbs(); }; r.readAsDataURL(e.target.files[0]); }; input.click(); }
+    function closeModal() { document.getElementById('formModal').style.display = 'none'; }
+    async function playVideo(idx) { const f = await projects[idx].videoFile.getFile(); const url = URL.createObjectURL(f); const win = window.open(""); win.document.write(`<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;"><video src="${url}" controls autoplay style="max-height:100vh;max-width:100%"></video></body>`); }
 
     // Canvas Background
     const canvas = document.getElementById('bgCanvas');
@@ -480,7 +480,7 @@
     let shapes = [];
     function initShapes() {
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        shapes = Array.from({length: 12}, () => ({
+        shapes = Array.from({length: 15}, () => ({
             x: Math.random()*canvas.width, y: Math.random()*canvas.height,
             s: Math.random()*150+50, dx: (Math.random()-0.5)*0.5, dy: (Math.random()-0.5)*0.5,
             t: Math.floor(Math.random()*3)
@@ -502,8 +502,18 @@
         requestAnimationFrame(drawShapes);
     }
 
+    // Init
     initShapes(); drawShapes();
     autoConnect();
+    if(currentLang === 'ar') {
+        document.body.classList.add('rtl');
+        document.getElementById('langBtn').innerText = 'EN';
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = i18n.ar[key];
+            else el.innerText = i18n.ar[key];
+        });
+    }
     lucide.createIcons();
 </script>
 </body>
