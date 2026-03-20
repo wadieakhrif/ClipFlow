@@ -65,15 +65,8 @@ button:hover {
     transform:scale(1.05);
 }
 
-button#addProjectBtn {
-    background:#6c63ff;
-    color:#fff;
-}
-
-button#chooseFolder {
-    background:#0d6cff;
-    color:#fff;
-}
+button#addProjectBtn { background:#6c63ff; color:#fff; }
+button#chooseFolder { background:#0d6cff; color:#fff; }
 
 /* واجهة المشروع */
 #projectsContainer {
@@ -94,15 +87,9 @@ button#chooseFolder {
     transition:0.3s;
 }
 
-.project:hover {
-    transform: translateY(-5px);
-}
+.project:hover { transform: translateY(-5px); }
 
-.project img {
-    width:100%;
-    height:140px;
-    object-fit:cover;
-}
+.project img { width:100%; height:140px; object-fit:cover; }
 
 .project-info {
     padding:10px;
@@ -111,29 +98,11 @@ button#chooseFolder {
     gap:5px;
 }
 
-.project-info h3 {
-    font-size:16px;
-    margin:0;
-    font-weight:bold;
-}
-
-.project-info p {
-    font-size:12px;
-    margin:0;
-    display:flex;
-    align-items:center;
-    gap:5px;
-}
+.project-info h3 { font-size:16px; margin:0; font-weight:bold; }
+.project-info p { font-size:12px; margin:0; display:flex; align-items:center; gap:5px; }
 
 /* ألوان المنصات */
-.platform-label {
-    padding:2px 6px;
-    border-radius:5px;
-    font-size:11px;
-    font-weight:bold;
-    color:#fff;
-}
-
+.platform-label { padding:2px 6px; border-radius:5px; font-size:11px; font-weight:bold; color:#fff; }
 .youtube { background:#FF0000; }
 .youtube-shorts { background:#FF5555; }
 .tiktok { background:#000000; color:#fff; }
@@ -217,9 +186,217 @@ input, textarea {
 <div id="projectsContainer"></div>
 
 <script>
-// --- هنا يمكنك إضافة كل سكريبت إدارة المشاريع نفسه كما في النسخة الأخيرة ---
-// لا تتغير أي وظيفة، فقط تغيّر الشكل
+// ===================== سكريبت إدارة المشاريع =====================
+let rootFolderHandle, mainFolderHandle;
+let projects = [];
+let editingIndex = null;
+let selectedVideoFile = null;
+let selectedThumbsFiles = [];
+let selectedPlatforms = [];
 
+// اختيار مجلد المشاريع
+document.getElementById('chooseFolder').addEventListener('click', async () => {
+    try {
+        const chosenFolder = await window.showDirectoryPicker();
+        mainFolderHandle = await chosenFolder.getDirectoryHandle('ClipFlow Projects', { create: true });
+        rootFolderHandle = mainFolderHandle;
+        document.getElementById('addProjectBtn').disabled = false;
+        await loadProjects();
+    } catch(e) {
+        alert('الموقع يحتاج الوصول لمجلد على جهازك للعمل.');
+    }
+});
+
+// تحميل المشاريع
+async function loadProjects() {
+    projects = [];
+    for await (const entry of rootFolderHandle.values()) {
+        if(entry.kind === 'directory'){
+            const metaHandle = await entry.getFileHandle('meta.json').catch(()=>null);
+            if(metaHandle){
+                const file = await metaHandle.getFile();
+                const data = JSON.parse(await file.text());
+                projects.push({ handle: entry, ...data });
+            }
+        }
+    }
+    projects.sort((a,b)=> new Date(b.date)-new Date(a.date));
+    renderProjects();
+}
+
+// عرض المشاريع
+function renderProjects() {
+    const container = document.getElementById('projectsContainer');
+    container.innerHTML = '';
+    projects.forEach((p,index)=>{
+        const div = document.createElement('div');
+        div.className = 'project';
+        const thumbsHTML = p.thumbs.map(t=>`<img src="${t}" class="thumb-preview">`).join('');
+        const platformsHTML = p.platforms.map(pl=>{
+            let cls = pl.toLowerCase().replace(' ','-');
+            return `<span class="platform-label ${cls}">${pl}</span>`;
+        }).join(' ');
+        div.innerHTML = `
+            <img src="${p.thumbs[0] || ''}">
+            <div class="project-info">
+                <h3>${p.title}</h3>
+                <p>${p.description}</p>
+                <p>${platformsHTML}</p>
+                <p>${new Date(p.date).toLocaleString()}</p>
+            </div>
+            <button onclick="editProject(${index})">تعديل</button>
+            <button onclick="viewProject(${index})">مشاهدة</button>
+            <button onclick="deleteProject(${index})">حذف</button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+// فتح واجهة إضافة مشروع
+document.getElementById('addProjectBtn').addEventListener('click', ()=>{
+    editingIndex = null;
+    selectedVideoFile = null;
+    selectedThumbsFiles = [];
+    selectedPlatforms = [];
+    document.getElementById('formTitle').innerText = 'إضافة مشروع جديد';
+    document.getElementById('projectForm').style.display = 'block';
+    document.getElementById('title').value='';
+    document.getElementById('description').value='';
+    document.getElementById('datetime').value=new Date().toISOString().slice(0,16);
+    document.getElementById('thumbPreview').innerHTML='';
+});
+
+// Drag & Drop للفيديو
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e=>{e.preventDefault(); dropZone.style.borderColor='#fff';});
+dropZone.addEventListener('dragleave', e=>{dropZone.style.borderColor='#6c63ff';});
+dropZone.addEventListener('drop', e=>{
+    e.preventDefault();
+    dropZone.style.borderColor='#6c63ff';
+    selectedVideoFile = e.dataTransfer.files[0];
+    dropZone.innerText = selectedVideoFile.name;
+});
+
+// Drag & Drop للصور المصغرة
+const dropThumbs = document.getElementById('dropThumbs');
+dropThumbs.addEventListener('dragover', e=>{e.preventDefault(); dropThumbs.style.borderColor='#fff';});
+dropThumbs.addEventListener('dragleave', e=>{dropThumbs.style.borderColor='#6c63ff';});
+dropThumbs.addEventListener('drop', e=>{
+    e.preventDefault();
+    dropThumbs.style.borderColor='#6c63ff';
+    selectedThumbsFiles = Array.from(e.dataTransfer.files).slice(0,3);
+    const preview = selectedThumbsFiles.map(f=>URL.createObjectURL(f)).map(url=>`<img src="${url}" class="thumb-preview">`).join('');
+    document.getElementById('thumbPreview').innerHTML = preview;
+});
+
+// أزرار المنصات
+document.querySelectorAll('.platformBtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+        const name = btn.dataset.name;
+        if(selectedPlatforms.includes(name)){
+            selectedPlatforms = selectedPlatforms.filter(p=>p!==name);
+            btn.classList.remove('selected');
+        }else{
+            selectedPlatforms.push(name);
+            btn.classList.add('selected');
+        }
+    });
+});
+
+// حفظ المشروع
+document.getElementById('saveProject').addEventListener('click', async ()=>{
+    const title = document.getElementById('title').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const date = document.getElementById('datetime').value;
+    if(!title || !selectedVideoFile) { alert('يجب إدخال العنوان والفيديو'); return; }
+
+    let projectFolder;
+    if(editingIndex!==null){
+        projectFolder = projects[editingIndex].handle;
+    } else {
+        projectFolder = await rootFolderHandle.getDirectoryHandle(title,{create:true});
+    }
+
+    // حفظ الفيديو بشكل منفصل
+    const videoHandle = await projectFolder.getFileHandle('video.mp4',{create:true});
+    const writableVideo = await videoHandle.createWritable();
+    await writableVideo.write(await selectedVideoFile.arrayBuffer());
+    await writableVideo.close();
+
+    // حفظ الصور المصغرة
+    let thumbs=[];
+    for(let i=0;i<selectedThumbsFiles.length;i++){
+        const f=selectedThumbsFiles[i];
+        const name = `thumbnail${i+1}.png`;
+        const thumbHandle = await projectFolder.getFileHandle(name,{create:true});
+        const writableThumb = await thumbHandle.createWritable();
+        await writableThumb.write(await f.arrayBuffer());
+        await writableThumb.close();
+        const file = await thumbHandle.getFile();
+        const url = URL.createObjectURL(file);
+        thumbs.push(url);
+    }
+
+    // حفظ meta.json
+    const meta = { title, description, platforms:selectedPlatforms, date, thumbs };
+    const metaHandle = await projectFolder.getFileHandle('meta.json',{create:true});
+    const writableMeta = await metaHandle.createWritable();
+    await writableMeta.write(JSON.stringify(meta));
+    await writableMeta.close();
+
+    if(editingIndex!==null){
+        projects[editingIndex]={handle:projectFolder,...meta};
+    } else {
+        projects.push({handle:projectFolder,...meta});
+    }
+
+    projects.sort((a,b)=> new Date(b.date)-new Date(a.date));
+    renderProjects();
+    document.getElementById('projectForm').style.display='none';
+});
+
+// إلغاء المشروع
+document.getElementById('cancelProject').addEventListener('click', ()=>{
+    document.getElementById('projectForm').style.display='none';
+});
+
+// تعديل المشروع
+async function editProject(index){
+    editingIndex=index;
+    const p=projects[index];
+    document.getElementById('formTitle').innerText='تعديل المشروع';
+    document.getElementById('title').value=p.title;
+    document.getElementById('description').value=p.description;
+    document.getElementById('datetime').value=new Date(p.date).toISOString().slice(0,16);
+    selectedVideoFile=null;
+    selectedThumbsFiles=[];
+    selectedPlatforms=[...p.platforms];
+    document.querySelectorAll('.platformBtn').forEach(btn=>{
+        btn.classList.toggle('selected', selectedPlatforms.includes(btn.dataset.name));
+    });
+    const preview = p.thumbs.map(t=>t).map(url=>`<img src="${url}" class="thumb-preview">`).join('');
+    document.getElementById('thumbPreview').innerHTML = preview;
+    document.getElementById('projectForm').style.display='block';
+}
+
+// حذف المشروع
+async function deleteProject(index){
+    if(!confirm('هل أنت متأكد من حذف المشروع؟')) return;
+    const p=projects[index];
+    await rootFolderHandle.removeEntry(p.handle.name,{recursive:true});
+    projects.splice(index,1);
+    renderProjects();
+}
+
+// مشاهدة الفيديو
+async function viewProject(index){
+    const p=projects[index];
+    const videoFileHandle = await p.handle.getFileHandle('video.mp4');
+    const file = await videoFileHandle.getFile();
+    const url = URL.createObjectURL(file);
+    const win = window.open('');
+    win.document.write(`<video src="${url}" controls autoplay style="width:100%"></video>`);
+}
 </script>
 
 </body>
