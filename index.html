@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clipflow Pro | Manager</title>
+    <title>Clipflow Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
@@ -11,15 +11,15 @@
 
         :root {
             --primary: #6c63ff; --primary-hover: #5a52d6;
-            --bg: #05060f; --card-bg: rgba(17, 19, 34, 0.9);
-            --nav-bg: rgba(13, 15, 30, 0.7); --text: #ffffff;
+            --bg: #05060f; --card-bg: rgba(17, 19, 34, 0.8);
+            --nav-bg: rgba(13, 15, 30, 0.9); --text: #ffffff;
             --text-muted: #94a3b8; --border: rgba(255, 255, 255, 0.1);
-            --danger: #ff4757; --accent-glow: rgba(108, 99, 255, 0.2);
+            --danger: #ff4757;
         }
 
         [data-theme="light"] {
-            --bg: #f0f2f5; --card-bg: rgba(255, 255, 255, 0.9);
-            --nav-bg: rgba(255, 255, 255, 0.8); --text: #0f172a;
+            --bg: #f8fafc; --card-bg: rgba(255, 255, 255, 0.8);
+            --nav-bg: rgba(255, 255, 255, 0.9); --text: #0f172a;
             --text-muted: #64748b; --border: rgba(0, 0, 0, 0.1);
         }
 
@@ -29,87 +29,80 @@
             transition: 0.3s; line-height: 1.6; overflow-x: hidden;
         }
 
-        /* --- Animated Geometric Background --- */
-        #bgCanvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1; pointer-events: none;
-        }
+        /* --- Geometric Background --- */
+        #bgCanvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
 
         header {
             position: sticky; top: 0; z-index: 1000;
-            background: var(--nav-bg); backdrop-filter: blur(15px);
-            border-bottom: 1px solid var(--border); padding: 12px 24px;
+            background: var(--nav-bg); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border); padding: 15px 30px;
+            display: flex; align-items: center; justify-content: space-between;
         }
 
-        .top-bar { display: flex; align-items: center; justify-content: space-between; max-width: 1400px; margin: 0 auto; gap: 20px; }
-        
-        .search-wrapper { flex: 1; max-width: 400px; position: relative; }
-        .search-wrapper input {
+        .search-bar {
+            flex: 1; max-width: 450px; margin: 0 20px; position: relative;
+        }
+
+        .search-bar input {
             width: 100%; background: var(--bg); border: 1px solid var(--border);
-            padding: 10px 15px 10px 40px; border-radius: 20px; color: var(--text);
+            padding: 12px 15px 12px 40px; border-radius: 25px; color: var(--text);
+            outline: none; transition: 0.3s;
         }
+        .search-bar input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(108, 99, 255, 0.2); }
 
-        /* --- Project Grid --- */
+        /* --- Grid & Cards --- */
         .grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px; padding: 24px; max-width: 1400px; margin: 0 auto;
+            gap: 30px; padding: 40px 30px; max-width: 1500px; margin: 0 auto;
         }
 
         .card {
-            background: var(--card-bg); border-radius: 20px;
-            border: 1px solid var(--border); overflow: hidden;
-            position: relative; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            backdrop-filter: blur(5px);
+            background: var(--card-bg); border-radius: 24px; border: 1px solid var(--border);
+            overflow: hidden; position: relative; transition: 0.4s cubic-bezier(0.2, 1, 0.2, 1);
+            backdrop-filter: blur(10px);
         }
-        .card:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 15px 35px var(--accent-glow); }
+        .card:hover { transform: translateY(-10px); border-color: var(--primary); }
 
-        /* Handle Vertical Thumbnail Logic */
         .card.vertical .card-thumb { aspect-ratio: 9/16; }
         .card.horizontal .card-thumb { aspect-ratio: 16/9; }
 
         .card-thumb { width: 100%; background: #000; cursor: pointer; overflow: hidden; }
-        .card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-        .card:hover .card-thumb img { scale: 1.05; }
+        .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-        .card-body { padding: 15px; }
-        .badge-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
-        .badge { font-size: 10px; padding: 3px 8px; border-radius: 5px; background: var(--primary); color: white; font-weight: bold; text-transform: uppercase; }
+        .card-body { padding: 20px; }
+        .card-body h3 { margin: 0; font-size: 18px; font-weight: 700; }
+        
+        .platform-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+        .tag { font-size: 10px; padding: 4px 10px; border-radius: 6px; background: var(--primary); color: #white; font-weight: 800; text-transform: uppercase; }
 
-        /* --- Multi-Select Platform UI --- */
-        .platform-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
-        .plat-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px; background: var(--bg); border: 1px solid var(--border);
-            border-radius: 10px; cursor: pointer; transition: 0.2s;
-        }
-        .plat-item input { width: auto; }
-        .plat-item:hover { border-color: var(--primary); }
-
-        /* --- Modal Styling --- */
+        /* --- Modal & Forms --- */
         .overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
             display: none; align-items: center; justify-content: center;
-            z-index: 2000; backdrop-filter: blur(10px);
+            z-index: 2000; backdrop-filter: blur(15px);
         }
-        .modal {
-            background: var(--card-bg); width: 95%; max-width: 550px;
-            border-radius: 25px; padding: 30px; border: 1px solid var(--border);
-            max-height: 85vh; overflow-y: auto; animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
-        .btn { padding: 12px 20px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-primary { background: var(--primary); color: white; width: 100%; }
+        .modal {
+            background: var(--card-bg); width: 90%; max-width: 550px;
+            border-radius: 30px; padding: 35px; border: 1px solid var(--border);
+            max-height: 85vh; overflow-y: auto;
+        }
+
+        .btn { padding: 12px 25px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
         .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
 
-        .dots-btn { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.5); color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; }
-        .dropdown { position: absolute; top: 50px; right: 10px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; display: none; flex-direction: column; overflow: hidden; z-index: 100; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .dropdown button { padding: 12px 20px; border: none; background: none; color: var(--text); text-align: left; cursor: pointer; font-size: 13px; border-bottom: 1px solid var(--border); }
-        .dropdown button:hover { background: var(--primary); color: white; }
+        .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
+        .check-item { 
+            background: var(--bg); border: 1px solid var(--border); padding: 12px; 
+            border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer;
+        }
 
-        .thumb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .thumb-box { aspect-ratio: 1; border: 2px dashed var(--border); border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; }
-        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+        /* Menu */
+        .dots-btn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.4); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
+        .dropdown { position: absolute; top: 55px; right: 15px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; display: none; flex-direction: column; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.5); z-index: 100; }
+        .dropdown button { padding: 12px 20px; border: none; background: none; color: var(--text); text-align: left; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--border); }
+        .dropdown button:hover { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
@@ -117,64 +110,68 @@
 <canvas id="bgCanvas"></canvas>
 
 <header>
-    <div class="top-bar">
-        <div style="display:flex; align-items:center; gap:15px;">
-            <div style="background:var(--primary); width:35px; height:35px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;">C</div>
-            <h1 style="font-size:20px; margin:0;">Clipflow</h1>
-        </div>
-        
-        <div class="search-wrapper">
-            <input type="text" id="mainSearch" placeholder="Search projects..." oninput="renderProjects()">
-        </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+        <div style="width:35px; height:35px; background:var(--primary); border-radius:8px;"></div>
+        <h1 style="font-size:22px; margin:0; letter-spacing:-1px;">Clipflow<span style="color:var(--primary)">.</span></h1>
+    </div>
 
-        <div style="display:flex; gap:10px;">
-            <button class="btn btn-ghost" onclick="toggleTheme()">🌓</button>
-            <button class="btn btn-primary" onclick="openModal('add')">＋ New</button>
-        </div>
+    <div class="search-bar">
+        <input type="text" id="mainSearch" placeholder="Find a project..." oninput="renderProjects()">
+    </div>
+
+    <div style="display:flex; gap:12px;">
+        <button class="btn btn-ghost" onclick="toggleTheme()">🌓</button>
+        <button class="btn btn-primary" onclick="openModal('add')">＋ New Project</button>
     </div>
 </header>
 
 <main>
-    <div class="grid" id="projectsContainer"></div>
-    <div id="setupView" style="text-align:center; padding-top:100px;" class="hidden">
-        <h2>No Workspace Selected</h2>
-        <button class="btn btn-primary" style="width:200px;" onclick="initWorkspace()">Select Folder</button>
+    <div id="projectsContainer" class="grid"></div>
+    <div id="setupView" style="text-align:center; padding:100px 0;" class="hidden">
+        <h2 style="opacity:0.5">Welcome. Please connect your workspace.</h2>
+        <button class="btn btn-primary" onclick="initWorkspace()">Select Workspace Folder</button>
     </div>
 </main>
 
 <div class="overlay" id="formModal">
     <div class="modal">
-        <h2 id="modalTitle">Project Settings</h2>
+        <h2 id="modalTitle" style="margin-top:0">Create Project</h2>
         
-        <div id="videoSection">
-            <label style="font-size:12px; color:var(--text-muted)">Video File (.mp4)</label>
-            <div id="dropZone" style="border:2px dashed var(--primary); padding:20px; text-align:center; border-radius:15px; cursor:pointer; margin:10px 0;">
-                <span id="videoLabel">Select Video</span>
+        <div id="videoUploadBox" style="margin-bottom:20px;">
+            <label style="font-size:12px; color:var(--text-muted)">Project Video (.mp4)</label>
+            <div onclick="triggerVideo()" id="dropZone" style="border:2px dashed var(--primary); padding:30px; text-align:center; border-radius:20px; cursor:pointer; margin-top:10px;">
+                <span id="videoLabel">Click to Upload Video</span>
             </div>
         </div>
 
-        <label style="font-size:12px; color:var(--text-muted)">Thumbnails (Drag to reorder - coming soon)</label>
-        <div class="thumb-grid">
-            <div class="thumb-box" onclick="pickImage(0)"><img id="pre0" class="hidden"><span>+</span></div>
-            <div class="thumb-box" onclick="pickImage(1)"><img id="pre1" class="hidden"><span>+</span></div>
-            <div class="thumb-box" onclick="pickImage(2)"><img id="pre2" class="hidden"><span>+</span></div>
+        <label style="font-size:12px; color:var(--text-muted)">Thumbnails (Set of 3)</label>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin:10px 0 20px;">
+            <div onclick="pickThumb(0)" style="aspect-ratio:1; background:var(--bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                <img id="pre0" style="width:100%; height:100%; object-fit:cover; display:none"><span>+</span>
+            </div>
+            <div onclick="pickThumb(1)" style="aspect-ratio:1; background:var(--bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                <img id="pre1" style="width:100%; height:100%; object-fit:cover; display:none"><span>+</span>
+            </div>
+            <div onclick="pickThumb(2)" style="aspect-ratio:1; background:var(--bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                <img id="pre2" style="width:100%; height:100%; object-fit:cover; display:none"><span>+</span>
+            </div>
         </div>
 
-        <input type="text" id="projTitle" placeholder="Project Title" style="margin-bottom:15px;">
-        <textarea id="projDesc" placeholder="Description..." rows="2" style="margin-bottom:15px;"></textarea>
+        <input type="text" id="projTitle" placeholder="Project Title" style="width:100%; padding:15px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); margin-bottom:15px; box-sizing:border-box;">
+        <textarea id="projDesc" placeholder="Brief description..." rows="3" style="width:100%; padding:15px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); box-sizing:border-box;"></textarea>
 
-        <label style="font-size:12px; color:var(--text-muted)">Target Platforms (Multi-select)</label>
-        <div class="platform-selector">
-            <label class="plat-item"><input type="checkbox" value="youtube"> YouTube</label>
-            <label class="plat-item"><input type="checkbox" value="shorts"> YT Shorts</label>
-            <label class="plat-item"><input type="checkbox" value="reels"> IG Reels</label>
-            <label class="plat-item"><input type="checkbox" value="tiktok"> TikTok</label>
-            <label class="plat-item"><input type="checkbox" value="facebook"> Facebook</label>
+        <label style="display:block; margin-top:20px; font-size:12px; color:var(--text-muted)">Select Platforms:</label>
+        <div class="checkbox-group">
+            <label class="check-item"><input type="checkbox" value="youtube"> YouTube</label>
+            <label class="check-item"><input type="checkbox" value="shorts"> Shorts</label>
+            <label class="check-item"><input type="checkbox" value="reels"> Reels</label>
+            <label class="check-item"><input type="checkbox" value="tiktok"> TikTok</label>
+            <label class="check-item"><input type="checkbox" value="facebook"> Facebook</label>
         </div>
 
-        <div style="display:flex; gap:10px; margin-top:20px;">
+        <div style="display:flex; gap:12px; margin-top:30px;">
             <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" style="flex:2" onclick="saveProject()">Save Changes</button>
+            <button class="btn btn-primary" style="flex:2" onclick="saveData()">Save Project</button>
         </div>
     </div>
 </div>
@@ -182,59 +179,44 @@
 <script>
     let workspace = null;
     let projects = [];
-    let selectedVideoFile = null;
+    let selectedVideo = null;
     let tempThumbs = [null, null, null];
     let editMode = false;
     let currentEditName = null;
 
-    // --- Background Engine ---
+    // --- Background Shapes ---
     const canvas = document.getElementById('bgCanvas');
     const ctx = canvas.getContext('2d');
     let shapes = [];
 
     function initShapes() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        shapes = [];
-        for(let i=0; i<15; i++) {
-            shapes.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                size: Math.random() * 100 + 50,
-                dx: (Math.random() - 0.5) * 0.8,
-                dy: (Math.random() - 0.5) * 0.8,
-                type: Math.floor(Math.random() * 3) // 0: Circle, 1: Square, 2: Triangle
-            });
-        }
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        shapes = Array.from({length: 12}, () => ({
+            x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+            s: Math.random()*150+50, dx: (Math.random()-0.5), dy: (Math.random()-0.5),
+            t: Math.floor(Math.random()*3)
+        }));
     }
 
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+    function drawShapes() {
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--text') + '1A'; 
         ctx.lineWidth = 2;
-
-        shapes.forEach(s => {
+        shapes.forEach(p => {
             ctx.beginPath();
-            if(s.type === 0) ctx.arc(s.x, s.y, s.size/2, 0, Math.PI*2);
-            else if(s.type === 1) ctx.rect(s.x, s.y, s.size, s.size);
-            else {
-                ctx.moveTo(s.x, s.y);
-                ctx.lineTo(s.x + s.size, s.y);
-                ctx.lineTo(s.x + s.size/2, s.y - s.size);
-                ctx.closePath();
-            }
+            if(p.t===0) ctx.arc(p.x, p.y, p.s/2, 0, Math.PI*2);
+            else if(p.t===1) ctx.rect(p.x, p.y, p.s, p.s);
+            else { ctx.moveTo(p.x, p.y); ctx.lineTo(p.x+p.s, p.y); ctx.lineTo(p.x+p.s/2, p.y-p.s); ctx.closePath(); }
             ctx.stroke();
-            s.x += s.dx; s.y += s.dy;
-            if(s.x < -100 || s.x > canvas.width + 100) s.dx *= -1;
-            if(s.y < -100 || s.y > canvas.height + 100) s.dy *= -1;
+            p.x += p.dx; p.y += p.dy;
+            if(p.x< -200 || p.x > canvas.width+200) p.dx *= -1;
+            if(p.y< -200 || p.y > canvas.height+200) p.dy *= -1;
         });
-        requestAnimationFrame(animate);
+        requestAnimationFrame(drawShapes);
     }
-    initShapes(); animate();
-    window.onresize = initShapes;
+    initShapes(); drawShapes(); window.onresize = initShapes;
 
-    // --- Project Logic ---
+    // --- Core Logic ---
     async function initWorkspace() {
         workspace = await window.showDirectoryPicker({ mode: 'readwrite' });
         document.getElementById('setupView').classList.add('hidden');
@@ -243,14 +225,14 @@
 
     async function loadProjects() {
         projects = [];
-        const root = await workspace.getDirectoryHandle('Clipflow_Vault', { create: true });
+        const root = await workspace.getDirectoryHandle('Clipflow_Projects', { create: true });
         for await (const [name, handle] of root.entries()) {
-            if (handle.kind === 'directory') {
+            if(handle.kind === 'directory') {
                 try {
-                    const mFile = await handle.getFileHandle('meta.json');
-                    const meta = JSON.parse(await (await mFile.getFile()).text());
+                    const mFile = await (await handle.getFileHandle('meta.json')).getFile();
+                    const meta = JSON.parse(await mFile.text());
                     const vFile = await handle.getFileHandle('video.mp4');
-                    projects.push({ folderName: name, meta, videoFile: vFile, handle });
+                    projects.push({ name, meta, videoFile: vFile, handle });
                 } catch(e) {}
             }
         }
@@ -259,32 +241,30 @@
 
     function renderProjects() {
         const container = document.getElementById('projectsContainer');
-        const query = document.getElementById('mainSearch').value.toLowerCase();
+        const q = document.getElementById('mainSearch').value.toLowerCase();
         container.innerHTML = '';
 
-        projects.sort((a,b) => b.meta.timestamp - a.meta.timestamp).forEach((p, idx) => {
-            if (!p.meta.title.toLowerCase().includes(query)) return;
-
-            // Determine Ratio: If any platform is TikTok/Reels/Shorts, use Vertical
-            const isVertical = p.meta.platforms.some(plt => ['tiktok','reels','shorts'].includes(plt));
+        const sorted = projects.sort((a,b) => b.meta.timestamp - a.meta.timestamp);
+        
+        sorted.forEach((p, idx) => {
+            if(!p.meta.title.toLowerCase().includes(q)) return;
+            const isVertical = p.meta.platforms.some(x => ['reels','tiktok','shorts'].includes(x));
             
             const div = document.createElement('div');
             div.className = `card ${isVertical ? 'vertical' : 'horizontal'}`;
             div.innerHTML = `
                 <div class="dots-btn" onclick="toggleMenu(event, ${idx})">⋮</div>
                 <div class="dropdown" id="menu-${idx}">
-                    <button onclick="openModal('edit', ${idx})">✏️ Edit Project</button>
+                    <button onclick="openModal('edit', ${idx})">✏️ Edit</button>
                     <button onclick="downloadZip(${idx})">📦 Download ZIP</button>
-                    <button onclick="deleteProject(${idx})" style="color:var(--danger)">🗑️ Delete Permanently</button>
+                    <button onclick="deleteProject(${idx})" style="color:var(--danger)">🗑️ Delete</button>
                 </div>
                 <div class="card-thumb" onclick="playVideo(${idx})">
                     <img src="${p.meta.thumbs[0] || ''}">
                 </div>
                 <div class="card-body">
-                    <h3 style="margin:0; font-size:16px;">${p.meta.title}</h3>
-                    <div class="badge-container">
-                        ${p.meta.platforms.map(plt => `<span class="badge">${plt}</span>`).join('')}
-                    </div>
+                    <h3>${p.meta.title}</h3>
+                    <div class="platform-tags">${p.meta.platforms.map(t => `<span class="tag">${t}</span>`).join('')}</div>
                 </div>
             `;
             container.appendChild(div);
@@ -293,12 +273,13 @@
 
     function openModal(mode, idx = null) {
         editMode = mode === 'edit';
-        document.getElementById('videoSection').style.display = editMode ? 'none' : 'block';
-        document.querySelectorAll('.platform-selector input').forEach(i => i.checked = false);
+        document.getElementById('modalTitle').innerText = editMode ? "Edit Project" : "New Project";
+        document.getElementById('videoUploadBox').style.display = editMode ? 'none' : 'block';
+        document.querySelectorAll('.check-item input').forEach(c => c.checked = false);
 
         if(editMode) {
             const p = projects[idx];
-            currentEditName = p.folderName;
+            currentEditName = p.name;
             document.getElementById('projTitle').value = p.meta.title;
             document.getElementById('projDesc').value = p.meta.desc;
             tempThumbs = [...p.meta.thumbs];
@@ -310,52 +291,61 @@
             document.getElementById('projTitle').value = "";
             document.getElementById('projDesc').value = "";
             tempThumbs = [null, null, null];
-            selectedVideoFile = null;
+            selectedVideo = null;
+            document.getElementById('videoLabel').innerText = "Click to Upload Video";
         }
-        updateThumbUI();
+        refreshThumbs();
         document.getElementById('formModal').style.display = 'flex';
     }
 
-    async function saveProject() {
+    async function saveData() {
         const title = document.getElementById('projTitle').value;
-        const selectedPlats = Array.from(document.querySelectorAll('.platform-selector input:checked')).map(i => i.value);
-        
-        if(!title || (!selectedVideoFile && !editMode)) return alert("Missing Info");
+        const plats = Array.from(document.querySelectorAll('.check-item input:checked')).map(i => i.value);
+        if(!title || (!selectedVideo && !editMode)) return alert("Required fields missing");
 
-        const root = await workspace.getDirectoryHandle('Clipflow_Vault', { create: true });
+        const root = await workspace.getDirectoryHandle('Clipflow_Projects', { create: true });
         const folderName = editMode ? currentEditName : title.replace(/\s+/g,'_') + "_" + Date.now();
         const pFolder = await root.getDirectoryHandle(folderName, { create: true });
 
-        const mFile = await pFolder.getFileHandle('meta.json', { create: true });
-        const writer = await mFile.createWritable();
+        // Save Meta
+        const mHandle = await pFolder.getFileHandle('meta.json', { create: true });
+        const writer = await mHandle.createWritable();
         await writer.write(JSON.stringify({
             title, desc: document.getElementById('projDesc').value,
-            platforms: selectedPlats, thumbs: tempThumbs,
-            timestamp: editMode ? projects.find(p=>p.folderName===currentEditName).meta.timestamp : Date.now()
+            platforms: plats, thumbs: tempThumbs,
+            timestamp: editMode ? projects.find(p => p.name === currentEditName).meta.timestamp : Date.now()
         }));
         await writer.close();
 
-        if(selectedVideoFile) {
-            const vFile = await pFolder.getFileHandle('video.mp4', { create: true });
-            const vWriter = await vFile.createWritable();
-            await vWriter.write(selectedVideoFile);
+        // Save Video (only if new one selected)
+        if(selectedVideo) {
+            const vHandle = await pFolder.getFileHandle('video.mp4', { create: true });
+            const vWriter = await vHandle.createWritable();
+            await vWriter.write(selectedVideo);
             await vWriter.close();
         }
+
         closeModal(); loadProjects();
     }
 
     async function downloadZip(idx) {
         const p = projects[idx];
         const zip = new JSZip();
-        const vBlob = await p.videoFile.getFile();
-        zip.file("video.mp4", vBlob);
-        zip.file("meta.txt", `Title: ${p.meta.title}\nPlatforms: ${p.meta.platforms.join(',')}`);
-        p.meta.thumbs.forEach((t, i) => { if(t) zip.file(`thumb_${i}.png`, t.split(',')[1], {base64: true}); });
-        const content = await zip.generateAsync({type:"blob"});
-        saveAs(content, `${p.meta.title}_clipflow.zip`);
+        zip.file("video.mp4", await p.videoFile.getFile());
+        zip.file("info.txt", `Title: ${p.meta.title}\nDescription: ${p.meta.desc}\nPlatforms: ${p.meta.platforms.join(', ')}`);
+        p.meta.thumbs.forEach((img, i) => { if(img) zip.file(`thumb_${i}.png`, img.split(',')[1], {base64: true}); });
+        const blob = await zip.generateAsync({type:"blob"});
+        saveAs(blob, `${p.meta.title}_Clipflow.zip`);
     }
 
-    // UI Logic
+    async function deleteProject(idx) {
+        if(confirm("Delete this project permanently from your drive?")) {
+            const root = await workspace.getDirectoryHandle('Clipflow_Projects');
+            await root.removeEntry(projects[idx].name, { recursive: true });
+            loadProjects();
+        }
+    }
+
     function toggleMenu(e, idx) {
         e.stopPropagation();
         document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
@@ -363,47 +353,44 @@
     }
     window.onclick = () => document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
 
+    function closeModal() { document.getElementById('formModal').style.display = 'none'; }
     function toggleTheme() {
         const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', t);
     }
 
-    function closeModal() { document.getElementById('formModal').style.display = 'none'; }
+    function triggerVideo() {
+        const i = document.createElement('input'); i.type = 'file'; i.accept = 'video/mp4';
+        i.onchange = e => { selectedVideo = e.target.files[0]; document.getElementById('videoLabel').innerText = selectedVideo.name; };
+        i.click();
+    }
 
-    function pickImage(i) {
-        const input = document.createElement('input');
-        input.type = 'file'; input.accept = 'image/*';
+    function pickThumb(i) {
+        const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
         input.onchange = e => {
-            const reader = new FileReader();
-            reader.onload = f => { tempThumbs[i] = f.target.result; updateThumbUI(); };
-            reader.readAsDataURL(e.target.files[0]);
+            const r = new FileReader();
+            r.onload = f => { tempThumbs[i] = f.target.result; refreshThumbs(); };
+            r.readAsDataURL(e.target.files[0]);
         };
         input.click();
     }
 
-    function updateThumbUI() {
-        tempThumbs.forEach((s, i) => {
+    function refreshThumbs() {
+        tempThumbs.forEach((src, i) => {
             const img = document.getElementById(`pre${i}`);
-            if(s) { img.src = s; img.classList.remove('hidden'); img.nextElementSibling.classList.add('hidden'); }
-            else { img.classList.add('hidden'); img.nextElementSibling.classList.remove('hidden'); }
+            if(src) { img.src = src; img.style.display = 'block'; img.nextElementSibling.style.display = 'none'; }
+            else { img.style.display = 'none'; img.nextElementSibling.style.display = 'block'; }
         });
     }
-
-    document.getElementById('dropZone').onclick = () => {
-        const i = document.createElement('input'); i.type = 'file'; i.accept = 'video/mp4';
-        i.onchange = e => { selectedVideoFile = e.target.files[0]; document.getElementById('videoLabel').innerText = selectedVideoFile.name; };
-        i.click();
-    };
 
     async function playVideo(idx) {
         const f = await projects[idx].videoFile.getFile();
         const url = URL.createObjectURL(f);
-        const w = window.open("");
-        w.document.write(`<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;"><video src="${url}" controls autoplay style="max-width:100%;max-height:100%"></video></body>`);
+        const win = window.open("");
+        win.document.write(`<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;"><video src="${url}" controls autoplay style="max-height:100vh;max-width:100%"></video></body>`);
     }
 
     if(!workspace) document.getElementById('setupView').classList.remove('hidden');
 </script>
-
 </body>
 </html>
