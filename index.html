@@ -7,68 +7,75 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
+:root {
+    --dark-bg:#0d0f25;
+    --dark-secondary:#1a0a36;
+    --light-bg:#f5f5f5;
+    --light-secondary:#ffffff;
+    --blue:#0d6cff;
+    --purple:#6c63ff;
+    --text-light:#fff;
+    --text-dark:#000;
+}
+
 body {
     margin:0;
     font-family: 'Roboto', sans-serif;
-    background: linear-gradient(135deg, #0d0f25, #1a0a36);
-    overflow-x: hidden;
-    color: #fff;
+    background: var(--dark-bg);
+    color: var(--text-light);
+    transition:0.5s;
+    overflow-x:hidden;
 }
 
-/* الخلفية المتحركة */
-body::before {
-    content:'';
-    position:fixed;
-    top:0; left:0;
-    width:100%; height:100%;
-    background: radial-gradient(circle, rgba(108,99,255,0.2) 1px, transparent 1px);
-    background-size: 50px 50px;
-    animation: moveBg 60s linear infinite;
-    z-index:-1;
-}
-
-@keyframes moveBg {
-    from {background-position:0 0;}
-    to {background-position:500px 500px;}
-}
-
-header {
+/* Navbar */
+nav {
     display:flex;
     align-items:center;
-    padding:20px;
-    gap:15px;
+    justify-content:space-between;
+    padding:15px 25px;
+    background: linear-gradient(90deg, var(--purple), var(--blue));
 }
 
-header img {
-    width:50px;
-    height:50px;
+nav .logo {
+    display:flex;
+    align-items:center;
+    gap:10px;
 }
 
-header h1 {
-    font-size:28px;
-    background: linear-gradient(90deg,#6c63ff,#0d6cff);
+nav .logo img {
+    width:40px;
+    height:40px;
+}
+
+nav .logo h1 {
+    font-size:22px;
+    background: linear-gradient(90deg,#fff,#ddd);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-button {
-    padding:10px 20px;
-    margin:5px;
-    cursor:pointer;
+nav button {
+    padding:8px 15px;
     border:none;
-    border-radius:10px;
+    border-radius:8px;
     font-weight:bold;
+    cursor:pointer;
     transition:0.3s;
 }
 
-button:hover {
-    transform:scale(1.05);
+nav button:hover { transform: scale(1.05); }
+
+/* خلفية الأشكال الهندسية */
+#bgCanvas {
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:-1;
 }
 
-button#addProjectBtn { background:#6c63ff; color:#fff; }
-button#chooseFolder { background:#0d6cff; color:#fff; }
-
-/* واجهة المشروع */
+/* المشاريع */
 #projectsContainer {
     display:grid;
     grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
@@ -77,7 +84,7 @@ button#chooseFolder { background:#0d6cff; color:#fff; }
 }
 
 .project {
-    background: linear-gradient(145deg, #1a0a36, #0d0f25);
+    background: linear-gradient(145deg, var(--dark-secondary), var(--dark-bg));
     border-radius:15px;
     overflow:hidden;
     box-shadow:0 5px 15px rgba(0,0,0,0.5);
@@ -85,6 +92,7 @@ button#chooseFolder { background:#0d6cff; color:#fff; }
     flex-direction:column;
     cursor:pointer;
     transition:0.3s;
+    position:relative;
 }
 
 .project:hover { transform: translateY(-5px); }
@@ -101,23 +109,64 @@ button#chooseFolder { background:#0d6cff; color:#fff; }
 .project-info h3 { font-size:16px; margin:0; font-weight:bold; }
 .project-info p { font-size:12px; margin:0; display:flex; align-items:center; gap:5px; }
 
-/* ألوان المنصات */
+/* المنصات */
 .platform-label { padding:2px 6px; border-radius:5px; font-size:11px; font-weight:bold; color:#fff; }
 .youtube { background:#FF0000; }
 .youtube-shorts { background:#FF5555; }
-.tiktok { background:#000000; color:#fff; }
+.tiktok { background:#000; color:#fff; }
 .instagram { background: linear-gradient(45deg,#feda75,#d62976,#8134af); }
 
-/* فورم إضافة مشروع */
+/* أيقونة ثلاث نقاط */
+.project .menu-btn {
+    position:absolute;
+    top:10px; right:10px;
+    background:rgba(255,255,255,0.2);
+    border:none;
+    border-radius:50%;
+    width:30px;
+    height:30px;
+    cursor:pointer;
+    font-weight:bold;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.project .menu-content {
+    display:none;
+    position:absolute;
+    top:40px;
+    right:10px;
+    background:var(--dark-secondary);
+    border-radius:8px;
+    overflow:hidden;
+    z-index:5;
+    flex-direction:column;
+}
+
+.project .menu-content button {
+    background:none;
+    color:#fff;
+    padding:8px 12px;
+    text-align:left;
+    border:none;
+    width:100%;
+    cursor:pointer;
+}
+
+.project .menu-content button:hover { background:rgba(255,255,255,0.2); }
+
+/* Form المشروع */
 #projectForm {
-    background:#1a0a36;
+    background: var(--dark-secondary);
     padding:15px;
     margin:20px;
     border-radius:15px;
+    display:none;
 }
 
 #dropZone, #dropThumbs {
-    border:2px dashed #6c63ff;
+    border:2px dashed var(--purple);
     border-radius:10px;
     padding:20px;
     text-align:center;
@@ -136,34 +185,56 @@ input, textarea {
     border-radius:8px;
     padding:8px;
     margin:5px 0;
-    background:#0d0f25;
-    color:#fff;
+    background: var(--dark-bg);
+    color:var(--text-light);
 }
 
 .platformBtn {
     padding:5px 10px;
     margin:2px;
     border-radius:6px;
-    background:#6c63ff;
+    background:var(--purple);
     transition:0.3s;
 }
 
 .platformBtn.selected { background:#ff6c63; }
+
+/* Popup عرض الفيديو */
+#videoPopup {
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:var(--dark-secondary);
+    padding:15px;
+    border-radius:15px;
+    display:none;
+    z-index:10;
+}
+
+#videoPopup video { width:400px; max-width:90vw; border-radius:10px; }
+
+#videoPopup button { margin-top:10px; background:#ff5555; color:#fff; }
 </style>
 </head>
 <body>
 
-<header>
-    <img src="https://img.sanishtech.com/u/8a6ce39c01afd349c83d1c5b8f4cd7ac.png" alt="Logo">
-    <h1>Clip Flow</h1>
-</header>
+<canvas id="bgCanvas"></canvas>
+
+<nav>
+    <div class="logo">
+        <img src="https://img.sanishtech.com/u/8a6ce39c01afd349c83d1c5b8f4cd7ac.png" alt="Logo">
+        <h1>Clip Flow</h1>
+    </div>
+    <button id="toggleMode">Dark / Light</button>
+</nav>
 
 <div style="padding:0 20px;">
 <button id="chooseFolder">اختر مجلد المشاريع</button>
 <button id="addProjectBtn" disabled>مشروع جديد</button>
 </div>
 
-<div id="projectForm" style="display:none;">
+<div id="projectForm">
     <h2 id="formTitle">إضافة مشروع جديد</h2>
     <div id="dropZone">اسحب الفيديو هنا أو اضغط لاختياره</div>
     <div id="dropThumbs">اسحب الصور المصغرة هنا أو اضغط لاختيارها (1-3)</div>
@@ -185,8 +256,14 @@ input, textarea {
 
 <div id="projectsContainer"></div>
 
+<!-- Popup عرض الفيديو -->
+<div id="videoPopup">
+    <video controls></video>
+    <button id="closePopup">إغلاق</button>
+</div>
+
 <script>
-// ===================== سكريبت إدارة المشاريع =====================
+// ===================== إعداد المشاريع =====================
 let rootFolderHandle, mainFolderHandle;
 let projects = [];
 let editingIndex = null;
@@ -202,9 +279,7 @@ document.getElementById('chooseFolder').addEventListener('click', async () => {
         rootFolderHandle = mainFolderHandle;
         document.getElementById('addProjectBtn').disabled = false;
         await loadProjects();
-    } catch(e) {
-        alert('الموقع يحتاج الوصول لمجلد على جهازك للعمل.');
-    }
+    } catch(e) { alert('الموقع يحتاج الوصول لمجلد على جهازك للعمل.'); }
 });
 
 // تحميل المشاريع
@@ -216,7 +291,16 @@ async function loadProjects() {
             if(metaHandle){
                 const file = await metaHandle.getFile();
                 const data = JSON.parse(await file.text());
-                projects.push({ handle: entry, ...data });
+
+                // تحميل الصور المصغرة مباشرة من الملفات
+                let thumbs=[];
+                for(let i=0;i<3;i++){
+                    try{
+                        const thumbFile = await entry.getFileHandle(`thumbnail${i+1}.png`).then(f=>f.getFile());
+                        thumbs.push(URL.createObjectURL(thumbFile));
+                    }catch(e){}
+                }
+                projects.push({ handle: entry, thumbs, ...data });
             }
         }
     }
@@ -230,43 +314,59 @@ function renderProjects() {
     container.innerHTML = '';
     projects.forEach((p,index)=>{
         const div = document.createElement('div');
-        div.className = 'project';
-        const thumbsHTML = p.thumbs.map(t=>`<img src="${t}" class="thumb-preview">`).join('');
+        div.className='project';
         const platformsHTML = p.platforms.map(pl=>{
             let cls = pl.toLowerCase().replace(' ','-');
             return `<span class="platform-label ${cls}">${pl}</span>`;
         }).join(' ');
+
         div.innerHTML = `
-            <img src="${p.thumbs[0] || ''}">
+            <img src="${p.thumbs[0]||''}">
             <div class="project-info">
                 <h3>${p.title}</h3>
                 <p>${p.description}</p>
                 <p>${platformsHTML}</p>
                 <p>${new Date(p.date).toLocaleString()}</p>
             </div>
-            <button onclick="editProject(${index})">تعديل</button>
-            <button onclick="viewProject(${index})">مشاهدة</button>
-            <button onclick="deleteProject(${index})">حذف</button>
+            <button class="menu-btn">⋮</button>
+            <div class="menu-content">
+                <button onclick="editProject(${index})">✏️ تعديل</button>
+                <button onclick="confirmDelete(${index})">🗑️ حذف</button>
+                <button onclick="viewProject(${index})">▶️ مشاهدة</button>
+            </div>
         `;
         container.appendChild(div);
+
+        // قائمة الثلاث نقاط
+        const menuBtn = div.querySelector('.menu-btn');
+        const menuContent = div.querySelector('.menu-content');
+        menuBtn.addEventListener('click', e=>{
+            e.stopPropagation();
+            document.querySelectorAll('.menu-content').forEach(c=>c.style.display='none');
+            menuContent.style.display='flex';
+            menuContent.style.flexDirection='column';
+        });
     });
 }
 
-// فتح واجهة إضافة مشروع
+// إخفاء قائمة الثلاث نقاط عند النقر في أي مكان
+document.body.addEventListener('click', ()=>{ document.querySelectorAll('.menu-content').forEach(c=>c.style.display='none'); });
+
+// فتح فورم إضافة مشروع
 document.getElementById('addProjectBtn').addEventListener('click', ()=>{
-    editingIndex = null;
-    selectedVideoFile = null;
-    selectedThumbsFiles = [];
-    selectedPlatforms = [];
-    document.getElementById('formTitle').innerText = 'إضافة مشروع جديد';
-    document.getElementById('projectForm').style.display = 'block';
+    editingIndex=null;
+    selectedVideoFile=null;
+    selectedThumbsFiles=[];
+    selectedPlatforms=[];
+    document.getElementById('formTitle').innerText='إضافة مشروع جديد';
+    document.getElementById('projectForm').style.display='block';
     document.getElementById('title').value='';
     document.getElementById('description').value='';
     document.getElementById('datetime').value=new Date().toISOString().slice(0,16);
     document.getElementById('thumbPreview').innerHTML='';
 });
 
-// Drag & Drop للفيديو
+// Drag & Drop الفيديو
 const dropZone = document.getElementById('dropZone');
 dropZone.addEventListener('dragover', e=>{e.preventDefault(); dropZone.style.borderColor='#fff';});
 dropZone.addEventListener('dragleave', e=>{dropZone.style.borderColor='#6c63ff';});
@@ -277,26 +377,26 @@ dropZone.addEventListener('drop', e=>{
     dropZone.innerText = selectedVideoFile.name;
 });
 
-// Drag & Drop للصور المصغرة
+// Drag & Drop الصور المصغرة
 const dropThumbs = document.getElementById('dropThumbs');
 dropThumbs.addEventListener('dragover', e=>{e.preventDefault(); dropThumbs.style.borderColor='#fff';});
 dropThumbs.addEventListener('dragleave', e=>{dropThumbs.style.borderColor='#6c63ff';});
 dropThumbs.addEventListener('drop', e=>{
     e.preventDefault();
     dropThumbs.style.borderColor='#6c63ff';
-    selectedThumbsFiles = Array.from(e.dataTransfer.files).slice(0,3);
-    const preview = selectedThumbsFiles.map(f=>URL.createObjectURL(f)).map(url=>`<img src="${url}" class="thumb-preview">`).join('');
-    document.getElementById('thumbPreview').innerHTML = preview;
+    selectedThumbsFiles=Array.from(e.dataTransfer.files).slice(0,3);
+    const preview=selectedThumbsFiles.map(f=>URL.createObjectURL(f)).map(url=>`<img src="${url}" class="thumb-preview">`).join('');
+    document.getElementById('thumbPreview').innerHTML=preview;
 });
 
-// أزرار المنصات
+// المنصات
 document.querySelectorAll('.platformBtn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-        const name = btn.dataset.name;
+        const name=btn.dataset.name;
         if(selectedPlatforms.includes(name)){
-            selectedPlatforms = selectedPlatforms.filter(p=>p!==name);
+            selectedPlatforms=selectedPlatforms.filter(p=>p!==name);
             btn.classList.remove('selected');
-        }else{
+        } else {
             selectedPlatforms.push(name);
             btn.classList.add('selected');
         }
@@ -305,21 +405,18 @@ document.querySelectorAll('.platformBtn').forEach(btn=>{
 
 // حفظ المشروع
 document.getElementById('saveProject').addEventListener('click', async ()=>{
-    const title = document.getElementById('title').value.trim();
-    const description = document.getElementById('description').value.trim();
-    const date = document.getElementById('datetime').value;
-    if(!title || !selectedVideoFile) { alert('يجب إدخال العنوان والفيديو'); return; }
+    const title=document.getElementById('title').value.trim();
+    const description=document.getElementById('description').value.trim();
+    const date=document.getElementById('datetime').value;
+    if(!title || !selectedVideoFile){ alert('يجب إدخال العنوان والفيديو'); return; }
 
     let projectFolder;
-    if(editingIndex!==null){
-        projectFolder = projects[editingIndex].handle;
-    } else {
-        projectFolder = await rootFolderHandle.getDirectoryHandle(title,{create:true});
-    }
+    if(editingIndex!==null){ projectFolder=projects[editingIndex].handle; } 
+    else { projectFolder=await rootFolderHandle.getDirectoryHandle(title,{create:true}); }
 
-    // حفظ الفيديو بشكل منفصل
-    const videoHandle = await projectFolder.getFileHandle('video.mp4',{create:true});
-    const writableVideo = await videoHandle.createWritable();
+    // حفظ الفيديو
+    const videoHandle=await projectFolder.getFileHandle('video.mp4',{create:true});
+    const writableVideo=await videoHandle.createWritable();
     await writableVideo.write(await selectedVideoFile.arrayBuffer());
     await writableVideo.close();
 
@@ -327,28 +424,24 @@ document.getElementById('saveProject').addEventListener('click', async ()=>{
     let thumbs=[];
     for(let i=0;i<selectedThumbsFiles.length;i++){
         const f=selectedThumbsFiles[i];
-        const name = `thumbnail${i+1}.png`;
-        const thumbHandle = await projectFolder.getFileHandle(name,{create:true});
-        const writableThumb = await thumbHandle.createWritable();
+        const name=`thumbnail${i+1}.png`;
+        const thumbHandle=await projectFolder.getFileHandle(name,{create:true});
+        const writableThumb=await thumbHandle.createWritable();
         await writableThumb.write(await f.arrayBuffer());
         await writableThumb.close();
-        const file = await thumbHandle.getFile();
-        const url = URL.createObjectURL(file);
+        const file=await thumbHandle.getFile();
+        const url=URL.createObjectURL(file);
         thumbs.push(url);
     }
 
-    // حفظ meta.json
-    const meta = { title, description, platforms:selectedPlatforms, date, thumbs };
-    const metaHandle = await projectFolder.getFileHandle('meta.json',{create:true});
-    const writableMeta = await metaHandle.createWritable();
+    const meta={title,description,platforms:selectedPlatforms,date,thumbs};
+    const metaHandle=await projectFolder.getFileHandle('meta.json',{create:true});
+    const writableMeta=await metaHandle.createWritable();
     await writableMeta.write(JSON.stringify(meta));
     await writableMeta.close();
 
-    if(editingIndex!==null){
-        projects[editingIndex]={handle:projectFolder,...meta};
-    } else {
-        projects.push({handle:projectFolder,...meta});
-    }
+    if(editingIndex!==null) projects[editingIndex]={handle:projectFolder,...meta};
+    else projects.push({handle:projectFolder,...meta});
 
     projects.sort((a,b)=> new Date(b.date)-new Date(a.date));
     renderProjects();
@@ -356,9 +449,7 @@ document.getElementById('saveProject').addEventListener('click', async ()=>{
 });
 
 // إلغاء المشروع
-document.getElementById('cancelProject').addEventListener('click', ()=>{
-    document.getElementById('projectForm').style.display='none';
-});
+document.getElementById('cancelProject').addEventListener('click', ()=>{ document.getElementById('projectForm').style.display='none'; });
 
 // تعديل المشروع
 async function editProject(index){
@@ -374,30 +465,106 @@ async function editProject(index){
     document.querySelectorAll('.platformBtn').forEach(btn=>{
         btn.classList.toggle('selected', selectedPlatforms.includes(btn.dataset.name));
     });
-    const preview = p.thumbs.map(t=>t).map(url=>`<img src="${url}" class="thumb-preview">`).join('');
-    document.getElementById('thumbPreview').innerHTML = preview;
+    const preview=p.thumbs.map(t=>t).map(url=>`<img src="${url}" class="thumb-preview">`).join('');
+    document.getElementById('thumbPreview').innerHTML=preview;
     document.getElementById('projectForm').style.display='block';
 }
 
-// حذف المشروع
-async function deleteProject(index){
-    if(!confirm('هل أنت متأكد من حذف المشروع؟')) return;
-    const p=projects[index];
-    await rootFolderHandle.removeEntry(p.handle.name,{recursive:true});
-    projects.splice(index,1);
-    renderProjects();
+// تأكيد حذف المشروع
+async function confirmDelete(index){
+    if(confirm('⚠️ سيتم حذف المشروع بالكامل من جهازك! هل تريد المتابعة؟')){
+        const p=projects[index];
+        await rootFolderHandle.removeEntry(p.handle.name,{recursive:true});
+        projects.splice(index,1);
+        renderProjects();
+    }
 }
 
-// مشاهدة الفيديو
+// عرض الفيديو داخل Popup
 async function viewProject(index){
     const p=projects[index];
-    const videoFileHandle = await p.handle.getFileHandle('video.mp4');
-    const file = await videoFileHandle.getFile();
-    const url = URL.createObjectURL(file);
-    const win = window.open('');
-    win.document.write(`<video src="${url}" controls autoplay style="width:100%"></video>`);
+    const videoFileHandle=await p.handle.getFileHandle('video.mp4');
+    const file=await videoFileHandle.getFile();
+    const url=URL.createObjectURL(file);
+    const popup=document.getElementById('videoPopup');
+    popup.querySelector('video').src=url;
+    popup.style.display='block';
 }
-</script>
 
+document.getElementById('closePopup').addEventListener('click', ()=>{
+    const popup=document.getElementById('videoPopup');
+    popup.querySelector('video').pause();
+    popup.style.display='none';
+});
+
+// Light/Dark Mode
+document.getElementById('toggleMode').addEventListener('click', ()=>{
+    if(document.body.style.background==`var(--light-bg)`){
+        document.body.style.background='var(--dark-bg)';
+        document.body.style.color='var(--text-light)';
+    } else {
+        document.body.style.background='var(--light-bg)';
+        document.body.style.color='var(--text-dark)';
+    }
+});
+
+// ===================== الخلفية المتحركة بالأشكال =====================
+const canvas=document.getElementById('bgCanvas');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+class Shape{
+    constructor(){
+        this.x=Math.random()*canvas.width;
+        this.y=Math.random()*canvas.height;
+        this.size=Math.random()*20+10;
+        this.type=['circle','square','triangle','parallelogram'][Math.floor(Math.random()*4)];
+        this.speedX=(Math.random()-0.5)*1.5;
+        this.speedY=(Math.random()-0.5)*1.5;
+        this.color=`rgba(${Math.floor(Math.random()*255)},${Math.floor(Math.random()*255)},${Math.floor(Math.random()*255)},0.2)`;
+    }
+    draw(){
+        ctx.fillStyle=this.color;
+        ctx.beginPath();
+        if(this.type=='circle') ctx.arc(this.x,this.y,this.size,0,2*Math.PI);
+        else if(this.type=='square') ctx.fillRect(this.x,this.y,this.size,this.size);
+        else if(this.type=='triangle'){
+            ctx.moveTo(this.x,this.y);
+            ctx.lineTo(this.x+this.size,this.y+this.size);
+            ctx.lineTo(this.x-this.size,this.y+this.size);
+            ctx.closePath();
+            ctx.fill();
+        } else if(this.type=='parallelogram'){
+            ctx.moveTo(this.x,this.y);
+            ctx.lineTo(this.x+this.size*1.2,this.y);
+            ctx.lineTo(this.x+this.size,this.y+this.size);
+            ctx.lineTo(this.x-0.2*this.size,this.y+this.size);
+            ctx.closePath();
+            ctx.fill();
+        }
+        else ctx.fillRect(this.x,this.y,this.size,this.size);
+    }
+    update(){
+        this.x+=this.speedX; this.y+=this.speedY;
+        if(this.x<0||this.x>canvas.width) this.speedX*=-1;
+        if(this.y<0||this.y>canvas.height) this.speedY*=-1;
+        this.draw();
+    }
+}
+
+let shapes=[];
+for(let i=0;i<40;i++) shapes.push(new Shape());
+
+function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    shapes.forEach(s=>s.update());
+    requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener('resize', ()=>{canvas.width=window.innerWidth; canvas.height=window.innerHeight;});
+
+</script>
 </body>
 </html>
