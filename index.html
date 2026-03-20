@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -158,31 +158,31 @@ input,textarea { width:100%; padding:8px; margin:5px 0; border-radius:8px; borde
 <h1>Clip Flow</h1>
 </div>
 <div>
-<button id="chooseFolderNav">اختر مجلد</button>
-<button id="newProjectBtn">مشروع جديد</button>
+<button id="chooseFolderNav">Choose Folder</button>
+<button id="newProjectBtn">New Project</button>
 </div>
 </nav>
 
 <div id="projectsContainer"></div>
 
 <div id="folderPopup">
-<h2>اختر مجلد المشاريع</h2>
-<button class="popupBtn" id="chooseFolderBtn">اختر مجلد</button>
+<h2>Select Your Projects Folder</h2>
+<button class="popupBtn" id="chooseFolderBtn">Choose Folder</button>
 </div>
 
 <div id="projectPopup">
-<h2>مشروع جديد</h2>
-<div id="dropZone">اسحب الفيديو هنا أو اضغط لاختياره</div>
-<div id="dropThumbs">اسحب الصور المصغرة هنا أو اضغط لاختيارها (1-3)</div>
+<h2>New Project</h2>
+<div id="dropZone">Drag video here or click to select</div>
+<div id="dropThumbs">Drag thumbnails here or click to select (1-3)</div>
 <div id="thumbPreview"></div>
-<input type="text" id="title" placeholder="عنوان المشروع">
-<textarea id="description" placeholder="الوصف"></textarea>
-<label>اختر المنصات:</label>
+<input type="text" id="title" placeholder="Project Title">
+<textarea id="description" placeholder="Description"></textarea>
+<label>Select Platforms:</label>
 <div id="platformsContainer"></div>
-<label>اختر التاريخ والوقت:</label>
+<label>Select Date & Time:</label>
 <input type="datetime-local" id="datetime">
-<button class="popupBtn" id="saveProjectBtn">حفظ المشروع</button>
-<button class="popupBtn" id="cancelProjectBtn">إلغاء</button>
+<button class="popupBtn" id="saveProjectBtn">Save Project</button>
+<button class="popupBtn" id="cancelProjectBtn">Cancel</button>
 </div>
 
 <script>
@@ -223,7 +223,7 @@ btn.onclick=()=>btn.classList.toggle('selected');
 platformsContainer.appendChild(btn);
 });
 
-// اختيار مجلد
+// Folder selection
 chooseFolderBtn.onclick=chooseFolderNav.onclick=async()=>{
 folderHandle=await window.showDirectoryPicker();
 await folderHandle.getDirectoryHandle('ClipFlow Projects',{create:true});
@@ -231,20 +231,18 @@ folderPopup.style.display='none';
 loadProjects();
 }
 
-// مشروع جديد popup
+// New project popup
 newProjectBtn.onclick=()=>{ projectPopup.style.display='block'; titleInput.value=''; descriptionInput.value=''; datetimeInput.value=''; thumbPreview.innerHTML=''; selectedThumbs=[]; selectedVideo=null; }
 
 // Drag&Drop
 let selectedThumbs=[], selectedVideo=null;
-dropZone.onclick=()=>document.createElement('input').type='file';
-dropThumbs.onclick=()=>document.createElement('input').type='file';
 dropZone.addEventListener('dragover', e=>{ e.preventDefault(); });
 dropThumbs.addEventListener('dragover', e=>{ e.preventDefault(); });
 dropZone.addEventListener('drop', e=>{ e.preventDefault(); selectedVideo=e.dataTransfer.files[0]; });
 dropThumbs.addEventListener('drop', e=>{ e.preventDefault(); selectedThumbs=Array.from(e.dataTransfer.files); updateThumbPreview(); });
 function updateThumbPreview(){ thumbPreview.innerHTML=''; selectedThumbs.forEach(f=>{ let img=document.createElement('img'); img.src=URL.createObjectURL(f); thumbPreview.appendChild(img); })}
 
-// عرض المشاريع
+// Display projects
 async function loadProjects(){
 if(!folderHandle) return;
 projectsContainer.innerHTML=''; projects=[];
@@ -268,7 +266,7 @@ projects.sort((a,b)=> new Date(b.meta.datetime)-new Date(a.meta.datetime));
 projects.forEach(p=>{
 const div=document.createElement('div'); div.className='project';
 const img=document.createElement('img');
-img.src=p.thumbs.length>0?URL.createObjectURL(awaitFile(p.thumbs[0]):'';
+if(p.thumbs.length>0){ img.src=URL.createObjectURL(awaitFile(p.thumbs[0])); }
 const info=document.createElement('div'); info.className='project-info';
 const h3=document.createElement('h3'); h3.innerText=p.meta.title||p.name;
 const pInfo=document.createElement('p');
@@ -277,8 +275,8 @@ const platSpan=document.createElement('span'); platSpan.className='platform-labe
 pInfo.appendChild(platSpan); info.appendChild(h3); info.appendChild(pInfo);
 const menuBtn=document.createElement('button'); menuBtn.className='menu-btn'; menuBtn.innerText='⋮';
 const menuContent=document.createElement('div'); menuContent.className='menu-content';
-const editBtn=document.createElement('button'); editBtn.innerText='✏️ تعديل'; editBtn.onclick=()=>openProjectPopup(p);
-const delBtn=document.createElement('button'); delBtn.innerText='🗑️ حذف'; delBtn.onclick=()=>deleteProject(p);
+const editBtn=document.createElement('button'); editBtn.innerText='✏️ Edit'; editBtn.onclick=()=>openProjectPopup(p);
+const delBtn=document.createElement('button'); delBtn.innerText='🗑️ Delete'; delBtn.onclick=()=>deleteProject(p);
 menuContent.appendChild(editBtn); menuContent.appendChild(delBtn);
 menuBtn.onclick=()=>{ menuContent.style.display=menuContent.style.display==='flex'?'none':'flex'; }
 div.appendChild(img); div.appendChild(info); div.appendChild(menuBtn); div.appendChild(menuContent);
@@ -293,7 +291,7 @@ const win=window.open('','Video Preview','width=600,height=400'); win.document.w
 }
 
 async function deleteProject(project){
-if(!confirm('تحذير! سيتم حذف المشروع بالكامل من جهازك!')) return;
+if(!confirm('Warning! This will delete the project completely from your device!')) return;
 await project.folderHandle.removeEntry('video.mp4');
 for(const t of project.thumbs) await project.folderHandle.removeEntry(await t.name);
 await project.folderHandle.removeEntry('meta.json');
@@ -302,22 +300,21 @@ loadProjects();
 }
 
 function openProjectPopup(project=null){ projectPopup.style.display='block'; if(project){ titleInput.value=project.meta.title||''; descriptionInput.value=project.meta.description||''; datetimeInput.value=project.meta.datetime||''; } else { titleInput.value=''; descriptionInput.value=''; datetimeInput.value=''; thumbPreview.innerHTML=''; selectedThumbs=[]; selectedVideo=null; }
-
 }
 
 saveProjectBtn.onclick=async()=>{
-if(!folderHandle) return alert('اختر مجلد المشروع أولاً');
+if(!folderHandle) return alert('Please select a project folder first');
 const clipFlowFolder=await folderHandle.getDirectoryHandle('ClipFlow Projects');
 const projectName=titleInput.value||'New Project';
 const projectFolder=await clipFlowFolder.getDirectoryHandle(projectName,{create:true});
-alert('تم حفظ المشروع!'); projectPopup.style.display='none'; loadProjects();
+alert('Project saved!'); projectPopup.style.display='none'; loadProjects();
 }
 
 cancelProjectBtn.onclick=()=>{projectPopup.style.display='none';}
 
 async function awaitFile(fileHandle){ return await fileHandle.getFile(); }
 
-// الخلفية الهندسية Outline
+// Geometric background outline
 const canvas=document.getElementById('bgCanvas');
 const ctx=canvas.getContext('2d');
 canvas.width=window.innerWidth; canvas.height=window.innerHeight;
