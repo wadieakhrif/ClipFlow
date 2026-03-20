@@ -2,26 +2,65 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>ClipFlow Pro</title>
+<title>ClipFlow</title>
 
 <style>
 body { font-family:sans-serif; margin:0; background:white; color:black; }
-nav { display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid black;}
-#projects { display:flex; flex-wrap:wrap; gap:10px; padding:10px; }
-.card { border:1px solid black; width:200px; padding:10px; cursor:pointer;}
-.card img { width:100%; height:120px; object-fit:cover;}
+
+nav {
+ display:flex;
+ justify-content:space-between;
+ padding:15px;
+ border-bottom:1px solid black;
+}
+
+#projects {
+ display:flex;
+ flex-wrap:wrap;
+ gap:10px;
+ padding:10px;
+}
+
+.card {
+ border:1px solid black;
+ width:200px;
+ padding:10px;
+ cursor:pointer;
+}
+
+.card img {
+ width:100%;
+ height:120px;
+ object-fit:cover;
+}
+
 #player { padding:10px; }
 video { width:100%; }
 
-#modal {
- position:fixed; top:0; left:0;
+/* ===== MODAL ===== */
+#startupModal {
+ position:fixed;
+ top:0; left:0;
  width:100%; height:100%;
- background:rgba(0,0,0,0.5);
- display:none; justify-content:center; align-items:center;
+ background:rgba(0,0,0,0.6);
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ z-index:999;
 }
+
 .modal-box {
- background:white; padding:20px; width:300px;
- display:flex; flex-direction:column; gap:10px;
+ background:white;
+ padding:25px;
+ width:350px;
+ border-radius:10px;
+ text-align:center;
+}
+
+button {
+ padding:6px 12px;
+ cursor:pointer;
+ margin-top:10px;
 }
 </style>
 </head>
@@ -31,154 +70,166 @@ video { width:100%; }
 <nav>
   <b>ClipFlow</b>
   <div>
-    <button onclick="pickFolder()">📂</button>
-    <button onclick="openModal()">+ مشروع</button>
+    <button onclick="openNewProject()">+ مشروع</button>
   </div>
 </nav>
 
 <div id="projects"></div>
 <div id="player"></div>
 
-<div id="modal">
+<!-- نافذة البداية -->
+<div id="startupModal">
   <div class="modal-box">
-    <input id="title" placeholder="العنوان">
-    <button onclick="pickVideo()">اختيار فيديو</button>
-    <button onclick="pickThumb()">اختيار صورة</button>
-    <button onclick="saveProject()">حفظ</button>
-    <button onclick="closeModal()">إلغاء</button>
+    <h3>اختيار مكان التخزين</h3>
+
+    <p id="statusText">
+      يجب اختيار فولدر لحفظ مشاريعك.<br>
+      ملفاتك تُحفظ في جهازك وليس على الإنترنت.
+    </p>
+
+    <button onclick="connectFolder()">التالي</button>
   </div>
 </div>
 
 <script>
 let dir;
-let videoFile=null;
-let thumbFile=null;
 
 /* ===== IndexedDB ===== */
 function openDB(){
   return new Promise(res=>{
-    let req=indexedDB.open("clipflowDB",1);
-    req.onupgradeneeded=()=>req.result.createObjectStore("store");
-    req.onsuccess=()=>res(req.result);
+    let req = indexedDB.open("clipflowDB",1);
+    req.onupgradeneeded = ()=>req.result.createObjectStore("store");
+    req.onsuccess = ()=>res(req.result);
   });
 }
 
 async function saveDir(handle){
-  let db=await openDB();
+  let db = await openDB();
   db.transaction("store","readwrite").objectStore("store").put(handle,"dir");
 }
 
 async function getDir(){
-  let db=await openDB();
+  let db = await openDB();
   return db.transaction("store","readonly").objectStore("store").get("dir");
 }
 
-/* ===== اختيار الفولدر ===== */
-async function pickFolder(){
-  dir = await window.showDirectoryPicker({mode:"readwrite"});
-  await saveDir(dir);
-  loadProjects();
-}
-
-/* ===== استرجاع تلقائي ===== */
+/* ===== عند فتح الموقع ===== */
 window.onload = async ()=>{
   dir = await getDir();
 
   if(dir){
-    let perm = await dir.queryPermission({mode:"readwrite"});
-    if(perm !== "granted"){
-      perm = await dir.requestPermission({mode:"readwrite"});
-    }
-    if(perm === "granted"){
-      loadProjects();
-    }
+    document.getElementById("statusText").innerHTML =
+      "تم العثور على مكان التخزين السابق.<br>اضغط 'التالي' للموافقة عليه.";
+
+  } else {
+    document.getElementById("statusText").innerHTML =
+      "لا يوجد مكان تخزين.<br>يجب اختيار فولدر لحفظ مشاريعك.";
   }
 };
 
-/* ===== UI ===== */
-function openModal(){ modal.style.display="flex"; }
-function closeModal(){ modal.style.display="none"; }
+/* ===== الاتصال بالفولدر ===== */
+async function connectFolder(){
+  try{
 
-/* ===== اختيار ملفات ===== */
-function pickVideo(){
-  let i=document.createElement("input");
-  i.type="file"; i.accept="video/*";
-  i.click();
-  i.onchange=()=>videoFile=i.files[0];
-}
+    if(!dir){
+      dir = await window.showDirectoryPicker({mode:"readwrite"});
+    }
 
-function pickThumb(){
-  let i=document.createElement("input");
-  i.type="file"; i.accept="image/*";
-  i.click();
-  i.onchange=()=>thumbFile=i.files[0];
-}
+    let perm = await dir.requestPermission({mode:"readwrite"});
 
-/* ===== حفظ مشروع ===== */
-async function saveProject(){
-  if(!dir) return alert("اختر فولدر");
-  if(!videoFile || !thumbFile) return alert("أضف الملفات");
+    if(perm !== "granted"){
+      alert("يجب الموافقة للمتابعة");
+      return;
+    }
 
-  let raw = document.getElementById("title").value || "مشروع";
+    await saveDir(dir);
 
-  let name = raw.replace(/[\\/:*?"<>|]/g,"").trim() || "مشروع";
+    document.getElementById("startupModal").style.display="none";
 
-  let final = name;
-  let i=1;
+    loadProjects();
 
-  while(true){
-    try{
-      await dir.getDirectoryHandle(final);
-      final = name + "_" + i;
-      i++;
-    }catch{ break; }
+  }catch{
+    alert("لم يتم اختيار فولدر");
   }
-
-  let p = await dir.getDirectoryHandle(final,{create:true});
-
-  // video
-  let v = await p.getFileHandle("video.mp4",{create:true});
-  let vw = await v.createWritable();
-  await vw.write(videoFile); await vw.close();
-
-  // thumb
-  let t = await p.getFileHandle("thumb.png",{create:true});
-  let tw = await t.createWritable();
-  await tw.write(thumbFile); await tw.close();
-
-  // data
-  let d = await p.getFileHandle("data.json",{create:true});
-  let dw = await d.createWritable();
-  await dw.write(JSON.stringify({title:raw,date:new Date()}));
-  await dw.close();
-
-  closeModal();
-  loadProjects();
 }
 
-/* ===== تحميل ===== */
+/* ===== مشروع جديد ===== */
+function openNewProject(){
+  let title = prompt("عنوان المشروع");
+  if(!title) return;
+
+  let videoInput = document.createElement("input");
+  videoInput.type="file";
+  videoInput.accept="video/*";
+  videoInput.click();
+
+  videoInput.onchange = async ()=>{
+    let video = videoInput.files[0];
+
+    let thumbInput = document.createElement("input");
+    thumbInput.type="file";
+    thumbInput.accept="image/*";
+    thumbInput.click();
+
+    thumbInput.onchange = async ()=>{
+      let thumb = thumbInput.files[0];
+
+      let name = title.replace(/[\\/:*?"<>|]/g,"") || "مشروع";
+
+      let final=name, i=1;
+      while(true){
+        try{
+          await dir.getDirectoryHandle(final);
+          final = name+"_"+i++;
+        }catch{ break; }
+      }
+
+      let p = await dir.getDirectoryHandle(final,{create:true});
+
+      // video
+      let v = await p.getFileHandle("video.mp4",{create:true});
+      let vw = await v.createWritable();
+      await vw.write(video); await vw.close();
+
+      // thumb
+      let t = await p.getFileHandle("thumb.png",{create:true});
+      let tw = await t.createWritable();
+      await tw.write(thumb); await tw.close();
+
+      // data
+      let d = await p.getFileHandle("data.json",{create:true});
+      let dw = await d.createWritable();
+      await dw.write(JSON.stringify({title}));
+      await dw.close();
+
+      loadProjects();
+    }
+  }
+}
+
+/* ===== تحميل المشاريع ===== */
 async function loadProjects(){
   projects.innerHTML="";
 
   for await (const entry of dir.values()){
     if(entry.kind==="directory"){
       try{
-        let f=await entry.getFileHandle("data.json");
-        let data=JSON.parse(await (await f.getFile()).text());
+        let f = await entry.getFileHandle("data.json");
+        let data = JSON.parse(await (await f.getFile()).text());
 
         let thumbURL="";
         try{
-          let t=await entry.getFileHandle("thumb.png");
-          thumbURL=URL.createObjectURL(await t.getFile());
+          let t = await entry.getFileHandle("thumb.png");
+          thumbURL = URL.createObjectURL(await t.getFile());
         }catch{}
 
         let div=document.createElement("div");
         div.className="card";
         div.innerHTML=`<img src="${thumbURL}"><b>${data.title}</b>`;
 
-        div.onclick=async ()=>{
-          let v=await entry.getFileHandle("video.mp4");
-          let url=URL.createObjectURL(await v.getFile());
+        div.onclick = async ()=>{
+          let v = await entry.getFileHandle("video.mp4");
+          let url = URL.createObjectURL(await v.getFile());
           player.innerHTML=`<video src="${url}" controls autoplay></video>`;
         };
 
