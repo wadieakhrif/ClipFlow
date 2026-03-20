@@ -37,8 +37,8 @@ nav {
 #player { padding:10px; }
 video { width:100%; }
 
-/* ===== MODAL ===== */
-#startupModal {
+/* MODAL */
+#modal {
  position:fixed;
  top:0; left:0;
  width:100%; height:100%;
@@ -46,22 +46,17 @@ video { width:100%; }
  display:flex;
  justify-content:center;
  align-items:center;
- z-index:999;
 }
 
-.modal-box {
+.box {
  background:white;
- padding:25px;
+ padding:20px;
  width:350px;
  border-radius:10px;
  text-align:center;
 }
 
-button {
- padding:6px 12px;
- cursor:pointer;
- margin-top:10px;
-}
+button { padding:6px 12px; margin:5px; cursor:pointer; }
 </style>
 </head>
 
@@ -69,137 +64,160 @@ button {
 
 <nav>
   <b>ClipFlow</b>
-  <div>
-    <button onclick="openNewProject()">+ مشروع</button>
-  </div>
+  <button onclick="newProject()">+ مشروع</button>
 </nav>
 
 <div id="projects"></div>
 <div id="player"></div>
 
 <!-- نافذة البداية -->
-<div id="startupModal">
-  <div class="modal-box">
-    <h3>اختيار مكان التخزين</h3>
+<div id="modal">
+  <div class="box">
+    <h3 id="title">اختيار مكان الحفظ</h3>
+    <p id="desc"></p>
 
-    <p id="statusText">
-      يجب اختيار فولدر لحفظ مشاريعك.<br>
-      ملفاتك تُحفظ في جهازك وليس على الإنترنت.
-    </p>
-
-    <button onclick="connectFolder()">التالي</button>
+    <div id="actions"></div>
   </div>
 </div>
 
 <script>
-let dir;
+let rootDir;      // الفولدر الذي يختاره المستخدم
+let appDir;       // ClipFlow folder
 
 /* ===== IndexedDB ===== */
 function openDB(){
   return new Promise(res=>{
-    let req = indexedDB.open("clipflowDB",1);
-    req.onupgradeneeded = ()=>req.result.createObjectStore("store");
-    req.onsuccess = ()=>res(req.result);
+    let req=indexedDB.open("clipflowDB",1);
+    req.onupgradeneeded=()=>req.result.createObjectStore("store");
+    req.onsuccess=()=>res(req.result);
   });
 }
 
 async function saveDir(handle){
-  let db = await openDB();
+  let db=await openDB();
   db.transaction("store","readwrite").objectStore("store").put(handle,"dir");
 }
 
 async function getDir(){
-  let db = await openDB();
+  let db=await openDB();
   return db.transaction("store","readonly").objectStore("store").get("dir");
 }
 
 /* ===== عند فتح الموقع ===== */
 window.onload = async ()=>{
-  dir = await getDir();
+  rootDir = await getDir();
 
-  if(dir){
-    document.getElementById("statusText").innerHTML =
-      "تم العثور على مكان التخزين السابق.<br>اضغط 'التالي' للموافقة عليه.";
-
-  } else {
-    document.getElementById("statusText").innerHTML =
-      "لا يوجد مكان تخزين.<br>يجب اختيار فولدر لحفظ مشاريعك.";
+  if(rootDir){
+    showConfirmUI();
+  }else{
+    showFirstUI();
   }
 };
 
-/* ===== الاتصال بالفولدر ===== */
-async function connectFolder(){
+/* ===== واجهة أول مرة ===== */
+function showFirstUI(){
+  title.innerText = "اختيار مكان الحفظ";
+  desc.innerHTML = "اختر فولدر (مثل Documents).<br>سيتم إنشاء مجلد ClipFlow داخله.";
+  actions.innerHTML = `<button onclick="chooseFolder()">اختيار</button>`;
+}
+
+/* ===== واجهة التأكيد ===== */
+function showConfirmUI(){
+  title.innerText = "تأكيد مكان الحفظ";
+  desc.innerHTML = "تم العثور على مكان الحفظ السابق.<br>هل تريد استخدامه؟";
+
+  actions.innerHTML = `
+    <button onclick="confirmFolder()">نعم</button>
+    <button onclick="chooseFolder()">تغيير</button>
+  `;
+}
+
+/* ===== اختيار فولدر جديد ===== */
+async function chooseFolder(){
   try{
+    rootDir = await window.showDirectoryPicker({mode:"readwrite"});
 
-    if(!dir){
-      dir = await window.showDirectoryPicker({mode:"readwrite"});
-    }
+    await rootDir.requestPermission({mode:"readwrite"});
 
-    let perm = await dir.requestPermission({mode:"readwrite"});
+    // إنشاء مجلد ClipFlow
+    appDir = await rootDir.getDirectoryHandle("ClipFlow",{create:true});
 
-    if(perm !== "granted"){
-      alert("يجب الموافقة للمتابعة");
-      return;
-    }
+    await saveDir(rootDir);
 
-    await saveDir(dir);
+    closeModal();
+    loadProjects();
 
-    document.getElementById("startupModal").style.display="none";
+  }catch{}
+}
 
+/* ===== تأكيد الفولدر القديم ===== */
+async function confirmFolder(){
+  try{
+    let perm = await rootDir.requestPermission({mode:"readwrite"});
+    if(perm !== "granted") return;
+
+    appDir = await rootDir.getDirectoryHandle("ClipFlow",{create:true});
+
+    closeModal();
     loadProjects();
 
   }catch{
-    alert("لم يتم اختيار فولدر");
+    showFirstUI();
   }
 }
 
-/* ===== مشروع جديد ===== */
-function openNewProject(){
-  let title = prompt("عنوان المشروع");
-  if(!title) return;
+/* ===== إغلاق المودال ===== */
+function closeModal(){
+  modal.style.display="none";
+}
 
-  let videoInput = document.createElement("input");
+/* ===== إنشاء مشروع ===== */
+function newProject(){
+  let titleName = prompt("عنوان المشروع");
+  if(!titleName) return;
+
+  let videoInput=document.createElement("input");
   videoInput.type="file";
   videoInput.accept="video/*";
   videoInput.click();
 
-  videoInput.onchange = async ()=>{
-    let video = videoInput.files[0];
+  videoInput.onchange=async ()=>{
+    let video=videoInput.files[0];
 
-    let thumbInput = document.createElement("input");
+    let thumbInput=document.createElement("input");
     thumbInput.type="file";
     thumbInput.accept="image/*";
     thumbInput.click();
 
-    thumbInput.onchange = async ()=>{
-      let thumb = thumbInput.files[0];
+    thumbInput.onchange=async ()=>{
+      let thumb=thumbInput.files[0];
 
-      let name = title.replace(/[\\/:*?"<>|]/g,"") || "مشروع";
+      let name = titleName.replace(/[\\/:*?"<>|]/g,"") || "مشروع";
 
       let final=name, i=1;
       while(true){
         try{
-          await dir.getDirectoryHandle(final);
-          final = name+"_"+i++;
+          await appDir.getDirectoryHandle(final);
+          final=name+"_"+i++;
         }catch{ break; }
       }
 
-      let p = await dir.getDirectoryHandle(final,{create:true});
+      let p = await appDir.getDirectoryHandle(final,{create:true});
 
       // video
-      let v = await p.getFileHandle("video.mp4",{create:true});
-      let vw = await v.createWritable();
+      let v=await p.getFileHandle("video.mp4",{create:true});
+      let vw=await v.createWritable();
       await vw.write(video); await vw.close();
 
       // thumb
-      let t = await p.getFileHandle("thumb.png",{create:true});
-      let tw = await t.createWritable();
+      let t=await p.getFileHandle("thumb.png",{create:true});
+      let tw=await t.createWritable();
       await tw.write(thumb); await tw.close();
 
       // data
-      let d = await p.getFileHandle("data.json",{create:true});
-      let dw = await d.createWritable();
-      await dw.write(JSON.stringify({title}));
+      let d=await p.getFileHandle("data.json",{create:true});
+      let dw=await d.createWritable();
+      await dw.write(JSON.stringify({title:titleName}));
       await dw.close();
 
       loadProjects();
@@ -211,25 +229,25 @@ function openNewProject(){
 async function loadProjects(){
   projects.innerHTML="";
 
-  for await (const entry of dir.values()){
+  for await (const entry of appDir.values()){
     if(entry.kind==="directory"){
       try{
-        let f = await entry.getFileHandle("data.json");
-        let data = JSON.parse(await (await f.getFile()).text());
+        let f=await entry.getFileHandle("data.json");
+        let data=JSON.parse(await (await f.getFile()).text());
 
         let thumbURL="";
         try{
-          let t = await entry.getFileHandle("thumb.png");
-          thumbURL = URL.createObjectURL(await t.getFile());
+          let t=await entry.getFileHandle("thumb.png");
+          thumbURL=URL.createObjectURL(await t.getFile());
         }catch{}
 
         let div=document.createElement("div");
         div.className="card";
         div.innerHTML=`<img src="${thumbURL}"><b>${data.title}</b>`;
 
-        div.onclick = async ()=>{
-          let v = await entry.getFileHandle("video.mp4");
-          let url = URL.createObjectURL(await v.getFile());
+        div.onclick=async ()=>{
+          let v=await entry.getFileHandle("video.mp4");
+          let url=URL.createObjectURL(await v.getFile());
           player.innerHTML=`<video src="${url}" controls autoplay></video>`;
         };
 
