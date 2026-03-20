@@ -2,79 +2,169 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>ClipFlow Auto</title>
+<title>ClipFlow</title>
+<style>
+body{font-family:sans-serif;margin:0;padding:0;}
+nav{display:flex;justify-content:space-between;padding:10px;background:#ddd;}
+#projects{display:flex;flex-wrap:wrap;gap:10px;padding:10px;}
+.card{border:1px solid #000;padding:10px;width:180px;cursor:pointer;}
+.card img{width:100%;height:100px;object-fit:cover;}
+#player{padding:10px;}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:999;}
+.box{background:white;padding:20px;border-radius:10px;width:350px;text-align:center;}
+.hidden{display:none;}
+button{padding:6px 12px;margin:5px;cursor:pointer;}
+input,textarea,select{width:100%;padding:6px;margin:5px 0;border:1px solid #000;}
+</style>
 </head>
 <body>
 
-<button onclick="manualPick()">Choose Folder (First time only)</button>
+<nav>
+<b>ClipFlow</b>
+<button onclick="openProjectModal()">+ New Project</button>
+</nav>
+
 <div id="projects"></div>
+<div id="player"></div>
+
+<!-- MODAL PROJECT -->
+<div id="projectModal" class="modal hidden">
+<div class="box">
+<h3>Create Project</h3>
+<input id="title" placeholder="Title">
+<textarea id="desc" placeholder="Description"></textarea>
+<select id="type">
+<option>YouTube Video</option>
+<option>Shorts</option>
+<option>TikTok</option>
+<option>Instagram Reels</option>
+<option>Facebook Video</option>
+</select>
+<button onclick="pickVideo()">Select Video</button>
+<button onclick="pickThumb()">Select Thumbnail</button>
+<br>
+<button onclick="saveProject()">Save</button>
+<button onclick="closeProjectModal()">Cancel</button>
+</div>
+</div>
 
 <script>
 let rootDir;
 let appDir;
+let videoFile=null;
+let thumbFile=null;
 
-/* IndexedDB */
+/* ===== IndexedDB ===== */
 function openDB(){
- return new Promise(res=>{
-  let r=indexedDB.open("db",1);
-  r.onupgradeneeded=()=>r.result.createObjectStore("s");
-  r.onsuccess=()=>res(r.result);
- });
+  return new Promise(res=>{
+    let r=indexedDB.open("clipflowDB",1);
+    r.onupgradeneeded=()=>r.result.createObjectStore("store");
+    r.onsuccess=()=>res(r.result);
+  });
 }
 
-async function saveDir(h){
- let db=await openDB();
- db.transaction("s","readwrite").objectStore("s").put(h,"dir");
+async function saveDir(handle){
+  let db=await openDB();
+  db.transaction("store","readwrite").objectStore("store").put(handle,"dir");
 }
 
 async function getDir(){
- let db=await openDB();
- return db.transaction("s","readonly").objectStore("s").get("dir");
+  let db=await openDB();
+  return db.transaction("store","readonly").objectStore("store").get("dir");
 }
 
-/* أول مرة */
-async function manualPick(){
- rootDir = await window.showDirectoryPicker({mode:"readwrite"});
- await rootDir.requestPermission({mode:"readwrite"});
-
- appDir = await rootDir.getDirectoryHandle("clipflow",{create:true});
-
- await saveDir(rootDir);
-
- load();
+/* ===== اختيار فولدر لأول مرة ===== */
+async function chooseFolder(){
+  rootDir=await window.showDirectoryPicker({mode:"readwrite"});
+  const perm=await rootDir.requestPermission({mode:"readwrite"});
+  if(perm!=="granted"){ alert("Permission needed"); return; }
+  try{ appDir=await rootDir.getDirectoryHandle("clipflow",{create:true}); }
+  catch{ alert("Create folder named clipflow inside selected folder"); return; }
+  await saveDir(rootDir);
+  loadProjects();
 }
 
-/* أوتوماتيك عند الدخول */
-window.onload = async ()=>{
- rootDir = await getDir();
-
- if(rootDir){
-   let perm = await rootDir.queryPermission({mode:"readwrite"});
-
-   if(perm !== "granted"){
-     perm = await rootDir.requestPermission({mode:"readwrite"});
-   }
-
-   if(perm === "granted"){
-     appDir = await rootDir.getDirectoryHandle("clipflow",{create:true});
-     load();
-   }
- }
+/* ===== أوتوماتيك عند الدخول ===== */
+window.onload=async ()=>{
+  rootDir=await getDir();
+  if(rootDir){
+    let perm=await rootDir.queryPermission({mode:"readwrite"});
+    if(perm!=="granted") perm=await rootDir.requestPermission({mode:"readwrite"});
+    if(perm==="granted"){
+      appDir=await rootDir.getDirectoryHandle("clipflow",{create:true});
+      loadProjects();
+    } else { chooseFolder(); }
+  } else { chooseFolder(); }
 };
 
-/* عرض المشاريع */
-async function load(){
- projects.innerHTML="";
+/* ===== PROJECT MODAL ===== */
+function openProjectModal(){ projectModal.classList.remove("hidden"); }
+function closeProjectModal(){ projectModal.classList.add("hidden"); }
+function pickVideo(){ let i=document.createElement("input"); i.type="file"; i.accept="video/*"; i.click(); i.onchange=()=>videoFile=i.files[0]; }
+function pickThumb(){ let i=document.createElement("input"); i.type="file"; i.accept="image/*"; i.click(); i.onchange=()=>thumbFile=i.files[0]; }
 
- for await (const entry of appDir.values()){
-  if(entry.kind==="directory"){
-   let div=document.createElement("div");
-   div.innerText=entry.name;
-   projects.appendChild(div);
+/* ===== SAVE PROJECT ===== */
+async function saveProject(){
+  if(!videoFile || !thumbFile) return alert("Add video & thumbnail");
+
+  let name=document.getElementById("title").value||"project";
+  name=name.replace(/[\\/:*?"<>|]/g,"");
+
+  let final=name,i=1;
+  while(true){
+    try{ await appDir.getDirectoryHandle(final); final=name+"_"+i++; }
+    catch{ break; }
   }
- }
+
+  let p=await appDir.getDirectoryHandle(final,{create:true});
+
+  // video
+  let v=await p.getFileHandle("video.mp4",{create:true});
+  let vw=await v.createWritable(); await vw.write(videoFile); await vw.close();
+
+  // thumbnail
+  let t=await p.getFileHandle("thumb.png",{create:true});
+  let tw=await t.createWritable(); await tw.write(thumbFile); await tw.close();
+
+  // data.json
+  let d=await p.getFileHandle("data.json",{create:true});
+  let dw=await d.createWritable();
+  await dw.write(JSON.stringify({
+    title:document.getElementById("title").value,
+    desc:document.getElementById("desc").value,
+    type:document.getElementById("type").value
+  })); await dw.close();
+
+  closeProjectModal();
+  loadProjects();
+}
+
+/* ===== LOAD PROJECTS ===== */
+async function loadProjects(){
+  projects.innerHTML="";
+  for await(const entry of appDir.values()){
+    if(entry.kind==="directory"){
+      try{
+        let f=await entry.getFileHandle("data.json");
+        let data=JSON.parse(await (await f.getFile()).text());
+
+        let thumbURL="";
+        try{ let t=await entry.getFileHandle("thumb.png"); thumbURL=URL.createObjectURL(await t.getFile()); }catch{}
+
+        let div=document.createElement("div");
+        div.className="card";
+        div.innerHTML=`<img src="${thumbURL}"><b>${data.title}</b>`;
+        div.onclick=async ()=>{
+          let v=await entry.getFileHandle("video.mp4");
+          let url=URL.createObjectURL(await v.getFile());
+          player.innerHTML=`<video src="${url}" controls autoplay></video>`;
+        };
+        projects.appendChild(div);
+
+      }catch{}
+    }
+  }
 }
 </script>
-
 </body>
 </html>
