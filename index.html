@@ -3,460 +3,555 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clipflow Pro | Creator Workspace</title>
+    <title>Clipflow Pro | Ultimate Creator Workspace</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cairo:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
         :root {
             --primary: #8b5cf6; 
-            --primary-glow: rgba(139, 92, 246, 0.3);
+            --primary-light: #a78bfa;
+            --primary-glow: rgba(139, 92, 246, 0.2);
             --bg: #030712; 
-            --card-bg: rgba(17, 24, 39, 0.7);
-            --nav-bg: rgba(3, 7, 18, 0.8);
+            --sidebar-bg: #0b0f1a;
+            --card-bg: rgba(17, 24, 39, 0.6);
+            --nav-bg: rgba(3, 7, 18, 0.85);
             --text: #f9fafb;
             --text-muted: #9ca3af;
             --border: rgba(255, 255, 255, 0.08);
-            --accent: #10b981;
+            --danger: #ef4444;
+            --success: #10b981;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        [data-theme="light"] {
-            --bg: #f3f4f6; 
-            --card-bg: rgba(255, 255, 255, 0.8);
-            --nav-bg: rgba(243, 244, 246, 0.9);
-            --text: #111827;
-            --text-muted: #6b7280;
-            --border: rgba(0, 0, 0, 0.08);
-        }
-
+        /* --- Global Styles --- */
+        * { box-sizing: border-box; }
         body {
             margin: 0; font-family: 'Inter', sans-serif;
             background: var(--bg); color: var(--text);
-            transition: background 0.3s; line-height: 1.5;
+            display: flex; height: 100vh; overflow: hidden;
         }
 
-        body.rtl { direction: rtl; font-family: 'Cairo', sans-serif; }
+        button, input, select, textarea { font-family: inherit; }
 
-        /* Animated Background */
-        #bgCanvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.4; }
+        /* --- Sidebar Navigation --- */
+        aside {
+            width: 260px; background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 24px;
+            z-index: 100;
+        }
+
+        .logo { 
+            display: flex; align-items: center; gap: 12px; 
+            font-weight: 800; font-size: 22px; margin-bottom: 40px;
+            color: white; text-decoration: none;
+        }
+        .logo-box {
+            width: 38px; height: 38px; background: linear-gradient(135deg, var(--primary), #d946ef);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+        }
+
+        .nav-group { margin-bottom: 30px; }
+        .nav-label { 
+            font-size: 11px; font-weight: 700; color: var(--text-muted); 
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: block;
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            border-radius: 12px; color: var(--text-muted); text-decoration: none;
+            font-weight: 500; transition: var(--transition); cursor: pointer;
+            margin-bottom: 4px;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: var(--primary-glow); color: var(--primary-light); }
+
+        /* --- Main Content Area --- */
+        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
 
         header {
-            position: sticky; top: 0; z-index: 1000;
-            background: var(--nav-bg); backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--border); padding: 12px 40px;
+            position: sticky; top: 0; background: var(--nav-bg);
+            backdrop-filter: blur(12px); padding: 16px 40px;
             display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--border); z-index: 90;
         }
 
-        .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 22px; letter-spacing: -0.5px; }
-        .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), #d946ef); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; }
-
-        .header-center { flex: 1; max-width: 600px; margin: 0 40px; }
-        
-        .search-bar { position: relative; }
-        .search-bar i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-        .search-bar input {
+        .search-wrapper { position: relative; width: 400px; }
+        .search-wrapper i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .search-wrapper input {
             width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-            padding: 10px 15px 10px 42px; border-radius: 12px; color: var(--text);
-            font-size: 14px; outline: none; transition: 0.2s;
+            padding: 12px 12px 12px 48px; border-radius: 14px; color: white; outline: none; transition: 0.2s;
         }
-        .search-bar input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-glow); }
+        .search-wrapper input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-glow); }
 
+        /* --- Category Bar (YouTube Style) --- */
+        .category-container {
+            padding: 16px 40px; display: flex; gap: 10px; overflow-x: auto;
+            border-bottom: 1px solid var(--border); scrollbar-width: none;
+        }
+        .category-container::-webkit-scrollbar { display: none; }
+        .cat-pill {
+            padding: 8px 18px; background: rgba(255,255,255,0.05); border-radius: 10px;
+            font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+            transition: 0.2s; border: 1px solid var(--border);
+        }
+        .cat-pill:hover { background: rgba(255,255,255,0.1); }
+        .cat-pill.active { background: white; color: black; border-color: white; }
+
+        /* --- Grid & Cards --- */
+        .content-body { padding: 30px 40px; }
         .grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 24px; padding: 40px; max-width: 1600px; margin: 0 auto;
-            align-items: start;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
         }
 
-        /* CARD DESIGN */
         .card {
             background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border);
-            overflow: hidden; position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
+            overflow: hidden; transition: var(--transition); backdrop-filter: blur(10px);
+            display: flex; flex-direction: column;
         }
-        .card:hover { transform: translateY(-6px); border-color: rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .card:hover { transform: translateY(-6px); border-color: rgba(255,255,255,0.2); }
 
-        /* Dynamic Aspect Ratios */
-        .card-thumb { width: 100%; background: #000; position: relative; overflow: hidden; cursor: pointer; }
+        .thumb-area { width: 100%; position: relative; cursor: pointer; background: #000; overflow: hidden; }
         .ratio-16-9 { aspect-ratio: 16/9; }
         .ratio-9-16 { aspect-ratio: 9/16; }
+        .thumb-area img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .card:hover .thumb-area img { transform: scale(1.05); }
 
-        .card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-        .card:hover .card-thumb img { transform: scale(1.08); }
-
-        .card-body { padding: 18px; }
-        .card-title { font-weight: 700; margin: 0 0 6px 0; font-size: 16px; }
-        .card-meta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); }
-
-        /* Buttons & Chips */
-        .btn { 
-            padding: 10px 20px; border-radius: 12px; border: none; font-weight: 600; 
-            cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: 0.2s; 
-        }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 14px var(--primary-glow); }
-        .btn-primary:hover { background: #7c3aed; transform: translateY(-1px); }
-        .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
-        .btn-ghost:hover { background: rgba(255,255,255,0.05); }
-
-        .platform-chip {
-            padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.05);
-            display: flex; align-items: center; gap: 4px; font-size: 11px;
+        .platform-badge {
+            position: absolute; top: 12px; left: 12px; padding: 4px 10px;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase;
         }
 
-        /* Modals */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; }
-        .modal { 
-            background: #111827; width: 95%; max-width: 600px; border-radius: 24px; padding: 32px; 
-            border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; position: relative;
+        .card-info { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+        .card-title { font-size: 16px; font-weight: 700; margin: 0 0 8px 0; color: white; }
+        .card-meta { font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px; }
+        .status-line { display: flex; align-items: center; gap: 6px; }
+        .dot { width: 6px; height: 6px; border-radius: 50%; }
+        .dot.scheduled { background: #f59e0b; }
+        .dot.uploaded { background: var(--success); }
+
+        .card-btns { 
+            margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
         }
 
+        /* --- Buttons --- */
+        .btn {
+            padding: 10px 20px; border-radius: 12px; font-weight: 600; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px; font-size: 14px; border: none; transition: 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #7c3aed; }
+        .btn-icon { padding: 8px; background: rgba(255,255,255,0.05); color: var(--text-muted); border-radius: 10px; }
+        .btn-icon:hover { background: rgba(255,255,255,0.1); color: white; }
+
+        /* --- Modals --- */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(12px); display: none; align-items: center;
+            justify-content: center; z-index: 1000; padding: 20px;
+        }
+        .modal {
+            background: #0f172a; width: 100%; max-width: 600px; border-radius: 28px;
+            padding: 32px; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto;
+        }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
         .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
-        .input-group input, .input-group textarea, .input-group select {
-            width: 100%; background: #030712; border: 1px solid var(--border); padding: 12px; border-radius: 12px; color: var(--text); outline: none; box-sizing: border-box;
+        .input-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%; background: #030712; border: 1px solid var(--border);
+            padding: 14px; border-radius: 14px; color: white; outline: none;
         }
 
-        .thumb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
-        .thumb-slot { 
-            aspect-ratio: 16/9; background: #030712; border: 2px dashed var(--border); border-radius: 12px; 
-            display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative;
+        .thumb-preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px; }
+        .thumb-box { 
+            aspect-ratio: 16/9; background: #000; border: 1px solid var(--border); 
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; cursor: pointer; position: relative;
         }
-        .thumb-slot img { width: 100%; height: 100%; object-fit: cover; }
-        .thumb-slot.is-portrait { aspect-ratio: 9/16; }
-
-        .format-toggle {
-            display: flex; background: #030712; padding: 4px; border-radius: 10px; margin-bottom: 20px; gap: 4px;
-        }
-        .format-btn { 
-            flex: 1; padding: 8px; text-align: center; font-size: 12px; font-weight: 600; 
-            border-radius: 8px; cursor: pointer; transition: 0.2s; color: var(--text-muted);
-        }
-        .format-btn.active { background: var(--primary); color: white; }
+        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* --- Analytics Section --- */
+        .analytics-view { padding: 40px; }
+        .stats-header { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 40px; }
+        .stat-card { background: var(--card-bg); padding: 24px; border-radius: 20px; border: 1px solid var(--border); }
+        .stat-val { font-size: 32px; font-weight: 800; margin-top: 8px; }
 
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<canvas id="bgCanvas"></canvas>
+<aside>
+    <a href="#" class="logo">
+        <div class="logo-box"><i data-lucide="zap" size="20" color="white"></i></div>
+        Clipflow.
+    </a>
 
-<header>
-    <div class="logo">
-        <div class="logo-icon"><i data-lucide="zap" size="20"></i></div>
-        Clipflow<span style="color:var(--primary)">.</span>
+    <div class="nav-group">
+        <span class="nav-label">Menu</span>
+        <div class="nav-item active" onclick="showSection('library')"><i data-lucide="layout-grid"></i> Library</div>
+        <div class="nav-item" onclick="showSection('analytics')"><i data-lucide="bar-chart-3"></i> Analytics</div>
+        <div class="nav-item" onclick="showSection('schedule')"><i data-lucide="calendar"></i> Calendar</div>
     </div>
 
-    <div class="header-center">
-        <div class="search-bar">
-            <i data-lucide="search" size="16"></i>
-            <input type="text" id="mainSearch" placeholder="Search your creative projects..." oninput="renderProjects()">
-        </div>
+    <div class="nav-group" style="margin-top:auto">
+        <div class="nav-item" onclick="showSection('settings')"><i data-lucide="settings"></i> Settings</div>
+        <div class="nav-item" style="color:var(--danger)"><i data-lucide="log-out"></i> Logout</div>
     </div>
-
-    <div style="display:flex; gap:12px; align-items:center;">
-        <button class="btn btn-ghost" onclick="toggleLanguage()" id="langBtn" style="padding: 8px 12px;">EN</button>
-        <button class="btn btn-ghost" onclick="toggleTheme()" style="padding: 8px 12px;"><i data-lucide="sun" id="themeIcon" size="18"></i></button>
-        <button class="btn btn-primary" onclick="openModal('add')"><i data-lucide="plus" size="18"></i> <span data-i18n="newProject">New Project</span></button>
-    </div>
-</header>
+</aside>
 
 <main>
-    <div id="projectsContainer" class="grid"></div>
-    <div id="setupView" style="text-align:center; padding:150px 0;" class="hidden">
-        <div style="background:var(--primary-glow); width:80px; height:80px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 24px;">
-            <i data-lucide="folder-plus" size="40" color="var(--primary)"></i>
+    <header>
+        <div class="search-wrapper">
+            <i data-lucide="search" size="18"></i>
+            <input type="text" id="mainSearch" placeholder="Find a project..." oninput="app.render()">
         </div>
-        <h2 style="margin:0 0 10px 0;">No Workspace Connected</h2>
-        <p style="color:var(--text-muted); margin-bottom:30px;">Select a folder on your computer to store your video projects.</p>
-        <button class="btn btn-primary" onclick="initWorkspace()">Connect Local Folder</button>
-    </div>
+
+        <div style="display:flex; gap:12px;">
+            <button class="btn btn-icon"><i data-lucide="bell"></i></button>
+            <button class="btn btn-primary" onclick="app.openModal('add')">
+                <i data-lucide="plus"></i> New Project
+            </button>
+        </div>
+    </header>
+
+    <section id="librarySection">
+        <div class="category-container">
+            <div class="cat-pill active" onclick="app.setFilter('All', this)">All</div>
+            <div class="cat-pill" onclick="app.setFilter('YouTube', this)">YouTube</div>
+            <div class="cat-pill" onclick="app.setFilter('Shorts', this)">Shorts</div>
+            <div class="cat-pill" onclick="app.setFilter('Instagram', this)">Instagram</div>
+            <div class="cat-pill" onclick="app.setFilter('TikTok', this)">TikTok</div>
+            <div class="cat-pill" onclick="app.setFilter('Facebook', this)">Facebook</div>
+        </div>
+
+        <div class="content-body">
+            <div id="projectsGrid" class="grid"></div>
+        </div>
+    </section>
+
+    <section id="analyticsSection" class="hidden analytics-view">
+        <div class="stats-header">
+            <div class="stat-card">
+                <span class="nav-label">Total Projects</span>
+                <div class="stat-val" id="totalCount">0</div>
+            </div>
+            <div class="stat-card">
+                <span class="nav-label">Scheduled</span>
+                <div class="stat-val" id="scheduledCount">0</div>
+            </div>
+            <div class="stat-card">
+                <span class="nav-label">Storage Used</span>
+                <div class="stat-val">1.2 GB</div>
+            </div>
+        </div>
+        <div class="stat-card" style="height: 400px;">
+            <canvas id="analyticsChart"></canvas>
+        </div>
+    </section>
 </main>
 
 <div class="overlay" id="formModal">
     <div class="modal">
-        <h2 id="modalTitle" style="margin:0 0 24px 0;">Create Project</h2>
-        
-        <div class="input-group">
-            <label>Format</label>
-            <div class="format-toggle">
-                <div class="format-btn active" id="fmt-landscape" onclick="setFormat('landscape')">Landscape ($16:9$)</div>
-                <div class="format-btn" id="fmt-portrait" onclick="setFormat('portrait')">Portrait ($9:16$)</div>
-            </div>
-        </div>
-
-        <div id="videoUploadBox" class="input-group">
-            <div onclick="triggerVideo()" style="border:2px dashed var(--primary); padding:30px; text-align:center; border-radius:16px; cursor:pointer; background:var(--primary-glow);">
-                <i data-lucide="clapperboard" size="24"></i>
-                <p id="videoLabelText" style="margin:10px 0 0 0; font-weight:600; font-size:14px;">Select Video Source (.mp4)</p>
-            </div>
-        </div>
-
-        <label style="display:block; font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:8px;">THUMBNAILS (AUTO-FILL)</label>
-        <div class="thumb-grid">
-            <div class="thumb-slot" id="slot0" onclick="pickThumb(0)"><i data-lucide="image"></i><img id="pre0" class="hidden"></div>
-            <div class="thumb-slot" id="slot1" onclick="pickThumb(1)"><i data-lucide="image"></i><img id="pre1" class="hidden"></div>
-            <div class="thumb-slot" id="slot2" onclick="pickThumb(2)"><i data-lucide="image"></i><img id="pre2" class="hidden"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+            <h2 id="modalTitle" style="margin:0">Create New Project</h2>
+            <button class="btn-icon" onclick="app.closeModal()"><i data-lucide="x"></i></button>
         </div>
 
         <div class="input-group">
-            <label>Project Details</label>
-            <input type="text" id="projTitle" placeholder="Title your project..." style="margin-bottom:12px;">
-            <textarea id="projDesc" placeholder="Brief description or captions..." rows="3"></textarea>
+            <label>Project Title</label>
+            <input type="text" id="projTitle" placeholder="e.g. My New Vlog #1">
         </div>
 
-        <div style="display:flex; gap:12px; margin-top:32px;">
-            <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" style="flex:2" onclick="saveData()">Save Project</button>
+        <div class="form-grid">
+            <div class="input-group">
+                <label>Platform</label>
+                <select id="projPlatform">
+                    <option value="YouTube">YouTube</option>
+                    <option value="Shorts">YouTube Shorts</option>
+                    <option value="Instagram">Instagram Reels</option>
+                    <option value="TikTok">TikTok</option>
+                    <option value="Facebook">Facebook</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Aspect Ratio</label>
+                <select id="projRatio">
+                    <option value="16-9">Landscape ($16:9$)</option>
+                    <option value="9-16">Vertical ($9:16$)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Scheduled Post Time</label>
+            <input type="datetime-local" id="projDate">
+        </div>
+
+        <div id="uploadSection" class="input-group">
+            <label>Video File (.mp4)</label>
+            <div onclick="app.triggerVideo()" style="border:2px dashed var(--border); padding:30px; text-align:center; border-radius:18px; cursor:pointer;">
+                <i data-lucide="clapperboard" size="24" style="margin-bottom:10px;"></i>
+                <p id="videoStatus" style="margin:0; font-size:13px; color:var(--text-muted)">Drop video here or click to browse</p>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Thumbnails (Set cover)</label>
+            <div class="thumb-preview-grid">
+                <div class="thumb-box" onclick="app.pickThumb(0)"><img id="pre0" class="hidden"><i data-lucide="image"></i></div>
+                <div class="thumb-box" onclick="app.pickThumb(1)"><img id="pre1" class="hidden"><i data-lucide="image"></i></div>
+                <div class="thumb-box" onclick="app.pickThumb(2)"><img id="pre2" class="hidden"><i data-lucide="image"></i></div>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:30px;">
+            <button class="btn btn-ghost" style="flex:1; background:#1e293b; color:white;" onclick="app.closeModal()">Discard</button>
+            <button class="btn btn-primary" style="flex:2" onclick="app.save()">Confirm & Save</button>
         </div>
     </div>
 </div>
 
 <script>
-    let workspace = null;
-    let projects = [];
-    let selectedVideo = null;
-    let tempThumbs = [null, null, null];
-    let selectedFormat = 'landscape';
-    let editMode = false;
-    let currentEditName = null;
-    let currentLang = localStorage.getItem('clipflow_lang') || 'en';
+/**
+ * CLIPFLOW PRO - CORE ENGINE
+ * Modular JavaScript to handle State, UI, and File Operations
+ */
 
-    // Initialize Lucide
-    lucide.createIcons();
+const app = {
+    projects: JSON.parse(localStorage.getItem('clipflow_vault')) || [],
+    currentFilter: 'All',
+    selectedVideo: null,
+    tempThumbs: [null, null, null],
+    editMode: false,
+    editingId: null,
 
-    async function openDB() {
-        return new Promise(res => {
-            const req = indexedDB.open("ClipflowProDB", 1);
-            req.onupgradeneeded = () => req.result.createObjectStore("settings");
-            req.onsuccess = () => res(req.result);
+    init() {
+        lucide.createIcons();
+        this.render();
+        this.initChart();
+    },
+
+    setFilter(platform, el) {
+        this.currentFilter = platform;
+        document.querySelectorAll('.cat-pill').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        this.render();
+    },
+
+    render() {
+        const grid = document.getElementById('projectsGrid');
+        const query = document.getElementById('mainSearch').value.toLowerCase();
+        grid.innerHTML = '';
+
+        const filtered = this.projects.filter(p => {
+            const matchesTab = this.currentFilter === 'All' || p.platform === this.currentFilter;
+            const matchesSearch = p.title.toLowerCase().includes(query);
+            return matchesTab && matchesSearch;
         });
-    }
 
-    async function initWorkspace() {
-        try {
-            workspace = await window.showDirectoryPicker({ mode: 'readwrite' });
-            const db = await openDB();
-            const tx = db.transaction("settings", "readwrite");
-            tx.objectStore("settings").put(workspace, "folderHandle");
-            document.getElementById('setupView').classList.add('hidden');
-            loadProjects();
-        } catch(e) { console.error(e); }
-    }
-
-    async function autoConnect() {
-        const db = await openDB();
-        const req = db.transaction("settings").objectStore("settings").get("folderHandle");
-        req.onsuccess = async () => {
-            const handle = req.result;
-            if (handle && (await handle.queryPermission({mode: 'readwrite'})) === 'granted') {
-                workspace = handle;
-                document.getElementById('setupView').classList.add('hidden');
-                loadProjects();
-            } else {
-                document.getElementById('setupView').classList.remove('hidden');
-            }
-        };
-    }
-
-    async function loadProjects() {
-        projects = [];
-        if(!workspace) return;
-        const root = await workspace.getDirectoryHandle('Clipflow_Vault', { create: true });
-        for await (const [name, handle] of root.entries()) {
-            if(handle.kind === 'directory') {
-                try {
-                    const mFile = await (await handle.getFileHandle('meta.json')).getFile();
-                    const meta = JSON.parse(await mFile.text());
-                    const vFile = await handle.getFileHandle('video.mp4');
-                    projects.push({ name, meta, videoFile: vFile });
-                } catch(e) {}
-            }
+        if(filtered.length === 0) {
+            grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:100px; color:var(--text-muted)">
+                <i data-lucide="folder-open" size="48" style="margin-bottom:16px; opacity:0.3"></i>
+                <p>No projects found in this category.</p>
+            </div>`;
         }
-        renderProjects();
-    }
 
-    function setFormat(fmt) {
-        selectedFormat = fmt;
-        document.getElementById('fmt-landscape').classList.toggle('active', fmt === 'landscape');
-        document.getElementById('fmt-portrait').classList.toggle('active', fmt === 'portrait');
-        
-        document.querySelectorAll('.thumb-slot').forEach(slot => {
-            slot.classList.toggle('is-portrait', fmt === 'portrait');
-        });
-    }
-
-    function renderProjects() {
-        const container = document.getElementById('projectsContainer');
-        const q = document.getElementById('mainSearch').value.toLowerCase();
-        container.innerHTML = '';
-
-        projects.filter(p => p.meta.title.toLowerCase().includes(q)).forEach((p, idx) => {
-            const ratioClass = p.meta.format === 'portrait' ? 'ratio-9-16' : 'ratio-16-9';
+        filtered.forEach(p => {
+            const dateObj = new Date(p.publishDate);
+            const isFuture = dateObj > new Date();
+            
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <div class="card-thumb ${ratioClass}" onclick="playVideo(${idx})">
-                    <img src="${p.meta.thumbs[0] || ''}">
+                <div class="thumb-area ratio-${p.ratio}" onclick="app.preview('${p.id}')">
+                    <img src="${p.thumbs[0] || 'https://via.placeholder.com/400x225?text=No+Thumbnail'}">
+                    <span class="platform-badge">${p.platform}</span>
                 </div>
-                <div class="card-body">
-                    <h3 class="card-title">${p.meta.title}</h3>
+                <div class="card-info">
+                    <h3 class="card-title">${p.title}</h3>
                     <div class="card-meta">
-                        <span>${new Date(p.meta.timestamp).toLocaleDateString()}</span>
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn-ghost" style="padding:4px;" onclick="deleteProject(${idx}, event)"><i data-lucide="trash-2" size="14"></i></button>
-                            <button class="btn-ghost" style="padding:4px;" onclick="downloadZip(${idx}, event)"><i data-lucide="download" size="14"></i></button>
+                        <div class="status-line">
+                            <span class="dot ${isFuture ? 'scheduled' : 'uploaded'}"></span>
+                            ${isFuture ? 'Scheduled' : 'Uploaded'} • ${dateObj.toLocaleDateString()}
                         </div>
+                        <span><i data-lucide="clock" size="10"></i> ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
+                    <div class="card-btns">
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn-icon" onclick="app.openModal('edit', '${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
+                            <button class="btn-icon" style="color:var(--danger)" onclick="app.delete('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
+                        </div>
+                        <button class="btn-icon" onclick="app.download('${p.id}')"><i data-lucide="download" size="14"></i></button>
                     </div>
                 </div>
             `;
-            container.appendChild(card);
+            grid.appendChild(card);
         });
+        
         lucide.createIcons();
-    }
+        this.updateStats();
+    },
 
-    function openModal(mode) {
-        editMode = mode === 'edit';
+    openModal(mode, id = null) {
+        this.editMode = mode === 'edit';
+        this.editingId = id;
         document.getElementById('formModal').style.display = 'flex';
-        tempThumbs = [null, null, null];
-        selectedVideo = null;
-        refreshThumbs();
-    }
+        
+        if(this.editMode) {
+            const p = this.projects.find(proj => proj.id === id);
+            document.getElementById('modalTitle').innerText = "Edit Project";
+            document.getElementById('projTitle').value = p.title;
+            document.getElementById('projPlatform').value = p.platform;
+            document.getElementById('projRatio').value = p.ratio;
+            document.getElementById('projDate').value = p.publishDate;
+            document.getElementById('uploadSection').classList.add('hidden');
+            this.tempThumbs = [...p.thumbs];
+        } else {
+            document.getElementById('modalTitle').innerText = "Create New Project";
+            document.getElementById('projTitle').value = "";
+            document.getElementById('projDate').value = new Date().toISOString().slice(0, 16);
+            document.getElementById('uploadSection').classList.remove('hidden');
+            this.tempThumbs = [null, null, null];
+        }
+        this.refreshThumbUI();
+    },
 
-    function closeModal() { document.getElementById('formModal').style.display = 'none'; }
+    closeModal() {
+        document.getElementById('formModal').style.display = 'none';
+        this.selectedVideo = null;
+    },
 
-    async function captureFrame(videoFile) {
-        return new Promise(res => {
-            const v = document.createElement('video');
-            v.src = URL.createObjectURL(videoFile);
-            v.onloadedmetadata = () => v.currentTime = 0.5;
-            v.onseeked = () => {
-                const c = document.createElement('canvas');
-                c.width = v.videoWidth; c.height = v.videoHeight;
-                c.getContext('2d').drawImage(v, 0, 0);
-                res(c.toDataURL('image/jpeg', 0.8));
-            };
-        });
-    }
-
-    function triggerVideo() {
+    triggerVideo() {
         const inp = document.createElement('input');
         inp.type = 'file'; inp.accept = 'video/mp4';
-        inp.onchange = async e => {
-            selectedVideo = e.target.files[0];
-            document.getElementById('videoLabelText').innerText = selectedVideo.name;
-            if(!tempThumbs[0]) {
-                tempThumbs[0] = await captureFrame(selectedVideo);
-                refreshThumbs();
-            }
+        inp.onchange = e => {
+            this.selectedVideo = e.target.files[0];
+            document.getElementById('videoStatus').innerText = "Selected: " + this.selectedVideo.name;
         };
         inp.click();
-    }
+    },
 
-    function pickThumb(i) {
+    pickThumb(i) {
         const inp = document.createElement('input');
         inp.type = 'file'; inp.accept = 'image/*';
         inp.onchange = e => {
             const reader = new FileReader();
-            reader.onload = f => { tempThumbs[i] = f.target.result; refreshThumbs(); };
+            reader.onload = f => { this.tempThumbs[i] = f.target.result; this.refreshThumbUI(); };
             reader.readAsDataURL(e.target.files[0]);
         };
         inp.click();
-    }
+    },
 
-    function refreshThumbs() {
-        tempThumbs.forEach((src, i) => {
+    refreshThumbUI() {
+        this.tempThumbs.forEach((src, i) => {
             const img = document.getElementById(`pre${i}`);
-            const slot = document.getElementById(`slot${i}`);
-            if(src) {
-                img.src = src; img.classList.remove('hidden');
-                slot.querySelector('i').classList.add('hidden');
-            } else {
-                img.classList.add('hidden');
-                slot.querySelector('i').classList.remove('hidden');
+            const icon = img.nextElementSibling;
+            if(src) { 
+                img.src = src; img.classList.remove('hidden'); 
+                if(icon) icon.classList.add('hidden');
+            } else { 
+                img.classList.add('hidden'); 
+                if(icon) icon.classList.remove('hidden');
+            }
+        });
+    },
+
+    save() {
+        const title = document.getElementById('projTitle').value;
+        if(!title) return alert("Please name your project.");
+
+        const data = {
+            id: this.editMode ? this.editingId : Date.now().toString(),
+            title,
+            platform: document.getElementById('projPlatform').value,
+            ratio: document.getElementById('projRatio').value,
+            publishDate: document.getElementById('projDate').value,
+            thumbs: this.tempThumbs,
+            timestamp: Date.now()
+        };
+
+        if(this.editMode) {
+            const idx = this.projects.findIndex(p => p.id === this.editingId);
+            this.projects[idx] = data;
+        } else {
+            this.projects.unshift(data);
+        }
+
+        localStorage.setItem('clipflow_vault', JSON.stringify(this.projects));
+        this.closeModal();
+        this.render();
+    },
+
+    delete(id) {
+        if(confirm("Delete this project permanently?")) {
+            this.projects = this.projects.filter(p => p.id !== id);
+            localStorage.setItem('clipflow_vault', JSON.stringify(this.projects));
+            this.render();
+        }
+    },
+
+    download(id) {
+        const p = this.projects.find(proj => proj.id === id);
+        const zip = new JSZip();
+        zip.file("project_info.json", JSON.stringify(p, null, 2));
+        zip.generateAsync({type:"blob"}).then(content => {
+            saveAs(content, `${p.title.replace(/\s+/g, '_')}_bundle.zip`);
+        });
+    },
+
+    updateStats() {
+        document.getElementById('totalCount').innerText = this.projects.length;
+        const scheduled = this.projects.filter(p => new Date(p.publishDate) > new Date()).length;
+        document.getElementById('scheduledCount').innerText = scheduled;
+    },
+
+    initChart() {
+        const ctx = document.getElementById('analyticsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Upload Frequency',
+                    data: [2, 5, 3, 8, 4, 10, 6],
+                    borderColor: '#8b5cf6',
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
             }
         });
     }
+};
 
-    async function saveData() {
-        const title = document.getElementById('projTitle').value;
-        if(!title || !selectedVideo) return alert("Title and Video required");
+function showSection(id) {
+    document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+    document.getElementById(id + 'Section').classList.remove('hidden');
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+}
 
-        const root = await workspace.getDirectoryHandle('Clipflow_Vault', { create: true });
-        const folderName = title.replace(/\s+/g, '_') + "_" + Date.now();
-        const folder = await root.getDirectoryHandle(folderName, { create: true });
-
-        const meta = { title, desc: document.getElementById('projDesc').value, format: selectedFormat, thumbs: tempThumbs, timestamp: Date.now() };
-        
-        const mFile = await folder.getFileHandle('meta.json', { create: true });
-        const writer = await mFile.createWritable();
-        await writer.write(JSON.stringify(meta));
-        await writer.close();
-
-        const vFile = await folder.getFileHandle('video.mp4', { create: true });
-        const vWriter = await vFile.createWritable();
-        await vWriter.write(selectedVideo);
-        await vWriter.close();
-
-        closeModal();
-        loadProjects();
-    }
-
-    async function deleteProject(idx, e) {
-        e.stopPropagation();
-        if(confirm("Permanently delete this project?")) {
-            const root = await workspace.getDirectoryHandle('Clipflow_Vault');
-            await root.removeEntry(projects[idx].name, { recursive: true });
-            loadProjects();
-        }
-    }
-
-    async function downloadZip(idx, e) {
-        e.stopPropagation();
-        const p = projects[idx];
-        const zip = new JSZip();
-        zip.file("video.mp4", await p.videoFile.getFile());
-        zip.file("meta.json", JSON.stringify(p.meta));
-        const content = await zip.generateAsync({type:"blob"});
-        saveAs(content, `${p.meta.title}.zip`);
-    }
-
-    async function playVideo(idx) {
-        const file = await projects[idx].videoFile.getFile();
-        const url = URL.createObjectURL(file);
-        const win = window.open("");
-        win.document.write(`<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;"><video src="${url}" controls autoplay style="max-height:100vh;max-width:100%"></video></body>`);
-    }
-
-    // BG Animation
-    const canvas = document.getElementById('bgCanvas');
-    const ctx = canvas.getContext('2d');
-    let circles = [];
-
-    function initCircles() {
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        circles = Array.from({length: 20}, () => ({
-            x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-            r: Math.random() * 100 + 50, dx: (Math.random() - 0.5) * 0.5, dy: (Math.random() - 0.5) * 0.5
-        }));
-    }
-
-    function animate() {
-        ctx.clearRect(0,0,canvas.width, canvas.height);
-        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
-        ctx.globalAlpha = 0.05;
-        circles.forEach(c => {
-            ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI*2); ctx.fill();
-            c.x += c.dx; c.y += c.dy;
-            if(c.x<0 || c.x>canvas.width) c.dx*=-1;
-            if(c.y<0 || c.y>canvas.height) c.dy*=-1;
-        });
-        requestAnimationFrame(animate);
-    }
-
-    window.onresize = initCircles;
-    initCircles(); animate();
-    autoConnect();
+// Start App
+window.onload = () => app.init();
 </script>
 
 </body>
