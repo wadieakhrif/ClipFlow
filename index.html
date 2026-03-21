@@ -77,17 +77,30 @@
 
         /* Horizontal Style */
         .card.is-horizontal { width: 320px; aspect-ratio: 16/11; }
-        /* Vertical Style */
-        .card.is-vertical { width: 200px; aspect-ratio: 9/16; }
+        /* Vertical Style - Reduced size */
+        .card.is-vertical { width: 160px; aspect-ratio: 9/16; }
 
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .card:hover { transform: translateY(-10px); border-color: var(--primary); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
 
-        .card-thumb { width: 100%; cursor: pointer; overflow: hidden; position: relative; background: #000; }
+        /* Centered Thumbnail Box */
+        .card-thumb { 
+            width: 100%; 
+            cursor: pointer; 
+            overflow: hidden; 
+            position: relative; 
+            background: #000; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
         .is-horizontal .card-thumb { height: 60%; }
         .is-vertical .card-thumb { height: 75%; }
 
-        .card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        /* Separate object-fit rules for horizontal vs vertical */
+        .is-horizontal .card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .is-vertical .card-thumb img { width: 100%; height: 100%; object-fit: contain; transition: 0.5s; }
+        
         .card:hover .card-thumb img { transform: scale(1.05); }
 
         .card-body { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
