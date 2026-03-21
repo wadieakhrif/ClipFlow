@@ -63,7 +63,7 @@
         .cat-count { font-size: 10px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 6px; font-weight: bold; }
 
         .grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 25px; padding: 40px 30px; max-width: 1500px; margin: 0 auto;
         }
 
@@ -71,13 +71,13 @@
             background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border);
             overflow: hidden; position: relative; transition: 0.4s cubic-bezier(0.2, 1, 0.2, 1);
             backdrop-filter: blur(10px); animation: fadeInUp 0.6s ease-out forwards;
-            display: flex; flex-direction: column; aspect-ratio: 9/16;
+            display: flex; flex-direction: column; aspect-ratio: 16/11;
         }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .card:hover { transform: translateY(-10px); border-color: var(--primary); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
 
-        .card-thumb { width: 100%; height: 75%; background: #000; cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
-        .card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .card-thumb { width: 100%; height: 70%; background: #000; cursor: pointer; overflow: hidden; position: relative; }
+        .card-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: 0.5s; }
         .card:hover .card-thumb img { transform: scale(1.05); }
 
         .card-body { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
@@ -113,7 +113,9 @@
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(15px); }
         .modal { background: var(--card-bg); width: 90%; max-width: 550px; border-radius: 30px; padding: 35px; border: 1px solid var(--border); max-height: 85vh; overflow-y: auto; }
 
-        .thumb-slot { position: relative; aspect-ratio: 1; background: var(--bg); border: 1.5px dashed var(--border); border-radius: 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .thumb-slot { position: relative; aspect-ratio: 16/9; background: var(--bg); border: 1.5px dashed var(--border); border-radius: 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .thumb-slot img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        
         .check-item { background: var(--bg); border: 1px solid var(--border); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; font-size: 12px; }
         .check-item input { cursor: pointer; }
         .checkbox-group { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 8px; padding-bottom: 5px; scrollbar-width: none; }
@@ -175,15 +177,15 @@
         <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:20px;">
             <div class="thumb-slot" onclick="pickThumb(0)">
                 <button type="button" class="remove-thumb-btn" style="position:absolute; top:5px; right:5px; background:var(--danger); border:none; border-radius:50%; color:white; width:24px; height:24px; cursor:pointer; display:none; z-index:5;" id="rm0" onclick="removeThumb(event, 0)">×</button>
-                <img id="pre0" style="width:100%; height:100%; object-fit:cover; display:none"><i data-lucide="image-plus"></i>
+                <img id="pre0" alt="thumb"><i data-lucide="image-plus"></i>
             </div>
             <div class="thumb-slot" onclick="pickThumb(1)">
                 <button type="button" class="remove-thumb-btn" style="position:absolute; top:5px; right:5px; background:var(--danger); border:none; border-radius:50%; color:white; width:24px; height:24px; cursor:pointer; display:none; z-index:5;" id="rm1" onclick="removeThumb(event, 1)">×</button>
-                <img id="pre1" style="width:100%; height:100%; object-fit:cover; display:none"><i data-lucide="image-plus"></i>
+                <img id="pre1" alt="thumb"><i data-lucide="image-plus"></i>
             </div>
             <div class="thumb-slot" onclick="pickThumb(2)">
                 <button type="button" class="remove-thumb-btn" style="position:absolute; top:5px; right:5px; background:var(--danger); border:none; border-radius:50%; color:white; width:24px; height:24px; cursor:pointer; display:none; z-index:5;" id="rm2" onclick="removeThumb(event, 2)">×</button>
-                <img id="pre2" style="width:100%; height:100%; object-fit:cover; display:none"><i data-lucide="image-plus"></i>
+                <img id="pre2" alt="thumb"><i data-lucide="image-plus"></i>
             </div>
         </div>
 
@@ -386,7 +388,7 @@
             const video = document.createElement('video');
             video.preload = 'metadata';
             video.onloadedmetadata = () => {
-                video.currentTime = 0.1; 
+                video.currentTime = 0.5; // Slight delay to ensure it's not a black frame
             };
             video.onseeked = () => {
                 const canvas = document.createElement('canvas');
@@ -394,7 +396,7 @@
                 canvas.height = video.videoHeight;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                resolve(canvas.toDataURL('image/png'));
+                resolve(canvas.toDataURL('image/jpeg', 0.8));
             };
             video.src = URL.createObjectURL(videoFile);
         });
@@ -475,13 +477,15 @@
             const img = document.getElementById(`pre${i}`);
             const rmBtn = document.getElementById(`rm${i}`);
             const icon = img.nextElementSibling;
+            
             if(src) {
-                img.src = src; img.style.display = 'block';
-                icon.style.display = 'none';
+                img.src = src; 
+                img.style.display = 'block';
+                if(icon) icon.style.display = 'none';
                 rmBtn.style.display = 'block';
             } else {
                 img.style.display = 'none';
-                icon.style.display = 'block';
+                if(icon) icon.style.display = 'block';
                 rmBtn.style.display = 'none';
             }
         });
