@@ -39,7 +39,6 @@
 
         body.rtl { direction: rtl; font-family: 'Cairo', sans-serif; }
 
-        /* Animated Background */
         #bgCanvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.4; }
 
         header {
@@ -49,185 +48,213 @@
             display: flex; align-items: center; justify-content: space-between;
         }
 
-        .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 22px; letter-spacing: -0.5px; }
+        .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 22px; }
         .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), #d946ef); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; }
 
         .header-center { flex: 1; max-width: 600px; margin: 0 40px; }
-        
-        .search-bar { position: relative; }
+        .search-bar { position: relative; margin-bottom: 10px; }
         .search-bar i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
         .search-bar input {
             width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
             padding: 10px 15px 10px 42px; border-radius: 12px; color: var(--text);
-            font-size: 14px; outline: none; transition: 0.2s;
-        }
-        .search-bar input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-glow); }
-
-        .grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 24px; padding: 40px; max-width: 1600px; margin: 0 auto;
-            align-items: start;
         }
 
-        /* CARD DESIGN */
-        .card {
-            background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border);
-            overflow: hidden; position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
-        }
-        .card:hover { transform: translateY(-6px); border-color: rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .filter-tabs { display: flex; gap: 8px; justify-content: center; }
+        .tab { padding: 6px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); color: var(--text-muted); transition: 0.2s; }
+        .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Dynamic Aspect Ratios */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; padding: 40px; max-width: 1600px; margin: 0 auto; }
+
+        .card { background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; position: relative; transition: 0.3s; backdrop-filter: blur(10px); }
+        .card:hover { transform: translateY(-6px); border-color: var(--primary); }
+
         .card-thumb { width: 100%; background: #000; position: relative; overflow: hidden; cursor: pointer; }
         .ratio-16-9 { aspect-ratio: 16/9; }
         .ratio-9-16 { aspect-ratio: 9/16; }
+        .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-        .card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-        .card:hover .card-thumb img { transform: scale(1.08); }
+        .card-body { padding: 18px; position: relative; }
+        .card-title { font-weight: 700; margin: 0; font-size: 15px; width: 85%; }
+        .card-meta { font-size: 11px; color: var(--text-muted); margin-top: 8px; display: flex; justify-content: space-between; }
 
-        .card-body { padding: 18px; }
-        .card-title { font-weight: 700; margin: 0 0 6px 0; font-size: 16px; }
-        .card-meta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); }
+        .card-options { position: absolute; top: 18px; right: 10px; cursor: pointer; }
+        .options-menu { position: absolute; right: 0; top: 30px; background: #1f2937; border: 1px solid var(--border); border-radius: 8px; z-index: 10; display: none; width: 120px; }
+        .options-menu div { padding: 8px 12px; font-size: 12px; display: flex; align-items: center; gap: 8px; }
+        .options-menu div:hover { background: rgba(255,255,255,0.1); }
 
-        /* Buttons & Chips */
-        .btn { 
-            padding: 10px 20px; border-radius: 12px; border: none; font-weight: 600; 
-            cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: 0.2s; 
-        }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 14px var(--primary-glow); }
-        .btn-primary:hover { background: #7c3aed; transform: translateY(-1px); }
+        .btn { padding: 10px 20px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
         .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
-        .btn-ghost:hover { background: rgba(255,255,255,0.05); }
 
-        .platform-chip {
-            padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.05);
-            display: flex; align-items: center; gap: 4px; font-size: 11px;
-        }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .modal { background: #111827; width: 100%; max-width: 550px; border-radius: 24px; padding: 24px; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
 
-        /* Modals */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; }
-        .modal { 
-            background: #111827; width: 95%; max-width: 600px; border-radius: 24px; padding: 32px; 
-            border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; position: relative;
-        }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        .input-group input, .input-group textarea, .input-group select { width: 100%; background: #030712; border: 1px solid var(--border); padding: 10px; border-radius: 10px; color: var(--text); outline: none; }
 
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
-        .input-group input, .input-group textarea, .input-group select {
-            width: 100%; background: #030712; border: 1px solid var(--border); padding: 12px; border-radius: 12px; color: var(--text); outline: none; box-sizing: border-box;
-        }
-
-        .thumb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
-        .thumb-slot { 
-            aspect-ratio: 16/9; background: #030712; border: 2px dashed var(--border); border-radius: 12px; 
-            display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative;
-        }
+        .thumb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+        .thumb-slot { aspect-ratio: 16/9; background: #030712; border: 2px dashed var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; }
         .thumb-slot img { width: 100%; height: 100%; object-fit: cover; }
-        .thumb-slot.is-portrait { aspect-ratio: 9/16; }
+        .remove-thumb { position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.7); border-radius: 4px; padding: 2px; z-index: 5; }
 
-        .format-toggle {
-            display: flex; background: #030712; padding: 4px; border-radius: 10px; margin-bottom: 20px; gap: 4px;
-        }
-        .format-btn { 
-            flex: 1; padding: 8px; text-align: center; font-size: 12px; font-weight: 600; 
-            border-radius: 8px; cursor: pointer; transition: 0.2s; color: var(--text-muted);
-        }
+        .format-toggle { display: flex; background: #030712; padding: 4px; border-radius: 10px; gap: 4px; margin-bottom: 15px; }
+        .format-btn { flex: 1; padding: 8px; text-align: center; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: pointer; color: var(--text-muted); }
         .format-btn.active { background: var(--primary); color: white; }
+
+        #playerWindow { width: 90%; max-width: 1000px; background: #000; border-radius: 20px; overflow: hidden; position: relative; }
+        .close-player { position: absolute; top: 15px; right: 15px; color: white; cursor: pointer; z-index: 100; background: rgba(0,0,0,0.5); border-radius: 50%; padding: 5px; }
+
+        .loading-spinner { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #fff; width: 18px; height: 18px; animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .hidden { display: none !important; }
     </style>
 </head>
-<body>
+<body class="dark-mode">
 
 <canvas id="bgCanvas"></canvas>
 
 <header>
     <div class="logo">
         <div class="logo-icon"><i data-lucide="zap" size="20"></i></div>
-        Clipflow<span style="color:var(--primary)">.</span>
+        Clipflow<span>.</span>
     </div>
 
     <div class="header-center">
         <div class="search-bar">
             <i data-lucide="search" size="16"></i>
-            <input type="text" id="mainSearch" placeholder="Search your creative projects..." oninput="renderProjects()">
+            <input type="text" id="mainSearch" placeholder="Search..." oninput="renderProjects()">
+        </div>
+        <div class="filter-tabs">
+            <div class="tab active" onclick="filterBy('all', this)">All</div>
+            <div class="tab" onclick="filterBy('YouTube', this)">YouTube</div>
+            <div class="tab" onclick="filterBy('TikTok', this)">TikTok</div>
+            <div class="tab" onclick="filterBy('Instagram', this)">Instagram</div>
+            <div class="tab" onclick="filterBy('Facebook', this)">Facebook</div>
         </div>
     </div>
 
-    <div style="display:flex; gap:12px; align-items:center;">
-        <button class="btn btn-ghost" onclick="toggleLanguage()" id="langBtn" style="padding: 8px 12px;">EN</button>
-        <button class="btn btn-ghost" onclick="toggleTheme()" style="padding: 8px 12px;"><i data-lucide="sun" id="themeIcon" size="18"></i></button>
-        <button class="btn btn-primary" onclick="openModal('add')"><i data-lucide="plus" size="18"></i> <span data-i18n="newProject">New Project</span></button>
+    <div style="display:flex; gap:10px;">
+        <button class="btn btn-ghost" onclick="toggleLanguage()" id="langBtn">EN</button>
+        <button class="btn btn-ghost" onclick="toggleTheme()"><i data-lucide="sun" size="18"></i></button>
+        <button class="btn btn-primary" onclick="openModal('add')"><i data-lucide="plus" size="18"></i> <span>Project</span></button>
     </div>
 </header>
 
 <main>
     <div id="projectsContainer" class="grid"></div>
-    <div id="setupView" style="text-align:center; padding:150px 0;" class="hidden">
-        <div style="background:var(--primary-glow); width:80px; height:80px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 24px;">
-            <i data-lucide="folder-plus" size="40" color="var(--primary)"></i>
-        </div>
-        <h2 style="margin:0 0 10px 0;">No Workspace Connected</h2>
-        <p style="color:var(--text-muted); margin-bottom:30px;">Select a folder on your computer to store your video projects.</p>
-        <button class="btn btn-primary" onclick="initWorkspace()">Connect Local Folder</button>
+    <div id="setupView" class="hidden" style="text-align:center; padding:100px;">
+        <i data-lucide="folder-plus" size="60" color="var(--primary)"></i>
+        <h2>Connect Workspace</h2>
+        <button class="btn btn-primary" onclick="initWorkspace()">Select Local Folder</button>
     </div>
 </main>
 
 <div class="overlay" id="formModal">
     <div class="modal">
-        <h2 id="modalTitle" style="margin:0 0 24px 0;">Create Project</h2>
+        <h2 id="modalTitle" style="margin-top:0">New Project</h2>
         
         <div class="input-group">
-            <label>Format</label>
+            <label>Dimensions</label>
             <div class="format-toggle">
-                <div class="format-btn active" id="fmt-landscape" onclick="setFormat('landscape')">Landscape ($16:9$)</div>
-                <div class="format-btn" id="fmt-portrait" onclick="setFormat('portrait')">Portrait ($9:16$)</div>
+                <div class="format-btn active" id="fmt-landscape" onclick="setFormat('landscape')">Landscape 16:9</div>
+                <div class="format-btn" id="fmt-portrait" onclick="setFormat('portrait')">Portrait 9:16</div>
             </div>
+        </div>
+
+        <div class="input-group">
+            <label>Platform Category</label>
+            <select id="projPlatform">
+                </select>
         </div>
 
         <div id="videoUploadBox" class="input-group">
-            <div onclick="triggerVideo()" style="border:2px dashed var(--primary); padding:30px; text-align:center; border-radius:16px; cursor:pointer; background:var(--primary-glow);">
-                <i data-lucide="clapperboard" size="24"></i>
-                <p id="videoLabelText" style="margin:10px 0 0 0; font-weight:600; font-size:14px;">Select Video Source (.mp4)</p>
+            <div onclick="triggerVideo()" style="border:2px dashed var(--primary); padding:20px; text-align:center; border-radius:12px; cursor:pointer; background:var(--primary-glow);">
+                <i data-lucide="clapperboard"></i>
+                <p id="videoLabelText">Choose Video (.mp4)</p>
             </div>
         </div>
 
-        <label style="display:block; font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:8px;">THUMBNAILS (AUTO-FILL)</label>
+        <label style="font-size:11px; color:var(--text-muted)">THUMBNAILS (MAX 3)</label>
         <div class="thumb-grid">
-            <div class="thumb-slot" id="slot0" onclick="pickThumb(0)"><i data-lucide="image"></i><img id="pre0" class="hidden"></div>
-            <div class="thumb-slot" id="slot1" onclick="pickThumb(1)"><i data-lucide="image"></i><img id="pre1" class="hidden"></div>
-            <div class="thumb-slot" id="slot2" onclick="pickThumb(2)"><i data-lucide="image"></i><img id="pre2" class="hidden"></div>
+            <div class="thumb-slot" id="slot0" onclick="pickThumb(0)">
+                <i data-lucide="image"></i><img id="pre0" class="hidden">
+                <div class="remove-thumb hidden" onclick="clearThumb(0, event)"><i data-lucide="x" size="12"></i></div>
+            </div>
+            <div class="thumb-slot" id="slot1" onclick="pickThumb(1)">
+                <i data-lucide="image"></i><img id="pre1" class="hidden">
+                <div class="remove-thumb hidden" onclick="clearThumb(1, event)"><i data-lucide="x" size="12"></i></div>
+            </div>
+            <div class="thumb-slot" id="slot2" onclick="pickThumb(2)">
+                <i data-lucide="image"></i><img id="pre2" class="hidden">
+                <div class="remove-thumb hidden" onclick="clearThumb(2, event)"><i data-lucide="x" size="12"></i></div>
+            </div>
         </div>
 
         <div class="input-group">
             <label>Project Details</label>
-            <input type="text" id="projTitle" placeholder="Title your project..." style="margin-bottom:12px;">
-            <textarea id="projDesc" placeholder="Brief description or captions..." rows="3"></textarea>
+            <input type="text" id="projTitle" placeholder="Video Title" style="margin-bottom:10px;">
+            <textarea id="projDesc" placeholder="Description / Captions" rows="2" style="margin-bottom:10px;"></textarea>
+            <label>Scheduled / Uploaded Time</label>
+            <input type="datetime-local" id="projTime">
         </div>
 
-        <div style="display:flex; gap:12px; margin-top:32px;">
+        <div style="display:flex; gap:12px; margin-top:20px;">
             <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" style="flex:2" onclick="saveData()">Save Project</button>
+            <button class="btn btn-primary" style="flex:2" onclick="saveData()" id="saveBtn">
+                <div class="loading-spinner" id="btnSpinner"></div>
+                <span id="btnText">Save Project</span>
+            </button>
         </div>
+    </div>
+</div>
+
+<div class="overlay" id="playerModal" onclick="closePlayer()">
+    <div id="playerWindow" onclick="event.stopPropagation()">
+        <div class="close-player" onclick="closePlayer()"><i data-lucide="x" size="20"></i></div>
+        <video id="mainVideoPlayer" controls style="width:100%; display:block;"></video>
     </div>
 </div>
 
 <script>
     let workspace = null;
     let projects = [];
-    let selectedVideo = null;
+    let selectedVideoFile = null;
     let tempThumbs = [null, null, null];
     let selectedFormat = 'landscape';
-    let editMode = false;
-    let currentEditName = null;
-    let currentLang = localStorage.getItem('clipflow_lang') || 'en';
+    let currentFilter = 'all';
+    let editIdx = null;
 
-    // Initialize Lucide
+    const translations = {
+        en: { newProject: "New Project", search: "Search...", save: "Save Project", delete: "Delete", edit: "Edit", confirm: "Delete this project?" },
+        ar: { newProject: "مشروع جديد", search: "بحث...", save: "حفظ المشروع", delete: "حذف", edit: "تعديل", confirm: "هل تريد حذف هذا المشروع؟" }
+    };
+
     lucide.createIcons();
+
+    // Toggle Landscape/Portrait & Category Logic
+    function setFormat(fmt) {
+        selectedFormat = fmt;
+        document.getElementById('fmt-landscape').classList.toggle('active', fmt === 'landscape');
+        document.getElementById('fmt-portrait').classList.toggle('active', fmt === 'portrait');
+        
+        const platformSelect = document.getElementById('projPlatform');
+        platformSelect.innerHTML = '';
+        
+        const options = fmt === 'landscape' ? ['YouTube', 'Facebook'] : ['YouTube Shorts', 'TikTok', 'Instagram Reels', 'Facebook'];
+        options.forEach(opt => {
+            const el = document.createElement('option');
+            el.value = opt; el.innerText = opt;
+            platformSelect.appendChild(el);
+        });
+
+        document.querySelectorAll('.thumb-slot').forEach(s => s.classList.toggle('is-portrait', fmt === 'portrait'));
+    }
 
     async function openDB() {
         return new Promise(res => {
-            const req = indexedDB.open("ClipflowProDB", 1);
+            const req = indexedDB.open("ClipflowProDB_V2", 1);
             req.onupgradeneeded = () => req.result.createObjectStore("settings");
             req.onsuccess = () => res(req.result);
         });
@@ -237,21 +264,18 @@
         try {
             workspace = await window.showDirectoryPicker({ mode: 'readwrite' });
             const db = await openDB();
-            const tx = db.transaction("settings", "readwrite");
-            tx.objectStore("settings").put(workspace, "folderHandle");
+            await db.transaction("settings", "readwrite").objectStore("settings").put(workspace, "folderHandle");
             document.getElementById('setupView').classList.add('hidden');
             loadProjects();
-        } catch(e) { console.error(e); }
+        } catch(e) {}
     }
 
     async function autoConnect() {
         const db = await openDB();
         const req = db.transaction("settings").objectStore("settings").get("folderHandle");
         req.onsuccess = async () => {
-            const handle = req.result;
-            if (handle && (await handle.queryPermission({mode: 'readwrite'})) === 'granted') {
-                workspace = handle;
-                document.getElementById('setupView').classList.add('hidden');
+            if (req.result && (await req.result.queryPermission({mode: 'readwrite'})) === 'granted') {
+                workspace = req.result;
                 loadProjects();
             } else {
                 document.getElementById('setupView').classList.remove('hidden');
@@ -269,44 +293,49 @@
                     const mFile = await (await handle.getFileHandle('meta.json')).getFile();
                     const meta = JSON.parse(await mFile.text());
                     const vFile = await handle.getFileHandle('video.mp4');
-                    projects.push({ name, meta, videoFile: vFile });
+                    projects.push({ handleName: name, meta, videoFile: vFile });
                 } catch(e) {}
             }
         }
         renderProjects();
     }
 
-    function setFormat(fmt) {
-        selectedFormat = fmt;
-        document.getElementById('fmt-landscape').classList.toggle('active', fmt === 'landscape');
-        document.getElementById('fmt-portrait').classList.toggle('active', fmt === 'portrait');
-        
-        document.querySelectorAll('.thumb-slot').forEach(slot => {
-            slot.classList.toggle('is-portrait', fmt === 'portrait');
-        });
+    function filterBy(plat, el) {
+        currentFilter = plat;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        renderProjects();
     }
 
     function renderProjects() {
         const container = document.getElementById('projectsContainer');
-        const q = document.getElementById('mainSearch').value.toLowerCase();
+        const query = document.getElementById('mainSearch').value.toLowerCase();
         container.innerHTML = '';
 
-        projects.filter(p => p.meta.title.toLowerCase().includes(q)).forEach((p, idx) => {
-            const ratioClass = p.meta.format === 'portrait' ? 'ratio-9-16' : 'ratio-16-9';
+        const filtered = projects.filter(p => {
+            const matchesSearch = p.meta.title.toLowerCase().includes(query);
+            const matchesFilter = currentFilter === 'all' || p.meta.platform.includes(currentFilter);
+            return matchesSearch && matchesFilter;
+        });
+
+        filtered.forEach((p, idx) => {
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <div class="card-thumb ${ratioClass}" onclick="playVideo(${idx})">
+                <div class="card-thumb ${p.meta.format === 'portrait' ? 'ratio-9-16' : 'ratio-16-9'}" onclick="playVideo('${p.handleName}')">
                     <img src="${p.meta.thumbs[0] || ''}">
                 </div>
                 <div class="card-body">
-                    <h3 class="card-title">${p.meta.title}</h3>
-                    <div class="card-meta">
-                        <span>${new Date(p.meta.timestamp).toLocaleDateString()}</span>
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn-ghost" style="padding:4px;" onclick="deleteProject(${idx}, event)"><i data-lucide="trash-2" size="14"></i></button>
-                            <button class="btn-ghost" style="padding:4px;" onclick="downloadZip(${idx}, event)"><i data-lucide="download" size="14"></i></button>
+                    <div class="card-options" onclick="toggleMenu(${idx}, event)"><i data-lucide="more-vertical" size="18"></i>
+                        <div class="options-menu" id="menu-${idx}">
+                            <div onclick="openModal('edit', ${idx})"><i data-lucide="edit-3" size="14"></i> Edit</div>
+                            <div onclick="deleteProject(${idx}, event)"><i data-lucide="trash-2" size="14"></i> Delete</div>
                         </div>
+                    </div>
+                    <h3 class="card-title">${p.meta.title}</h3>
+                    <div style="font-size:10px; background:var(--primary-glow); color:var(--primary); display:inline-block; padding:2px 6px; border-radius:4px; margin-top:5px;">${p.meta.platform}</div>
+                    <div class="card-meta">
+                        <span>${p.meta.schedule ? new Date(p.meta.schedule).toLocaleString() : 'No time set'}</span>
                     </div>
                 </div>
             `;
@@ -315,40 +344,60 @@
         lucide.createIcons();
     }
 
-    function openModal(mode) {
-        editMode = mode === 'edit';
-        document.getElementById('formModal').style.display = 'flex';
-        tempThumbs = [null, null, null];
-        selectedVideo = null;
+    function toggleMenu(idx, e) {
+        e.stopPropagation();
+        const menus = document.querySelectorAll('.options-menu');
+        menus.forEach(m => m.style.display = 'none');
+        document.getElementById(`menu-${idx}`).style.display = 'block';
+    }
+
+    window.onclick = () => document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none');
+
+    function openModal(mode, idx = null) {
+        const modal = document.getElementById('formModal');
+        modal.style.display = 'flex';
+        editIdx = idx;
+        
+        if(mode === 'edit') {
+            const p = projects[idx];
+            document.getElementById('modalTitle').innerText = "Edit Details";
+            document.getElementById('projTitle').value = p.meta.title;
+            document.getElementById('projDesc').value = p.meta.desc;
+            document.getElementById('projTime').value = p.meta.schedule || "";
+            document.getElementById('videoUploadBox').classList.add('hidden');
+            tempThumbs = [...p.meta.thumbs];
+            setFormat(p.meta.format);
+            document.getElementById('projPlatform').value = p.meta.platform;
+        } else {
+            document.getElementById('modalTitle').innerText = "New Project";
+            document.getElementById('projTitle').value = "";
+            document.getElementById('projDesc').value = "";
+            document.getElementById('videoUploadBox').classList.remove('hidden');
+            tempThumbs = [null, null, null];
+            setFormat('landscape');
+        }
         refreshThumbs();
     }
 
     function closeModal() { document.getElementById('formModal').style.display = 'none'; }
 
-    async function captureFrame(videoFile) {
-        return new Promise(res => {
+    async function triggerVideo() {
+        const inp = document.createElement('input');
+        inp.type = 'file'; inp.accept = 'video/mp4';
+        inp.onchange = async e => {
+            selectedVideoFile = e.target.files[0];
+            document.getElementById('videoLabelText').innerText = selectedVideoFile.name;
+            // Auto capture first frame
             const v = document.createElement('video');
-            v.src = URL.createObjectURL(videoFile);
+            v.src = URL.createObjectURL(selectedVideoFile);
             v.onloadedmetadata = () => v.currentTime = 0.5;
             v.onseeked = () => {
                 const c = document.createElement('canvas');
                 c.width = v.videoWidth; c.height = v.videoHeight;
                 c.getContext('2d').drawImage(v, 0, 0);
-                res(c.toDataURL('image/jpeg', 0.8));
-            };
-        });
-    }
-
-    function triggerVideo() {
-        const inp = document.createElement('input');
-        inp.type = 'file'; inp.accept = 'video/mp4';
-        inp.onchange = async e => {
-            selectedVideo = e.target.files[0];
-            document.getElementById('videoLabelText').innerText = selectedVideo.name;
-            if(!tempThumbs[0]) {
-                tempThumbs[0] = await captureFrame(selectedVideo);
+                tempThumbs[0] = c.toDataURL('image/jpeg', 0.7);
                 refreshThumbs();
-            }
+            };
         };
         inp.click();
     }
@@ -364,100 +413,143 @@
         inp.click();
     }
 
+    function clearThumb(i, e) {
+        e.stopPropagation();
+        tempThumbs[i] = null;
+        refreshThumbs();
+    }
+
     function refreshThumbs() {
         tempThumbs.forEach((src, i) => {
             const img = document.getElementById(`pre${i}`);
             const slot = document.getElementById(`slot${i}`);
+            const removeBtn = slot.querySelector('.remove-thumb');
             if(src) {
                 img.src = src; img.classList.remove('hidden');
                 slot.querySelector('i').classList.add('hidden');
+                removeBtn.classList.remove('hidden');
             } else {
                 img.classList.add('hidden');
                 slot.querySelector('i').classList.remove('hidden');
+                removeBtn.classList.add('hidden');
             }
         });
     }
 
     async function saveData() {
         const title = document.getElementById('projTitle').value;
-        if(!title || !selectedVideo) return alert("Title and Video required");
+        if(!title || (!selectedVideoFile && editIdx === null)) return alert("Required: Title and Video");
+
+        // Loading State
+        document.getElementById('btnSpinner').style.display = 'block';
+        document.getElementById('btnText').innerText = "Saving...";
 
         const root = await workspace.getDirectoryHandle('Clipflow_Vault', { create: true });
-        const folderName = title.replace(/\s+/g, '_') + "_" + Date.now();
-        const folder = await root.getDirectoryHandle(folderName, { create: true });
+        let folder;
+        if(editIdx !== null) {
+            folder = await root.getDirectoryHandle(projects[editIdx].handleName);
+        } else {
+            const folderName = title.replace(/\s+/g, '_') + "_" + Date.now();
+            folder = await root.getDirectoryHandle(folderName, { create: true });
+        }
 
-        const meta = { title, desc: document.getElementById('projDesc').value, format: selectedFormat, thumbs: tempThumbs, timestamp: Date.now() };
-        
+        const meta = {
+            title, 
+            desc: document.getElementById('projDesc').value,
+            format: selectedFormat,
+            platform: document.getElementById('projPlatform').value,
+            thumbs: tempThumbs,
+            schedule: document.getElementById('projTime').value,
+            timestamp: Date.now()
+        };
+
         const mFile = await folder.getFileHandle('meta.json', { create: true });
         const writer = await mFile.createWritable();
         await writer.write(JSON.stringify(meta));
         await writer.close();
 
-        const vFile = await folder.getFileHandle('video.mp4', { create: true });
-        const vWriter = await vFile.createWritable();
-        await vWriter.write(selectedVideo);
-        await vWriter.close();
+        if(selectedVideoFile) {
+            const vFile = await folder.getFileHandle('video.mp4', { create: true });
+            const vWriter = await vFile.createWritable();
+            await vWriter.write(selectedVideoFile);
+            await vWriter.close();
+        }
 
+        document.getElementById('btnSpinner').style.display = 'none';
+        document.getElementById('btnText').innerText = "Save Project";
         closeModal();
         loadProjects();
     }
 
     async function deleteProject(idx, e) {
         e.stopPropagation();
-        if(confirm("Permanently delete this project?")) {
+        if(confirm("Permanently delete project?")) {
             const root = await workspace.getDirectoryHandle('Clipflow_Vault');
-            await root.removeEntry(projects[idx].name, { recursive: true });
+            await root.removeEntry(projects[idx].handleName, { recursive: true });
             loadProjects();
         }
     }
 
-    async function downloadZip(idx, e) {
-        e.stopPropagation();
-        const p = projects[idx];
-        const zip = new JSZip();
-        zip.file("video.mp4", await p.videoFile.getFile());
-        zip.file("meta.json", JSON.stringify(p.meta));
-        const content = await zip.generateAsync({type:"blob"});
-        saveAs(content, `${p.meta.title}.zip`);
+    async function playVideo(handleName) {
+        const root = await workspace.getDirectoryHandle('Clipflow_Vault');
+        const folder = await root.getDirectoryHandle(handleName);
+        const file = await (await folder.getFileHandle('video.mp4')).getFile();
+        const url = URL.createObjectURL(file);
+        
+        const player = document.getElementById('mainVideoPlayer');
+        player.src = url;
+        document.getElementById('playerModal').style.display = 'flex';
+        player.play();
     }
 
-    async function playVideo(idx) {
-        const file = await projects[idx].videoFile.getFile();
-        const url = URL.createObjectURL(file);
-        const win = window.open("");
-        win.document.write(`<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;"><video src="${url}" controls autoplay style="max-height:100vh;max-width:100%"></video></body>`);
+    function closePlayer() {
+        const player = document.getElementById('mainVideoPlayer');
+        player.pause();
+        player.src = "";
+        document.getElementById('playerModal').style.display = 'none';
+    }
+
+    function toggleTheme() {
+        const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+    }
+
+    function toggleLanguage() {
+        const body = document.body;
+        if(body.classList.contains('rtl')) {
+            body.classList.remove('rtl');
+            document.getElementById('langBtn').innerText = "EN";
+        } else {
+            body.classList.add('rtl');
+            document.getElementById('langBtn').innerText = "AR";
+        }
     }
 
     // BG Animation
     const canvas = document.getElementById('bgCanvas');
     const ctx = canvas.getContext('2d');
     let circles = [];
-
     function initCircles() {
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        circles = Array.from({length: 20}, () => ({
+        circles = Array.from({length: 15}, () => ({
             x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-            r: Math.random() * 100 + 50, dx: (Math.random() - 0.5) * 0.5, dy: (Math.random() - 0.5) * 0.5
+            r: Math.random() * 150 + 50, dx: (Math.random() - 0.5) * 0.4, dy: (Math.random() - 0.5) * 0.4
         }));
     }
-
     function animate() {
         ctx.clearRect(0,0,canvas.width, canvas.height);
-        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
-        ctx.globalAlpha = 0.05;
+        ctx.fillStyle = "#8b5cf6"; ctx.globalAlpha = 0.03;
         circles.forEach(c => {
             ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI*2); ctx.fill();
             c.x += c.dx; c.y += c.dy;
-            if(c.x<0 || c.x>canvas.width) c.dx*=-1;
-            if(c.y<0 || c.y>canvas.height) c.dy*=-1;
+            if(c.x<0 || c.x>canvas.width) c.dx*=-1; if(c.y<0 || c.y>canvas.height) c.dy*=-1;
         });
         requestAnimationFrame(animate);
     }
-
     window.onresize = initCircles;
     initCircles(); animate();
     autoConnect();
+    setFormat('landscape');
 </script>
-
 </body>
 </html>
